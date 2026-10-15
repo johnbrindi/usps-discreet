@@ -5,8 +5,8 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { href: "/track", label: "Quick Tools" },
-  { href: "/track", label: "Track & Manage" },
+  { href: "/track", label: "Track" },
+  { href: "/tools", label: "Quick Tools" },
   { href: "/help", label: "Help" },
   { href: "/contact", label: "Contact" },
 ] as const;

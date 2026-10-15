@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 
 const mobileNavItems = [
   { href: "/track", label: "Track a Package" },
+  { href: "/tools", label: "Quick Tools" },
   { href: "/help", label: "Help" },
   { href: "/contact", label: "Contact Us" },
   { href: "/privacy", label: "Privacy Policy" },

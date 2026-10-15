@@ -28,7 +28,11 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
           </Card>
           <Card className="p-5">
             <h2 className="flex items-center gap-2 font-semibold text-navy-900"><Mail className="size-4" aria-hidden /> Email</h2>
-            <p className="mt-1 text-muted">{siteConfig.supportEmail}</p>
+            <p className="mt-1">
+              <a href={`mailto:${siteConfig.supportEmail}`} className="font-medium break-all text-navy-700 underline underline-offset-2">
+                {siteConfig.supportEmail}
+              </a>
+            </p>
           </Card>
           <Card className="p-5">
             <h2 className="flex items-center gap-2 font-semibold text-navy-900"><WhatsAppIcon className="size-4 text-whatsapp-dark" /> WhatsApp</h2>

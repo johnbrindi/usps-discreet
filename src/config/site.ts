@@ -36,6 +36,7 @@ export const whatsappUrl = `https://wa.me/${siteConfig.whatsappNumber.replace(/\
 
 export const mainNav = [
   { href: "/track", label: "Track" },
+  { href: "/tools", label: "Quick Tools" },
   { href: "/help", label: "Help" },
   { href: "/contact", label: "Contact" },
 ] as const;

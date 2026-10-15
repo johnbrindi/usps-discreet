@@ -1,139 +1,90 @@
+import { Mail } from "lucide-react";
 import Link from "next/link";
-import { siteConfig, whatsappUrl } from "@/config/site";
 import { Container } from "@/components/ui/card";
+import { WhatsAppIcon } from "@/components/widgets/whatsapp-icon";
+import { TOOLS } from "@/config/service-requests";
+import { siteConfig, whatsappUrl } from "@/config/site";
+import { describeSupportHours } from "@/lib/support-hours";
 import { Logo } from "./logo";
 
+// Every link points at a real route or section — no placeholder pages.
 const footerColumns = [
   {
-    heading: "HELPFUL LINKS",
+    heading: "Tracking",
     links: [
-      { href: "/contact", label: "Contact Us" },
-      { href: "/help", label: "FAQs" },
-      { href: "/track", label: "Track a Package" },
-    ],
-    subHeading: "CAREERS",
-    subLinks: [
-      { href: "/help", label: "Careers" },
+      { href: "/track", label: "Track a package" },
+      { href: "/help#statuses", label: "What statuses mean" },
+      { href: "/help#tracking-numbers", label: "Find your tracking number" },
     ],
   },
   {
-    heading: "COMPANY",
+    heading: "Quick tools",
+    links: TOOLS.map((t) => ({ href: `/tools/${t.slug}`, label: t.label })),
+  },
+  {
+    heading: "Help",
     links: [
-      { href: "/help", label: "About Us" },
-      { href: "/help", label: "Newsroom" },
-      { href: "/help", label: "Service Updates" },
-      { href: "/help", label: "Forms & Publications" },
+      { href: "/help#faq", label: "FAQs" },
+      { href: "/help#scams", label: "Report a scam message" },
+      { href: "/contact", label: "Contact us" },
     ],
   },
   {
-    heading: "RESOURCES",
+    heading: "Legal",
     links: [
-      { href: "/help", label: "Business Customer Gateway" },
-      { href: "/help", label: "Report Fraud" },
-      { href: "/help", label: "Resources for Developers" },
-      { href: "/contact", label: "Contact Support" },
+      { href: "/privacy", label: "Privacy policy" },
+      { href: "/terms", label: "Terms of service" },
     ],
   },
-  {
-    heading: "LEGAL INFORMATION",
-    links: [
-      { href: "/privacy", label: "Privacy Policy" },
-      { href: "/terms", label: "Terms of Use" },
-      { href: "/privacy", label: "Accessibility Statement" },
-    ],
-  },
-] as const;
+];
 
 export function SiteFooter() {
+  const year = new Date().getFullYear();
   return (
     <footer className="mt-auto border-t border-line bg-white text-sm">
-      {/* ── Main footer columns ── */}
-      <div className="border-t border-line py-8">
-        <Container className="px-4">
-          {/* Site logo */}
-          <div className="mb-6">
-            <Logo />
-          </div>
+      <Container className="grid gap-10 py-12 lg:grid-cols-[16rem_1fr]">
+        <div className="space-y-4">
+          <Logo />
+          <p className="leading-6 text-muted">{siteConfig.tagline}.</p>
+          <ul className="space-y-2">
+            <li>
+              <a href={`mailto:${siteConfig.supportEmail}`} className="inline-flex items-center gap-2 break-all text-ink hover:text-navy-700">
+                <Mail className="size-4 shrink-0 text-muted" aria-hidden /> {siteConfig.supportEmail}
+              </a>
+            </li>
+            <li>
+              <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-ink hover:text-navy-700">
+                <WhatsAppIcon className="size-4 shrink-0 text-whatsapp-dark" /> {siteConfig.whatsappDisplay}
+              </a>
+            </li>
+            <li className="text-xs text-muted">Support: {describeSupportHours()}</li>
+          </ul>
+        </div>
+        <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
+          {footerColumns.map((col) => (
+            <nav key={col.heading} aria-label={col.heading}>
+              <h2 className="mb-3 text-xs font-semibold tracking-wide text-ink uppercase">{col.heading}</h2>
+              <ul className="space-y-2">
+                {col.links.map((l) => (
+                  <li key={l.href}>
+                    <Link href={l.href} className="text-muted transition-colors hover:text-navy-700">
+                      {l.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          ))}
+        </div>
+      </Container>
 
-          {/* 4-column grid */}
-          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-            {footerColumns.map((col) => (
-              <div key={col.heading}>
-                <h2 className="mb-3 text-xs font-bold tracking-wider text-ink uppercase">
-                  {col.heading}
-                </h2>
-                <ul className="space-y-1.5">
-                  {col.links.map((l) => (
-                    <li key={l.label}>
-                      <Link
-                        href={l.href}
-                        className="text-usps-blue hover:underline underline-offset-2"
-                      >
-                        {l.label}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-                {"subHeading" in col && col.subHeading && (
-                  <div className="mt-5">
-                    <h2 className="mb-3 text-xs font-bold tracking-wider text-ink uppercase">
-                      {col.subHeading}
-                    </h2>
-                    <ul className="space-y-1.5">
-                      {col.subLinks?.map((l) => (
-                        <li key={l.label}>
-                          <Link
-                            href={l.href}
-                            className="text-usps-blue hover:underline underline-offset-2"
-                          >
-                            {l.label}
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </Container>
-      </div>
-
-      {/* ── Copyright row ── */}
-      <div className="border-t border-line py-5">
-        <Container className="flex flex-col gap-4 px-4 sm:flex-row sm:items-center sm:justify-between">
-          {/* Copyright — right-padded on mobile so it doesn't overlap FABs */}
-          <p className="text-xs text-muted pr-24 sm:pr-0">
-            Copyright &copy; {new Date().getFullYear()} {siteConfig.legalName}. All Rights Reserved.
-            <br className="sm:hidden" />
-            <span className="hidden sm:inline"> · </span>
-            <span className="block sm:inline text-xs text-muted/80 mt-1 sm:mt-0">
-              {siteConfig.name} is an independent tracking service.{" "}
-              <Link href="/help" className="text-usps-blue underline underline-offset-2">
-                WhatsApp: <span className="font-medium">{siteConfig.whatsappDisplay}</span>
-              </Link>
-            </span>
+      {/* Right padding on mobile keeps text clear of the floating chat/WhatsApp buttons. */}
+      <div className="border-t border-line">
+        <Container className="flex flex-col gap-1 py-5 pr-24 text-xs text-muted sm:flex-row sm:justify-between sm:pr-28">
+          <p>
+            &copy; {year} {siteConfig.legalName}. All rights reserved.
           </p>
-        </Container>
-      </div>
-
-      {/* ── WhatsApp contact ── */}
-      <div className="border-t border-line bg-navy-950 py-3">
-        <Container className="flex flex-wrap items-center gap-2 px-4 pr-28 text-xs text-navy-100/80 sm:pr-8">
-          <span>WhatsApp support:</span>
-          <a
-            href={whatsappUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-semibold text-whatsapp hover:underline"
-          >
-            {siteConfig.whatsappDisplay}
-          </a>
-          <span className="text-navy-100/50">·</span>
-          <span>
-            &copy; {new Date().getFullYear()} {siteConfig.legalName}. Independent tracking service — not operated by or
-            affiliated with USPS or any national postal service.
-          </span>
+          <p>Independent parcel service — not affiliated with USPS or any national postal service.</p>
         </Container>
       </div>
     </footer>
