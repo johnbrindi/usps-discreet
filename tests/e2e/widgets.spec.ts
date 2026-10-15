@@ -66,6 +66,27 @@ test.describe("floating support widgets", () => {
     await expect(page.getByText("[e2e] Hello, automated widget test.")).toBeVisible();
   });
 
+  test("launchers stay visible and tappable while the chat panel is open @mobile", async ({ page }) => {
+    await page.goto("/");
+    const chat = page.getByRole("button", { name: /Chat with James|Close chat/ }).first();
+    await chat.click();
+    await expect(page.getByRole("dialog")).toBeVisible();
+    const wa = page.getByRole("link", { name: /Contact us on WhatsApp/ });
+    for (const el of [chat, wa]) {
+      await expect(el).toBeVisible();
+      // The launcher is the topmost element at its centre, i.e. the panel doesn't cover it.
+      const covered = await el.evaluate((node) => {
+        const b = node.getBoundingClientRect();
+        const top = document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2);
+        return !top || !(node === top || node.contains(top));
+      });
+      expect(covered).toBe(false);
+    }
+    const panel = (await page.getByRole("dialog").boundingBox())!;
+    const chatBox = (await chat.boundingBox())!;
+    expect(panel.y + panel.height).toBeLessThanOrEqual(chatBox.y);
+  });
+
   test("desktop chat panel doesn't overlap the launchers", async ({ page }, info) => {
     test.skip(info.project.name !== "desktop");
     await page.goto("/");

@@ -136,17 +136,13 @@ export function ChatWidget({ agentName, hoursLabel }: { agentName: string; hours
         aria-labelledby={titleId}
         hidden={!open}
         className={cn(
-          "pointer-events-auto fixed flex flex-col overflow-hidden bg-white shadow-float",
-          // Mobile: full-height sheet. ≥sm: docked above both launchers.
-          "inset-0 sm:inset-auto sm:rounded-xl sm:border sm:border-line",
-          "sm:right-[var(--fab-right)] sm:bottom-[calc(var(--fab-bottom)+2*var(--fab-size)+2*var(--fab-gap))]",
-          "sm:h-[min(36rem,calc(100dvh-var(--fab-bottom)-2*var(--fab-size)-2*var(--fab-gap)-5rem))] sm:w-[22.5rem]",
+          "pointer-events-auto fixed flex flex-col overflow-hidden rounded-xl border border-line bg-white shadow-float",
+          // Docked above both launchers at every size so neither launcher is ever covered.
+          "right-[var(--fab-right)] bottom-[calc(var(--fab-bottom)+2*var(--fab-size)+2*var(--fab-gap))]",
+          "w-[min(22.5rem,calc(100vw-2*var(--fab-inset)))]",
+          "h-[min(36rem,calc(100dvh-var(--fab-bottom)-2*var(--fab-size)-2*var(--fab-gap)-var(--fab-inset)-env(safe-area-inset-top,0px)))]",
         )}
-        style={{
-          zIndex: "var(--z-chat)",
-          paddingTop: "env(safe-area-inset-top, 0px)",
-          paddingBottom: "env(safe-area-inset-bottom, 0px)",
-        }}
+        style={{ zIndex: "var(--z-chat)" }}
       >
         <header className="flex items-center gap-3 bg-navy-800 px-4 py-3 text-white">
           <span

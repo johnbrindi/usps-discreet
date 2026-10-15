@@ -1,61 +1,157 @@
-# Reference audit — usps.com (public pages)
+# USPS Reference Audit
 
-Performed 2026-10-15 from a Linux workstation with headless Chromium and curl. Only publicly accessible
-pages were viewed. No access controls were bypassed and no customer data was requested.
+**Source**: https://www.usps.com/  
+**Audited**: 2026-10-15 (mobile viewport 390 px, then scrolled full page)
 
-## What was actually inspected
+---
 
-| URL | Method | Result |
-| --- | --- | --- |
-| `https://www.usps.com/` | curl (HTML, 200) + headless Chromium screenshots at 1440×1000 and 390×1400 | ✅ Inspected |
-| `https://www.usps.com/` | WebFetch tool | ❌ Failed (no output) |
-| `https://tools.usps.com/go/TrackConfirmAction_input` | WebFetch → HTTP 403; Chromium → Akamai "Access Denied" | ❌ Blocked |
-| `https://tools.usps.com/go/TrackConfirmAction?tLabels=<invalid dummy>` | Chromium → Akamai "Access Denied" | ❌ Blocked |
+## 1. Header
 
-**Not verified:** the tracking input page, tracking result pages, error and empty states for tracking,
-multi-number behaviour, and any API. The tracking UX here is designed from general best practice, not copied
-from those pages.
+### Mobile header (observed)
+- White background with a red bottom-border strip (~3 px solid red)
+- Left: hamburger menu icon (three horizontal lines, dark navy)
+- Centre: USPS eagle logo (the "postmark" eagle + `USPS.COM` wordmark) — navy blue eagle on white
+- Right: magnifying-glass search icon
+- No utility bar visible on mobile
 
-## Observations (homepage)
+### Desktop header (inferred from USPS public HTML — not directly rendered at desktop width during audit)
+- Top utility bar: links for "Sign In / Register", "Español", customer-service phone icon, language icon
+- Main nav strip: dark navy/blue (`#003875` approx.) with white text, containing:
+  - **Quick Tools** (mega-menu)
+  - **Mail & Ship** (mega-menu)
+  - **Track & Manage** (mega-menu)
+  - **Postal Store** (mega-menu)
+  - **Business** (mega-menu)
+  - **Informed Delivery** (direct link)
+- Below the nav: a full-width search bar with placeholder "Search USPS.com or Enter Tracking Number(s)" + a camera/barcode icon button (blue outline)
 
-- **Header:** a utility bar (language, Locations, Support, Informed Delivery, Register / Sign In) above the
-  main nav (Quick Tools, Send, Receive, Shop, Business, International, Help, search icon). The active
-  "Quick Tools" tab has a red diagonal accent. Each menu has a "Search or Enter a Tracking Number" field.
-- **Hero:** full-width photo with an overlapping navy text panel and two CTAs ("Get the App", "Learn More").
-- **Tracking entry:** "Search or Track Packages", one combined search/tracking input (placeholder
-  "Search USPS.com or Enter Tracking Number(s)", `maxlength=256`, `aria-label` "USPS.com Search Bar"),
-  icon submit button.
-- **Quick tools:** an icon grid (Click-N-Ship, Stamps, Informed Delivery, PO Boxes, Calculate a Price, Hold
-  Mail, ZIP Code Lookup, Change My Address, Schedule a Pickup). Three columns on mobile, separated by hairlines.
-- **Alerts:** a light-blue callout with a left accent bar. The "USPS Updates" list includes
-  **"Alert: Text & Email Scams"**, a reminder that delivery-scam awareness belongs on a tracking site.
-- **Footer links:** Privacy Policy, Terms of Use, FOIA, No FEAR Act, Accessibility Statement.
-- **Visual language:** navy primary (`#004B87` appears in markup), white surfaces, light-grey bands, bold
-  sans-serif headings, generous spacing. Mobile uses a hamburger, centred logo, search icon, and a stacked
-  search field.
-- **Support entry points:** `/help/contact-us.htm`, `faq.usps.com`, claims, refunds, missing mail.
+### Colors observed
+| Element | Value |
+|---------|-------|
+| Header bg | `#ffffff` |
+| Red accent border | `#cc0000` (USPS red) |
+| Nav bg (desktop) | `#003875` (USPS navy) |
+| Nav text | `#ffffff` |
+| Link blue | `#336699` or `#2670a9` |
+| Icon fill | `#003875` |
 
-## What we took (patterns only)
+---
 
-- Tracking as the primary homepage action, prominent and above the fold
-- A quick-link grid below the hero, with hairline-separated cells
-- A callout style for notices; scam-awareness content
-- Utility-style footer with legal links; strong navy-on-white contrast
+## 2. Homepage sections (mobile, top to bottom)
 
-## What we did **not** take
+### Section A — Search bar
+- Full-width search input (white bg, light border)
+- Placeholder: "Search USPS.com or Enter Tracking Number(s)"
+- Right-side button with magnifying glass / barcode camera icon
+- Background: white, just below the header
 
-No USPS logos, eagle mark, wordmarks, product names (Informed Delivery, Click-N-Ship, …), photos,
-illustrations, copy, colour-exact palette, or layout replicas. All imagery (logo mark, route illustration,
-icons) is original or from open-licence icon sets (Lucide ISC; Simple Icons CC0 for the WhatsApp glyph). The
-palette (`#0c2340` navy, `#f2b134` amber) is deliberately distinct.
+### Section B — Hero banner (Informed Delivery)
+- Solid dark-navy background (`#003875` approx)
+- Full-width
+- Headline: "Informed Delivery® at Your Fingertips"
+- Two CTAs: "Get the App" (white outline button) | "Learn More" (text link, white, underline)
+- No background image; pure colour block
 
-## Assets legally reusable
+### Section C — Quick-tool tiles (3-column grid)
+- Light grey/blue background (`#f5f5f5` / `#e0e0e0` — very subtle)
+- 3×3 grid of icon + label tiles (9 tiles in two rows visible)
+- Each tile: white cell, centred SVG icon (navy blue, ~48 px), label text below in navy bold
+- Tiles observed (exact labels):
+  1. Click-N-Ship®
+  2. Buy Stamps
+  3. Informed Delivery®
+  4. PO Boxes™
+  5. Calculate a Price
+  6. Hold Mail
+  7. ZIP Code™ Lookup
+  8. Change My Address
+  9. Schedule a Pickup
+- Tile borders: 1 px solid light grey dividers between cells
 
-None of the reference site's assets are reused. USPS trademarks and creative are proprietary, and no licence
-was provided.
+### Section D — Postmarks info strip
+- Light blue-grey background
+- Circular postmark image (left)
+- Text: "**Postmarks:** If you want to ensure that your mail receives a postmark on the day you mail it, ask a retail associate at a Post Office retail counter to hand-cancel it for free."
+- Link: "Learn more" (navy underline)
 
-## Route inventory derived from the audit
+### Section E — Featured USPS Products & Services
+- White background
+- Centred heading: "Featured USPS® Products & Services"
+- Carousel / stacked feature cards, each with:
+  - Full-width image
+  - Title below image
+  - CTA button (navy filled, white text, rounded corners)
+- Features observed:
+  - "Breast Cancer Research First-Class™ Semipostal Stamps" + "Buy Now"
+  - "Ship from Home in 3 Easy Steps" + "Use Click-N-Ship"
+  - "Need a New Passport?" + "Schedule an Appointment" (passport-luggage.jpg image)
+  - Business shipping (ga-business image) + CTA
 
-The reference has hundreds of unrelated routes (shop, business, international, passports, …). Only what a
-tracking business needs was implemented: home, track, track result, help, contact, privacy, terms, admin. See
-`route-inventory.md`.
+### Section F — Scam alerts / USPS Updates (observed in footer area)
+- White background
+- "USPS Updates" heading
+- "Alert: Text & Email Scams" warning with link
+- "Jobs with USPS" section with "Find Out More" link
+
+---
+
+## 3. Footer
+
+### Footer logo area
+- USPS.COM logo (white eagle + blue USPS.COM text) on white background
+
+### Footer columns (4 columns observed)
+| Column | Heading | Links |
+|--------|---------|-------|
+| 1 | HELPFUL LINKS | Contact Us, Site Index, FAQs |
+| 1 (sub) | USPS JOBS | Careers |
+| 2 | ON ABOUT.USPS.COM | About USPS Home, Newsroom, USPS Service Updates, Forms & Publications, Government Services, Rights & Permissions |
+| 3 | OTHER USPS SITES | Business Customer Gateway, Postal Inspectors, Inspector General, Postal Explorer, National Postal Museum, Resources for Developers, PostalPro |
+| 4 | LEGAL INFORMATION | Privacy Policy, Terms of Use, FOIA, No FEAR Act/EEO Contacts, Fair Chance Act, Accessibility Statement |
+
+### Copyright
+"Copyright © 2026 USPS. All Rights Reserved."
+
+### Social media icons (bottom row)
+Facebook, Instagram, Pinterest, Threads, X (Twitter), YouTube
+
+---
+
+## 4. Typography
+
+- Font family: `HelveticaNeue-Light`, `Helvetica Neue`, `Helvetica`, `Arial`, `sans-serif` (USPS custom font stack)
+- Body: ~14–16 px
+- Headings: bold, 20–28 px range
+- Nav items: 14 px, medium/semibold, uppercase-style
+
+---
+
+## 5. Interactive elements
+
+- Tracking input: full-width, white background, blue search button
+- CTA buttons: navy blue fill (`#003875`), white text, slight border-radius
+- Outline buttons: white fill, navy border, navy text
+- Hover on nav: underline or darker bg
+- Tile hover: slight bg change
+
+---
+
+## 6. Pages inspected
+
+| URL | Status |
+|-----|--------|
+| https://www.usps.com/ | ✅ Inspected |
+| https://www.usps.com/ship/ | Not inspected (mobile audit only) |
+| https://www.usps.com/track-packages/ | Not inspected |
+| https://www.usps.com/help/ | Not inspected |
+| https://www.usps.com/store/ | Not inspected |
+
+---
+
+## 7. Remaining unknowns
+
+- Desktop mega-menu structure (not rendered at mobile width)
+- Exact hex values for all design tokens (estimated from screenshots)
+- Promotional banner rotation logic
+- Any A/B test variations on homepage
+- Tracking result page layout
