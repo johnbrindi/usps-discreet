@@ -12,7 +12,7 @@ const navItems = [
 ] as const;
 
 /**
- * Desktop navy nav strip — matches USPS blue (#003875) header bar.
+ * Desktop navy nav strip — matches the header's navy accent bar.
  * Active item shows a white bottom underline indicator.
  */
 export function DesktopNav() {

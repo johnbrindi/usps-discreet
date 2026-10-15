@@ -1,102 +1,84 @@
 # Asset Inventory
 
-All assets located in `public/images/`. Mapped to their intended components.
+All assets live in `public/images/` (except the component-rendered logo, see below). This
+inventory was regenerated from the files actually on disk and cross-checked against what `src/`
+currently references (`grep -r "/images/" src`), so "Used by" below reflects real usage, not intent.
+
+> **Branding status.** The visible copy, footer and header no longer claim to be USPS (see
+> `docs/reference-audit.md`). Several image files below are still USPS creative/trademarked
+> material (promotional banners, the eagle logo) — they are now **unreferenced** by `src/` and
+> must not be re-wired into any page without the rights holder's authorization. They are left in
+> place rather than deleted, per the "do not delete or overwrite assets" instruction; remove or
+> replace them before launch. A previously-committed full offline mirror of usps.com
+> (`public/Welcome _ USPS.html` + `public/Welcome _ USPS_files/`, ~2.6 MB, zero references from
+> `src/`) has been removed from the repo as part of this pass — it was scraped reference material,
+> not an app asset.
 
 ---
 
-## JPEG Images (`.jpeg` extension — note: files named `.jpg.jpeg`)
+## JPEG images (`.jpeg` extension — note some are named `.jpg.jpeg`)
 
-| Filename | Dimensions | Category | Intended Component | Notes |
-|----------|-----------|----------|--------------------|-------|
-| `bcr-3-stamps.jpg.jpeg` | 668×452 | Photo — stamps | Featured Products card | Breast Cancer Research stamps |
-| `ga-business-03-25.jpg.jpeg` | 679×450 | Photo — business | Featured Products card | Business shipping / go now |
-| `id26-17.jpg.jpeg` | 1798×400 | Banner — wide | Hero / Informed Delivery banner | Wide-format banner, desktop hero |
-| `id26-17-m.jpg.jpeg` | 990×225 | Banner — medium | Hero / Informed Delivery banner | Medium-width variant |
-| `oct26-cards.jpg.jpeg` | 692×280 | Photo — cards | Featured Products card | Greeting cards promo |
-| `oct26-gifts.jpg.jpeg` | 692×280 | Photo — gifts | Featured Products card | Gift boxes promo |
-| `oct26-stamps.jpg.jpeg` | 700×280 | Photo — stamps | Featured Products card | October stamp promo |
-| `passport-luggage.jpg.jpeg` | 679×450 | Photo — passport | Featured Products card | Passport appointment promo |
-| `ship-from-home-1.jpg.jpeg` | 675×450 | Photo — shipping | Featured Products card | Click-N-Ship / ship from home |
-| `sustain-supplies-dotcom8.jpg.jpeg` | 626×277 | Photo — supplies | Featured Products card | Sustainable supplies |
-| `usps-homepage.jpg.jpeg` | 677×354 | Screenshot/photo | Hero background (optional) | General homepage image |
+| Filename | Dimensions | Used by | Status |
+|---|---|---|---|
+| `ga-business-03-25.jpg.jpeg` | 679×450 | Featured Products card (`(public)/page.tsx`) | ✅ in use — generic business-shipping photo, fine to keep |
+| `ship-from-home-1.jpg.jpeg` | 675×450 | Featured Products card (`(public)/page.tsx`) | ✅ in use — generic shipping-supplies photo, fine to keep |
+| `bcr-3-stamps.jpg.jpeg` | 668×452 | — | ⚠️ unused; USPS stamp-program photo — do not reuse |
+| `id26-17.jpg.jpeg` | 1798×400 | — | ⚠️ unused; was the "Informed Delivery" hero banner (USPS creative) — removed from hero |
+| `id26-17-m.jpg.jpeg` | 990×225 | — | ⚠️ unused; mobile variant of the above |
+| `oct26-cards.jpg.jpeg` | 692×280 | — | ⚠️ unused; USPS holiday-card promo photo |
+| `oct26-gifts.jpg.jpeg` | 692×280 | — | ⚠️ unused; USPS gifts promo photo |
+| `oct26-stamps.jpg.jpeg` | 700×280 | — | ⚠️ unused; USPS stamp-release promo photo |
+| `passport-luggage.jpg.jpeg` | 679×450 | — | ⚠️ unused; was "Need a New Passport?" card — removed (passport services are a USPS/government function, not something this app offers) |
+| `sustain-supplies-dotcom8.jpg.jpeg` | 626×277 | — | ⚠️ unused |
+| `usps-homepage.jpg.jpeg` | 677×354 | — | ⚠️ unused; literal USPS homepage screenshot — do not reuse |
 
-## PNG Images
+## PNG images
 
-| Filename | Dimensions | Category | Intended Component | Notes |
-|----------|-----------|----------|--------------------|-------|
-| `250-landing-promo.png` | 1400×150 | Banner — promo strip | Promotional banner (desktop) | Wide promo strip |
-| `250-landing-promo-m.png` | 390×300 | Banner — promo strip | Promotional banner (mobile) | Mobile variant |
-| `business-go-now.png` | 195×167 | Icon/illustration | Quick-tools "Business" tile | Go-now tile illustration |
-| `facebook_logo.png` | 38×38 | Social icon | Footer social links | Facebook |
-| `footer-logo.png` | 221×27 | Logo | Footer | USPS.COM footer logo (white on dark) |
-| `instagram_logo.png` | 38×38 | Social icon | Footer social links | Instagram |
-| `international-go-now.png` | 195×167 | Icon/illustration | Quick-tools "International" tile | Go-now tile illustration |
-| `manage-go-now.png` | 195×167 | Icon/illustration | Quick-tools "Manage" tile | Go-now tile illustration |
-| `pinterest_logo.png` | 38×38 | Social icon | Footer social links | Pinterest |
-| `postmark-home.png` | 113×113 | Decorative icon | Postmarks info strip | Postmark stamp image |
-| `scroll-red.png` | 60×60 | Decorative | — | Possibly a UI element |
-| `ship-go-now.png` | 195×167 | Icon/illustration | Quick-tools "Ship" tile | Go-now tile illustration |
-| `store-go-now.png` | 195×167 | Icon/illustration | Quick-tools "Store" tile | Go-now tile illustration |
-| `threads_logo.png` | 38×44 | Social icon | Footer social links | Threads |
-| `utility_customer_service.png` | 20×20 | Utility icon | Header utility bar | Customer service icon |
-| `utility_languages.png` | 19×19 | Utility icon | Header utility bar | Language selector icon |
-| `x_logo.png` | 38×39 | Social icon | Footer social links | X (Twitter) |
-| `youtube_logo.png` | 38×27 | Social icon | Footer social links | YouTube |
+| Filename | Dimensions | Used by | Status |
+|---|---|---|---|
+| `postmark-home.png` | 113×113 | Drop-off info strip (`(public)/page.tsx`) | ✅ in use — generic postmark/stamp graphic; confirm it isn't a USPS-trademarked mark before launch |
+| `250-landing-promo.png` | 1400×150 | — | ⚠️ unused; USPS promo creative — removed from homepage |
+| `250-landing-promo-m.png` | 390×300 | — | ⚠️ unused; mobile variant of the above |
+| `footer-logo.png` | 221×27 | — | ⚠️ unused; literal "USPS.COM" wordmark — footer now renders the project's own `Logo` component instead |
+| `facebook_logo.png` / `instagram_logo.png` / `pinterest_logo.png` / `threads_logo.png` / `x_logo.png` / `youtube_logo.png` | 38×38 (±) | — | ⚠️ unused; footer social row linked to USPS's real accounts and has been removed — re-add only with this operator's own accounts |
+| `business-go-now.png` / `international-go-now.png` / `manage-go-now.png` / `ship-go-now.png` / `store-go-now.png` | 195×167 | — | ⚠️ unused |
+| `scroll-red.png` | 60×60 | — | ⚠️ unused |
+| `utility_customer_service.png` / `utility_languages.png` | 20×20 / 19×19 | — | ⚠️ unused |
 
-## SVG Icons
+## SVG / icon assets
 
-| Filename | Category | Intended Component | Notes |
-|----------|----------|--------------------|-------|
-| `blue-caret.svg` | UI | Dropdown indicators | Navigation dropdown arrow |
-| `book-passport-appt.svg` | Service icon | Quick-tools tile | Passport appointment |
-| `business.svg` | Service icon | Quick-tools tile or nav | Business services |
-| `calculate_price.svg` | Service icon | Quick-tools tile | Calculate a Price |
-| `cards-and-envelopes.svg` | Service icon | — | Cards & envelopes |
-| `change_address.svg` | Service icon | Quick-tools tile | Change My Address |
-| `chinese_characters.gif` | Language | Header utility | CJK language indicator |
-| `collectors.svg` | Service icon | — | Stamp collectors |
-| `favicon.ico` | Brand | `<head>` / app icon | USPS favicon |
-| `featured_clicknship.svg` | Service icon | Featured section | Click-N-Ship feature |
-| `find_zip.svg` | Service icon | Quick-tools tile | ZIP Code Lookup |
-| `free_boxes.svg` | Service icon | — | Free shipping supplies |
-| `gifts.svg` | Service icon | — | Gifts/packaging |
-| `hamburger.svg` | UI | Mobile nav toggle | Menu icon |
-| `holdmail.svg` | Service icon | Quick-tools tile | Hold Mail |
-| `hs-code-search.svg` | Service icon | — | HS Code search (international) |
-| `icon-personalize-stamped-envelopes.svg` | Service icon | — | Personalized envelopes |
-| `location.svg` | Service icon | — | Location/find post office |
-| `logo-sb.svg` | Logo | Header | USPS main logo (eagle) |
-| `logo-sb_1.svg` | Logo | Header (alt) | USPS logo variant |
-| `logo_mobile.svg` | Logo | Header (mobile) | USPS mobile logo |
-| `mailman.svg` | Service icon | — | Mail carrier |
-| `package-intercept.svg` | Service icon | — | Package Intercept |
-| `po_box.svg` | Service icon | Quick-tools tile | PO Boxes |
-| `printcustomsforms.svg` | Service icon | — | Print Customs Forms |
-| `schedule_pickup.svg` | Service icon | Quick-tools tile | Schedule a Pickup |
-| `schedule-redelivery.svg` | Service icon | — | Schedule Redelivery |
-| `search.svg` | UI | Header search | Search icon |
-| `shipping-supplies.svg` | Service icon | — | Shipping supplies |
-| `ssm-icon.svg` | Service icon | — | Self-service |
-| `stamps.svg` | Service icon | Quick-tools tile | Buy Stamps |
-| `tracking.svg` | Service icon | Quick-tools tile or nav | Track a Package |
-| `transit-time.svg` | Service icon | — | Transit time calculator |
+| Filename | Used by | Status |
+|---|---|---|
+| `tracking.svg`, `calculate_price.svg`, `change_address.svg`, `schedule_pickup.svg`, `featured_clicknship.svg`, `holdmail.svg` | Homepage quick-tools tiles | ✅ in use (generic line icons; relabelled to "Ship Online" / "File a Claim" etc. — not USPS trademark names) |
+| `search.svg` | Header search, mobile search link | ✅ in use |
+| `hamburger.svg` | Mobile nav toggle | ✅ in use |
+| `logo-sb.svg`, `logo_mobile.svg`, `logo-sb_1.svg` | — | ⚠️ unused; these are the real USPS eagle logo in two sizes plus a variant — header now renders the project's own `LogoMark`/`Logo` component (`src/components/layout/logo.tsx`) instead. **Do not reconnect these.** |
+| `favicon.ico` | — | ⚠️ unused; USPS favicon. The app's own favicon is `src/app/icon.svg` (neutral parcel mark) |
+| `stamps.svg`, `po_box.svg`, `find_zip.svg`, `book-passport-appt.svg` | — | ⚠️ unused; tied to USPS-exclusive services (postage sales, PO Box rental, ZIP®  lookup, passport appointments) that a private tracking company cannot legitimately offer — tiles were dropped from the homepage, not just relabelled |
+| `blue-caret.svg`, `business.svg`, `cards-and-envelopes.svg`, `chinese_characters.gif`, `collectors.svg`, `free_boxes.svg`, `gifts.svg`, `hs-code-search.svg`, `icon-personalize-stamped-envelopes.svg`, `location.svg`, `mailman.svg`, `package-intercept.svg`, `printcustomsforms.svg`, `schedule-redelivery.svg`, `shipping-supplies.svg`, `ssm-icon.svg`, `transit-time.svg` | — | ⚠️ unused, carried over from the original scrape; harmless generic icons if ever reused, but currently dead weight |
 
 ---
 
-## Component Mapping Summary
+## Component → asset mapping (current)
 
-| Component | Primary Assets |
-|-----------|---------------|
-| `SiteHeader` | `logo-sb.svg`, `logo_mobile.svg`, `search.svg`, `utility_customer_service.png`, `utility_languages.png`, `hamburger.svg` |
-| `SiteFooter` | `footer-logo.png`, social PNGs (facebook, instagram, pinterest, threads, x_logo, youtube) |
-| Homepage hero/banner | `id26-17.jpg.jpeg` (desktop), `id26-17-m.jpg.jpeg` (mobile) |
-| Homepage quick-tools | `calculate_price.svg`, `stamps.svg`, `tracking.svg`, `po_box.svg`, `holdmail.svg`, `find_zip.svg`, `change_address.svg`, `schedule_pickup.svg` |
-| Featured Products section | `oct26-stamps.jpg.jpeg`, `ship-from-home-1.jpg.jpeg`, `passport-luggage.jpg.jpeg`, `ga-business-03-25.jpg.jpeg`, `bcr-3-stamps.jpg.jpeg` |
-| Postmarks strip | `postmark-home.png` |
-| Promo banner | `250-landing-promo.png` (desktop), `250-landing-promo-m.png` (mobile) |
+| Component | Assets it actually imports |
+|---|---|
+| `SiteHeader` (`src/components/layout/site-header.tsx`) | `logo.tsx` (`LogoMark`/`Logo`, inline SVG — no file asset), `/images/search.svg` |
+| `MobileNav` | `/images/hamburger.svg` |
+| `SiteFooter` | `logo.tsx` (`Logo`) — no social-icon or footer-logo image assets |
+| Homepage hero | no image (text-only banner on navy background) |
+| Homepage quick-tools | `tracking.svg`, `calculate_price.svg`, `change_address.svg`, `schedule_pickup.svg`, `featured_clicknship.svg`, `holdmail.svg` |
+| Homepage drop-off strip | `postmark-home.png` |
+| Featured Products section | `ship-from-home-1.jpg.jpeg`, `ga-business-03-25.jpg.jpeg` |
 
 ---
 
-## Authorization Note
+## Authorization note
 
-All assets in `public/images/` were placed in the project by the operator. Their use within this project is at the operator's discretion. This application is **not** operated by USPS; all USPS branding assets are the property of the United States Postal Service.
+Every file still listed as "unused" above was carried over from the original USPS scrape and is
+USPS creative, USPS's logo, or tied to a USPS-exclusive government/postal service. None of it is
+authorized for use by this project and none of it is referenced by `src/` anymore. They have not
+been deleted (per instruction), but they should be deleted or replaced with the operator's own,
+licensed assets before any public launch. The one exception already acted on: the full saved
+mirror of usps.com (`public/Welcome _ USPS.html*`) was removed in this change, since it was not an
+asset referenced anywhere and existed only as scraped material.

@@ -3,9 +3,10 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useId, useTransition, useState } from "react";
+import { siteConfig } from "@/config/site";
 
 /**
- * USPS-style full-width search bar that acts as a tracking-number entry.
+ * Full-width search bar that acts as a tracking-number entry.
  * On submit it navigates to /track/[number] (with JS) or /track?trackingNumber= (no-JS).
  */
 export function HeaderSearch() {
@@ -26,12 +27,17 @@ export function HeaderSearch() {
       action="/track"
       method="get"
       role="search"
-      aria-label="Search USPS.com or enter a tracking number"
+      aria-label={`Search ${siteConfig.name} or track a parcel`}
       onSubmit={handleSubmit}
       className="flex items-stretch w-full"
     >
+      {/*
+        Deliberately not "Tracking number": the page hero/‌/track also render
+        TrackingForm, whose input's label IS exactly "Tracking number". A fuzzy
+        getByLabel("Tracking number") query must resolve to that one field only.
+      */}
       <label htmlFor={inputId} className="sr-only">
-        Search USPS.com or Enter Tracking Number(s)
+        Quick parcel search
       </label>
       <input
         id={inputId}
@@ -39,7 +45,7 @@ export function HeaderSearch() {
         type="text"
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        placeholder="Search USPS.com or Enter Tracking Number(s)"
+        placeholder="Enter Tracking Number(s)"
         autoComplete="off"
         autoCapitalize="characters"
         spellCheck={false}

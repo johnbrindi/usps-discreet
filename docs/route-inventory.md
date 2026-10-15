@@ -1,36 +1,45 @@
 # Route Inventory
 
-Comparison of accessible USPS.com public routes against the current Next.js implementation.
+Actual routes implemented in this Next.js app (`src/app/`), generated from the App Router file tree,
+not from a competitor's site map. The app started from a USPS.com layout reference; that framing has
+been removed (see `docs/reference-audit.md` and `docs/asset-inventory.md` for what changed and why).
 
 ---
 
 ## Route Map
 
-| Reference URL | Local Route | Purpose | Status |
-|---------------|-------------|---------|--------|
-| https://www.usps.com/ | `/` | Homepage — hero, quick-tools, featured products | ✅ Exists (improved) |
-| https://www.usps.com/track-packages/ | `/track` | Track a package — search form | ✅ Exists |
-| https://www.usps.com/track-packages/ (result) | `/track/[trackingNumber]` | Tracking result detail page | ✅ Exists |
-| https://www.usps.com/help/ | `/help` | Help center | ✅ Exists (basic) |
-| https://www.usps.com/help/contact-us.htm | `/contact` | Contact support / inquiry form | ✅ Exists |
-| n/a | `/privacy` | Privacy policy | ✅ Exists |
-| n/a | `/terms` | Terms of service | ✅ Exists |
-| https://www.usps.com/ship/ | — | Mail & Ship hub | ❌ Not implemented |
-| https://www.usps.com/store/ | — | Postal Store (stamps, supplies) | ❌ Not implemented |
-| https://www.usps.com/manage/ | — | Track & Manage hub | ❌ Not implemented |
-| https://www.usps.com/international/ | — | International shipping | ❌ Not implemented |
-| https://www.usps.com/business/ | — | Business shipping | ❌ Not implemented |
-| https://www.usps.com/informeddelivery/ | — | Informed Delivery signup | ❌ Not implemented |
+| Local Route | Purpose | Status |
+|---|---|---|
+| `/` | Homepage — hero, quick-tools, featured products, drop-off info, service updates | ✅ Exists |
+| `/track` | Track a package — search form | ✅ Exists |
+| `/track/[trackingNumber]` | Tracking result detail page | ✅ Exists |
+| `/help` | Help center | ✅ Exists (basic) |
+| `/contact` | Contact support / inquiry form | ✅ Exists |
+| `/privacy` | Privacy policy | ✅ Exists |
+| `/terms` | Terms of service | ✅ Exists |
+| `/admin/login` | Staff sign-in | ✅ Exists |
+| `/admin` | Staff console home | ✅ Exists |
+| `/admin/shipments`, `/admin/shipments/new`, `/admin/shipments/[id]` | Shipment CRUD + event recording | ✅ Exists |
+| `/admin/messages`, `/admin/messages/[id]` | Chat inbox + reply | ✅ Exists |
+| `/admin/inquiries` | Contact-form inquiries | ✅ Exists |
+| `/api/auth/[...all]` | Better Auth handler | ✅ Exists |
+| `/api/chat` | Visitor chat GET/POST | ✅ Exists |
+| `/robots.txt`, `/sitemap.xml`, `/icon.svg` | SEO/metadata routes | ✅ Exists |
+
+Routes that would require a carrier integration, e-commerce, or a government-issued service this
+operator cannot legitimately offer (postage sales, PO Box rental, passport appointments, a rate
+calculator backed by a real carrier API) are intentionally **not implemented** — see
+`docs/integrations.md` for what a real carrier integration needs.
 
 ---
 
 ## Implemented Routes — Detail
 
 ### `/` — Homepage
-- **Layout**: Full-width hero, quick-tools grid, featured products, postmarks strip
-- **Images**: `id26-17.jpg.jpeg` (hero desktop), quick-tool SVGs, featured product JPEGs
+- **Layout**: Full-width hero, quick-tools grid, featured products, drop-off info strip, service-updates strip
+- **Images**: see `docs/asset-inventory.md` for the current, de-branded asset list
 - **Interactive**: Search / tracking form embedded, tile navigation
-- **Status**: Improved to match USPS structure
+- **Status**: ✅ De-branded — no USPS trademarked service names or copied promotional creative
 
 ### `/track` — Track a Package
 - **Layout**: Page header + tracking form card + help info
@@ -60,16 +69,19 @@ Comparison of accessible USPS.com public routes against the current Next.js impl
 
 ## Not-Implemented Routes
 
-These routes are part of the USPS public site but are out of scope for the current implementation because they require either official USPS APIs/integrations or are e-commerce flows:
+Out of scope for this app because they require a real carrier account/API, a government-issued
+service this operator can't offer, or an e-commerce payment flow:
 
-- **Postal Store** (`/store/`) — e-commerce, stamp purchasing
-- **Click-N-Ship** — label printing, requires USPS account + postage payment API
+- **Postage / stamp sales** — requires a licensed postal retailer or carrier reseller agreement
+- **PO Box rental, passport appointments** — USPS/government-exclusive services; not something an
+  independent tracking company can legitimately sell
+- **Label printing with live postage** — requires a carrier account + payment API (e.g. EasyPost, Shippo)
 - **Business Customer Gateway** — enterprise account system
-- **Informed Delivery** — requires USPS account and identity verification
-- **International shipping calculator** — requires USPS Rate API
-- **Find a Post Office** — requires location database
+- **International shipping rate calculator** — requires a carrier Rate API
+- **Find a drop-off location** — requires a location database
 
-**These are recorded but will not be implemented** without official USPS API access and operator authorization.
+**These are recorded but will not be implemented** without the relevant carrier's API access and the
+operator's own authorization to resell that service.
 
 ---
 

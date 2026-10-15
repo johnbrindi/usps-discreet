@@ -85,6 +85,11 @@
   html {
     color-scheme: light;
     -webkit-text-size-adjust: 100%;
+    /* Prevent horizontal scroll on small screens. Kept on <html>, not <body>: on iOS Safari,
+       overflow-x:hidden on <body> can make it the scrolling element instead of <html>, which
+       detaches/clips position:fixed descendants (the chat + WhatsApp launchers) during momentum
+       scroll or when the on-screen keyboard resizes the viewport. */
+    overflow-x: hidden;
   }
   body {
     background: #fff;
@@ -92,8 +97,6 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     padding-bottom: 0;
-    /* Prevent horizontal scroll on small screens */
-    overflow-x: hidden;
   }
   :focus-visible {
     outline: 3px solid var(--color-usps-blue);

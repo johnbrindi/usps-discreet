@@ -1,4 +1,12 @@
-# USPS Reference Audit
+# USPS Reference Audit (historical — superseded)
+
+> **Status: superseded.** This file records the USPS.com layout audit used to originally scaffold
+> this project. The app has since been de-branded: the USPS wordmark/eagle logo, USPS-exclusive
+> service names (Click-N-Ship®, PO Boxes™, ZIP Code™ Lookup, Buy Stamps, passport appointments),
+> the real USPS social-media links, and the "Copyright © USPS" footer line have all been removed or
+> replaced (see `docs/asset-inventory.md` and `docs/route-inventory.md` for the current state). This
+> document is kept only as a provenance record of what was copied and from where — it is not a
+> current description of the app and must not be used as a guide for restoring USPS branding.
 
 **Source**: https://www.usps.com/  
 **Audited**: 2026-10-15 (mobile viewport 390 px, then scrolled full page)

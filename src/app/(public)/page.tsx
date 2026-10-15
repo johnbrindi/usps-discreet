@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Container } from "@/components/ui/card";
+import { TrackingForm } from "@/components/tracking/tracking-form";
 import { siteConfig } from "@/config/site";
 
 /* ─── Quick-tool tile data ──────────────────────────────────────────────── */
@@ -12,33 +13,8 @@ const quickTools = [
   },
   {
     href: "/help",
-    icon: "/images/stamps.svg",
-    label: "Buy Stamps",
-  },
-  {
-    href: "/help",
-    icon: "/images/featured_clicknship.svg",
-    label: "Click-N-Ship\u00ae",
-  },
-  {
-    href: "/help",
-    icon: "/images/po_box.svg",
-    label: "PO Boxes\u2122",
-  },
-  {
-    href: "/help",
     icon: "/images/calculate_price.svg",
     label: "Calculate a Price",
-  },
-  {
-    href: "/help",
-    icon: "/images/holdmail.svg",
-    label: "Hold Mail",
-  },
-  {
-    href: "/help",
-    icon: "/images/find_zip.svg",
-    label: "ZIP Code\u2122 Lookup",
   },
   {
     href: "/help",
@@ -50,35 +26,27 @@ const quickTools = [
     icon: "/images/schedule_pickup.svg",
     label: "Schedule a Pickup",
   },
+  {
+    href: "/help",
+    icon: "/images/featured_clicknship.svg",
+    label: "Ship Online",
+  },
+  {
+    href: "/contact",
+    icon: "/images/holdmail.svg",
+    label: "File a Claim",
+  },
 ] as const;
 
 /* ─── Featured products data ────────────────────────────────────────────── */
 const featuredProducts = [
   {
-    image: "/images/oct26-stamps.jpg.jpeg",
-    imageAlt: "October 2026 stamp collection",
-    imageW: 700,
-    imageH: 280,
-    title: "New Stamp Releases",
-    cta: "Shop Now",
-    href: "/help",
-  },
-  {
     image: "/images/ship-from-home-1.jpg.jpeg",
-    imageAlt: "Shipping supplies and label printed at home",
+    imageAlt: "Shipping supplies and a label printed at home",
     imageW: 675,
     imageH: 450,
     title: "Ship from Home in 3 Easy Steps",
-    cta: "Use Click-N-Ship",
-    href: "/help",
-  },
-  {
-    image: "/images/passport-luggage.jpg.jpeg",
-    imageAlt: "Person holding US passport near luggage",
-    imageW: 679,
-    imageH: 450,
-    title: "Need a New Passport?",
-    cta: "Schedule an Appointment",
+    cta: "Ship Online",
     href: "/help",
   },
   {
@@ -96,58 +64,29 @@ const featuredProducts = [
 export default function HomePage() {
   return (
     <>
-      {/* ── Hero / Informed Delivery banner ── */}
+      {/* ── Hero / tracking search ── */}
       <section
         aria-labelledby="hero-title"
         style={{ background: "#003875" }}
         className="py-10 text-center"
       >
-        {/* Desktop wide banner image */}
-        <div className="hidden md:block relative w-full overflow-hidden" style={{ maxHeight: "120px" }}>
-          <Image
-            src="/images/id26-17.jpg.jpeg"
-            alt="Informed Delivery — track your mail and packages"
-            width={1798}
-            height={400}
-            className="w-full object-cover"
-            style={{ maxHeight: "120px", objectPosition: "center" }}
-            priority
-          />
-        </div>
-
-        {/* Mobile banner image */}
-        <div className="md:hidden relative w-full overflow-hidden" style={{ maxHeight: "100px" }}>
-          <Image
-            src="/images/id26-17-m.jpg.jpeg"
-            alt="Informed Delivery — track your mail and packages"
-            width={990}
-            height={225}
-            className="w-full object-cover"
-            style={{ maxHeight: "100px", objectPosition: "center" }}
-            priority
-          />
-        </div>
-
-        {/* Text content below banner image */}
-        <div className="px-4 pt-8 pb-4">
+        <Container className="px-4">
           <h1 id="hero-title" className="text-2xl font-bold text-white sm:text-3xl">
-            Informed Delivery<sup>®</sup> at Your Fingertips
+            Where&apos;s my parcel?
           </h1>
-          <div className="mt-5 flex flex-wrap items-center justify-center gap-4">
-            <Link
-              href="/help"
-              className="inline-flex h-10 items-center justify-center rounded border-2 border-white px-6 text-sm font-semibold text-white transition-colors hover:bg-white hover:text-usps-blue focus-visible:outline-white"
-            >
-              Get the App
-            </Link>
-            <Link
-              href="/help"
-              className="text-sm font-semibold text-white underline underline-offset-4 hover:opacity-80"
-            >
-              Learn More
-            </Link>
+          <p className="mx-auto mt-3 max-w-xl text-sm text-white/85 sm:text-base">
+            Enter your tracking number for a clear, step-by-step status of every shipment.
+          </p>
+          <div className="mx-auto mt-6 max-w-xl rounded-md bg-white p-4 text-left sm:p-5">
+            <TrackingForm size="md" />
           </div>
-        </div>
+          <Link
+            href="/help"
+            className="mt-4 inline-block text-sm font-semibold text-white underline underline-offset-4 hover:opacity-80"
+          >
+            Learn More
+          </Link>
+        </Container>
       </section>
 
       {/* ── Scam alert strip ── */}
@@ -158,8 +97,8 @@ export default function HomePage() {
               Alert: Text &amp; Email Scams
             </p>
             <p className="mt-0.5 text-ink/80">
-              If you get a text or email claiming to be from USPS about a package awaiting action or a delivery failure,
-              don&apos;t click it: Delete it immediately.{" "}
+              If you get a text or email claiming to be from {siteConfig.name} about a package awaiting action or a
+              delivery failure, don&apos;t click it: Delete it immediately.{" "}
               <Link href="/help#scams" className="font-medium text-usps-blue underline underline-offset-2">
                 Learn how to protect yourself
               </Link>
@@ -190,22 +129,22 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── Postmarks info strip ── */}
-      <section aria-label="Postmarks information" className="border-y border-line bg-surface-blue">
+      {/* ── Drop-off info strip ── */}
+      <section aria-label="Drop-off information" className="border-y border-line bg-surface-blue">
         <Container className="flex items-center gap-5 py-5 px-4">
           <div className="shrink-0">
             <Image
               src="/images/postmark-home.png"
-              alt="USPS postmark stamp"
+              alt="Shipment ready for pickup"
               width={80}
               height={80}
               className="rounded-full"
             />
           </div>
           <div className="min-w-0 text-sm leading-6 text-ink/90">
-            <span className="font-bold">Postmarks: </span>
-            If you want to ensure that your mail receives a postmark on the day you mail it, ask a retail associate at a
-            Post Office retail counter to hand-cancel it for free.{" "}
+            <span className="font-bold">Drop-off receipts: </span>
+            If you want a dated receipt for a package you drop off, ask a retail associate at a staffed counter to
+            scan and stamp it for you.{" "}
             <Link href="/help" className="font-medium text-usps-blue underline underline-offset-2">
               Learn more
             </Link>
@@ -213,14 +152,14 @@ export default function HomePage() {
         </Container>
       </section>
 
-      {/* ── Featured USPS Products & Services ── */}
+      {/* ── Featured products & services ── */}
       <section aria-labelledby="featured-title" className="py-10 sm:py-14">
         <Container className="px-4">
           <h2
             id="featured-title"
             className="mb-8 text-center text-2xl font-bold text-ink sm:text-3xl"
           >
-            Featured {siteConfig.name}<sup>®</sup> Products &amp; Services
+            Featured {siteConfig.name} Products &amp; Services
           </h2>
 
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
@@ -253,41 +192,19 @@ export default function HomePage() {
         </Container>
       </section>
 
-      {/* ── Promotional banner strip ── */}
-      <section aria-label="Promotional offer" className="overflow-hidden">
-        <div className="relative hidden md:block">
-          <Image
-            src="/images/250-landing-promo.png"
-            alt="Current USPS promotional offer"
-            width={1400}
-            height={150}
-            className="w-full object-cover"
-          />
-        </div>
-        <div className="relative md:hidden">
-          <Image
-            src="/images/250-landing-promo-m.png"
-            alt="Current USPS promotional offer"
-            width={390}
-            height={300}
-            className="w-full object-cover"
-          />
-        </div>
-      </section>
-
-      {/* ── USPS Updates / Jobs strip ── */}
+      {/* ── Service updates / careers strip ── */}
       <section aria-labelledby="updates-title" className="border-t border-line py-10 sm:py-14">
         <Container className="px-4">
           <h2 id="updates-title" className="mb-6 text-2xl font-bold text-ink">
-            USPS Updates
+            Service Updates
           </h2>
           <div className="grid gap-8 sm:grid-cols-2">
             <div>
               <h3 className="mb-2 text-lg font-bold text-ink">Alert: Text &amp; Email Scams</h3>
               <p className="text-sm leading-6 text-muted">
-                If you get a text or email claiming to be from USPS about a package awaiting action or a delivery
-                failure, don&apos;t click it: Delete it immediately. This is an attempt to steal your personal
-                information.{" "}
+                If you get a text or email claiming to be from {siteConfig.name} about a package awaiting action or
+                a delivery failure, don&apos;t click it: Delete it immediately. This is an attempt to steal your
+                personal information.{" "}
               </p>
               <div className="mt-3 space-y-1">
                 <Link href="/help#scams" className="block text-sm font-medium text-usps-blue underline underline-offset-2">
@@ -299,9 +216,9 @@ export default function HomePage() {
               </div>
             </div>
             <div>
-              <h3 className="mb-2 text-lg font-bold text-ink">Jobs with USPS</h3>
+              <h3 className="mb-2 text-lg font-bold text-ink">Careers</h3>
               <p className="text-sm leading-6 text-muted">
-                Find nationwide opportunities to build your career while serving the American public.
+                Find nationwide opportunities to build your career with {siteConfig.name}.
               </p>
               <Link href="/help" className="mt-3 block text-sm font-medium text-usps-blue underline underline-offset-2">
                 Find Out More

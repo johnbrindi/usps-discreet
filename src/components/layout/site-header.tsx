@@ -2,15 +2,16 @@ import Image from "next/image";
 import Link from "next/link";
 import { siteConfig } from "@/config/site";
 import { Container } from "@/components/ui/card";
+import { Logo, LogoMark } from "./logo";
 import { MobileNav } from "./mobile-nav";
 import { DesktopNav } from "./desktop-nav";
 import { HeaderSearch } from "./header-search";
 
 /**
- * USPS-style site header:
- * 1. White bar — mobile-hamburger | USPS eagle logo (centred on mobile) | search icon
- * 2. Red 3 px accent border at bottom of the white bar
- * 3. Dark-navy (#003875) desktop nav strip — hidden on mobile
+ * Site header:
+ * 1. White bar — mobile hamburger | logo (centred on mobile) | search icon
+ * 2. Accent border at bottom of the white bar
+ * 3. Dark-navy desktop nav strip — hidden on mobile
  * 4. Full-width search bar below the nav strip
  */
 export function SiteHeader() {
@@ -27,30 +28,14 @@ export function SiteHeader() {
         </div>
 
         {/* Logo — centred on mobile, left-aligned on desktop */}
-        <Link
-          href="/"
-          aria-label={`${siteConfig.name} — Home`}
-          className="absolute left-1/2 -translate-x-1/2 md:static md:translate-x-0 md:left-auto"
-        >
-          {/* Mobile logo (eagle only SVG) */}
-          <Image
-            src="/images/logo_mobile.svg"
-            alt={siteConfig.name}
-            width={44}
-            height={44}
-            className="block md:hidden"
-            priority
-          />
-          {/* Desktop full USPS logo */}
-          <Image
-            src="/images/logo-sb.svg"
-            alt={siteConfig.name}
-            width={180}
-            height={36}
-            className="hidden md:block"
-            priority
-          />
-        </Link>
+        <div className="absolute left-1/2 -translate-x-1/2 md:static md:translate-x-0 md:left-auto">
+          {/* Mobile: mark only */}
+          <Link href="/" aria-label={`${siteConfig.name} — Home`} className="block md:hidden">
+            <LogoMark className="size-9" />
+          </Link>
+          {/* Desktop: mark + wordmark */}
+          <Logo className="hidden md:inline-flex" />
+        </div>
 
         {/* Desktop right-side nav (track button) */}
         <div className="hidden md:flex items-center gap-3">

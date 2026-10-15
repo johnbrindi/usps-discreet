@@ -79,6 +79,11 @@ tests/{unit,e2e}
 **Needs production infrastructure:**
 - The rate limiter is in-memory and per instance; use Redis/Upstash for multi-instance deployments.
 - Trust `x-forwarded-for` only behind your own proxy.
+- `lib/rate-limit.ts` exports a `loginLimiter` that is never imported anywhere — the admin login route
+  has no app-level rate limit beyond Better Auth's own built-in one (`rateLimit: { window: 60, max: 30 }`
+  in `lib/auth.ts`, i.e. 30 requests/min/IP across all auth endpoints). That's a reasonable baseline but
+  is more permissive than the unused `loginLimiter` (10/15 min) was clearly meant to provide — wire it into
+  the login route/action, or drop it, rather than leaving it as dead code implying protection that isn't applied.
 - CSP uses `'unsafe-inline'` for scripts (Next bootstrap); move to a nonce-based CSP via `proxy.ts` if
   required (this makes all pages dynamic).
 - Add a CAPTCHA (e.g. Turnstile) if contact spam appears.
