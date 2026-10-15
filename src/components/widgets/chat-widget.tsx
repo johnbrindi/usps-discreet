@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 type Message = { id: string; sender: "VISITOR" | "AGENT"; body: string; createdAt: string };
 type LoadState = "idle" | "loading" | "ready" | "error";
 
-const POLL_MS = 15_000;
+const POLL_MS = 5_000;
 
 export function ChatWidget({ agentName, hoursLabel }: { agentName: string; hoursLabel: string }) {
   const [open, setOpen] = useState(false);

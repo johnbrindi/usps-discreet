@@ -49,7 +49,11 @@ tests/{unit,e2e}
 - **Estimates** are shown only when `estimatedDeliveryDate` and `estimateSource` are both set. The schema
   refuses a date without a source.
 - **Demo data** is flagged `isDemo`, uses `DEMO` numbers and `DEMO` event source, shows a warning banner, and
-  is hidden when `NODE_ENV=production` unless `ENABLE_DEMO_DATA=true`.
+  is hidden in every environment unless `ENABLE_DEMO_DATA=true` (`lib/env.ts`). The live database holds no
+  demo rows; seed them only into a separate test database.
+- **Live updates** (`components/live-refresh.tsx`): `router.refresh()` on an interval — admin console 10 s,
+  public tracking result 60 s (stops once delivered). Skips ticks while the tab is hidden, a form field is
+  focused, or a form has unsaved input. Chat widget polls `/api/chat` every 5 s while open.
 - **Time zones:** events store a UTC instant plus an optional IANA zone. The admin enters wall-clock time at
   the location; `zonedLocalToUtc` converts it (DST-safe, tested).
 - **Floating widgets** share one fixed container (`--fab-*` CSS variables, safe-area insets, z-index scale

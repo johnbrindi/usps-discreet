@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { LiveRefresh } from "@/components/live-refresh";
 import { ShipmentSummary } from "@/components/tracking/shipment-summary";
 import { TrackingForm } from "@/components/tracking/tracking-form";
 import { Alert } from "@/components/ui/alert";
@@ -38,7 +39,13 @@ export default async function TrackingResultPage({ params }: Props) {
 
       <div className="grid gap-8 lg:grid-cols-[1fr_20rem]">
         <div className="min-w-0">
-          {lookup.kind === "found" && <ShipmentSummary result={lookup.result} />}
+          {lookup.kind === "found" && (
+            <>
+              <ShipmentSummary result={lookup.result} />
+              {/* Picks up newly recorded scans; once a minute stays well inside the 30/min lookup limit. */}
+              {lookup.result.status !== "DELIVERED" && <LiveRefresh intervalMs={60_000} />}
+            </>
+          )}
 
           {lookup.kind === "not_found" && (
             <Card className="p-6 sm:p-8">

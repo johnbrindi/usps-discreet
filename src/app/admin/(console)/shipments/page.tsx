@@ -80,24 +80,34 @@ export default async function ShipmentsPage({ searchParams }: { searchParams: SP
 
       <Card className="overflow-x-auto">
         {shipments.length === 0 ? (
-          <p className="px-5 py-12 text-center text-sm text-muted">
-            {q || status ? "No shipments match these filters." : "No shipments yet. Create the first one."}
-          </p>
+          <div className="px-5 py-14 text-center">
+            <p className="text-sm font-medium text-ink">
+              {q || status ? "No shipments match these filters." : "No shipments yet"}
+            </p>
+            {!(q || status) && (
+              <>
+                <p className="mt-1 text-sm text-muted">
+                  Create a shipment to issue a tracking number your customer can look up.
+                </p>
+                <ButtonLink href="/admin/shipments/new" size="sm" className="mt-4">New shipment</ButtonLink>
+              </>
+            )}
+          </div>
         ) : (
           <table className="w-full min-w-[40rem] text-left text-sm">
-            <thead className="border-b border-line bg-surface text-xs tracking-wide text-muted uppercase">
+            <thead className="border-b border-line bg-slate-50/70 text-xs text-muted">
               <tr>
-                <th scope="col" className="px-5 py-3 font-semibold">Tracking number</th>
-                <th scope="col" className="px-5 py-3 font-semibold">Status</th>
-                <th scope="col" className="px-5 py-3 font-semibold">Destination</th>
-                <th scope="col" className="px-5 py-3 font-semibold">Updated</th>
+                <th scope="col" className="px-5 py-2.5 font-medium">Tracking number</th>
+                <th scope="col" className="px-5 py-2.5 font-medium">Status</th>
+                <th scope="col" className="px-5 py-2.5 font-medium">Destination</th>
+                <th scope="col" className="px-5 py-2.5 font-medium">Updated</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
               {shipments.map((s) => (
-                <tr key={s.id} className="hover:bg-surface">
+                <tr key={s.id} className="transition-colors hover:bg-slate-50">
                   <td className="px-5 py-3">
-                    <Link href={`/admin/shipments/${s.id}`} className="font-mono font-semibold text-navy-700 hover:underline">
+                    <Link href={`/admin/shipments/${s.id}`} className="font-mono text-[0.8125rem] font-semibold text-navy-700 hover:underline">
                       {s.trackingNumber}
                     </Link>
                     {s.isDemo && <span className="ml-2 rounded bg-warning-50 px-1.5 py-0.5 text-xs font-semibold text-warning-700">DEMO</span>}

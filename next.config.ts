@@ -29,6 +29,8 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // The dev-only "N" badge sits bottom-left, on top of the admin sidebar's Sign out button.
+  devIndicators: false,
   reactStrictMode: true,
   experimental: { serverActions: { bodySizeLimit: "64kb" } },
   async headers() {

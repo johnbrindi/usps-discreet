@@ -35,13 +35,16 @@ npm install                    # also runs `prisma generate`
 cp .env.example .env           # skip if .env already exists; fill in real values
 npm run db:check               # verifies connectivity (never prints credentials)
 npm run db:migrate:deploy      # applies migrations (additive only)
-npm run db:seed                # optional: 3 clearly-labelled DEMO shipments
 npm run admin:create -- --email you@company.com --name "Your Name"   # prompts for a password (min 12 chars)
-npm run dev                    # http://localhost:3000
+npm run dev                    # http://localhost:3000  ·  staff console: http://localhost:3000/admin/login
 ```
 
-Sample tracking numbers (development only): `DEMO00000000000001` (in transit), `…02` (delivered),
-`…03` (exception).
+No sample data is shown. Create shipments in the admin console (`/admin/shipments/new`); each one gets a
+tracking number customers can look up at `/track`. Demo records (`npm run db:seed`) are only for a
+separate test database and stay hidden unless `ENABLE_DEMO_DATA=true` is set.
+
+**Live updates:** admin pages re-sync every 10 s (paused while you type or have unsaved form input), the
+public tracking result page every 60 s until delivered, and the chat widget every 5 s while open.
 
 ## Scripts
 
@@ -50,7 +53,7 @@ Sample tracking numbers (development only): `DEMO00000000000001` (in transit), `
 | `npm run dev` / `build` / `start` | Develop, build, serve production build |
 | `npm run typecheck` / `lint` | TypeScript (strict) and ESLint |
 | `npm test` | Unit tests (Vitest) |
-| `npm run test:e2e` | Playwright end-to-end tests (builds must exist; uses `/usr/bin/chromium` — override with `PLAYWRIGHT_CHROMIUM_PATH`) |
+| `npm run test:e2e` | Playwright end-to-end tests (builds must exist; uses `/usr/bin/chromium` — override with `PLAYWRIGHT_CHROMIUM_PATH`). **Writes test chats/inquiries and needs seeded demo shipments — point `DATABASE_URL` at a separate test database, not your live one**, then run `npm run db:seed` there and `tsx scripts/e2e-cleanup.ts` afterwards |
 | `npm run db:check` | Connectivity and migration status |
 | `npm run db:migrate:deploy` / `db:status` | Apply / inspect migrations |
 | `npm run db:seed` | Seed demo records (idempotent) |

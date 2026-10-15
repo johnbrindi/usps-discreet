@@ -24,7 +24,7 @@ aggregator such as EasyPost or Shippo):
 
 - Visitor messages go to `POST /api/chat` and are stored in `chat_messages`. Identity is a random cookie;
   only its hash is stored.
-- Staff read and reply at `/admin/messages/[id]`. Replies show as "James". The widget polls every 15 s while
+- Staff read and reply at `/admin/messages/[id]`. Replies show as "James". The widget polls every 5 s while
   open and the tab is visible.
 - The availability indicator comes **only** from configured support hours
   (`NEXT_PUBLIC_SUPPORT_*`, `lib/support-hours.ts`). It never claims James is "online". The widget says

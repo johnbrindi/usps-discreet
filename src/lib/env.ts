@@ -24,10 +24,7 @@ export function serverEnv() {
   return cached;
 }
 
-/** Demo records are visible in development, or when explicitly enabled. */
+/** Demo records are hidden everywhere unless ENABLE_DEMO_DATA=true is set explicitly. */
 export function demoDataEnabled() {
-  const flag = process.env.ENABLE_DEMO_DATA;
-  if (flag === "true") return true;
-  if (flag === "false") return false;
-  return process.env.NODE_ENV !== "production";
+  return process.env.ENABLE_DEMO_DATA === "true";
 }

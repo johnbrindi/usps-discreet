@@ -33,8 +33,10 @@ export function SiteHeader() {
           <Link href="/" aria-label={`${siteConfig.name} — Home`} className="block md:hidden">
             <LogoMark className="size-9" />
           </Link>
-          {/* Desktop: mark + wordmark */}
-          <Logo className="hidden md:inline-flex" />
+          {/* Desktop: mark + wordmark (wrapper hides it — Logo's own inline-flex would override `hidden`) */}
+          <div className="hidden md:block">
+            <Logo />
+          </div>
         </div>
 
         {/* Desktop right-side nav (track button) */}

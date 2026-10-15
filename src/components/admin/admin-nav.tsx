@@ -25,11 +25,13 @@ export function AdminNav() {
               href={item.href}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "flex items-center gap-2.5 rounded-md px-3 py-2 text-sm font-semibold whitespace-nowrap",
-                active ? "bg-navy-700 text-white" : "text-navy-100/85 hover:bg-white/10 hover:text-white",
+                "relative flex items-center gap-2.5 rounded-md px-2.5 py-2 text-sm font-medium whitespace-nowrap transition-colors",
+                active
+                  ? "bg-white/[0.08] text-white before:absolute before:inset-y-1.5 before:left-0 before:w-0.5 before:rounded-full before:bg-amber-500"
+                  : "text-navy-100/70 hover:bg-white/[0.05] hover:text-white",
               )}
             >
-              <item.icon className="size-4" aria-hidden />
+              <item.icon className={cn("size-4", active ? "text-amber-500" : "opacity-80")} aria-hidden />
               {item.label}
             </Link>
           </li>
@@ -49,9 +51,11 @@ export function SignOutButton() {
         router.replace("/admin/login");
         router.refresh();
       }}
-      className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-semibold text-navy-100/85 hover:bg-white/10 hover:text-white"
+      aria-label="Sign out"
+      className="flex shrink-0 items-center gap-2 rounded-md px-2.5 py-2 text-sm font-medium whitespace-nowrap text-navy-100/70 transition-colors hover:bg-white/[0.05] hover:text-white"
     >
-      <LogOut className="size-4" aria-hidden /> Sign out
+      <LogOut className="size-4" aria-hidden />
+      <span className="hidden md:inline">Sign out</span>
     </button>
   );
 }
