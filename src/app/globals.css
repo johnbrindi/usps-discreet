@@ -1,0 +1,110 @@
+@import "tailwindcss";
+
+/* ─── Design tokens ─────────────────────────────────────────────────────── */
+@theme {
+  --font-sans: var(--font-public-sans), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  --color-navy-950: #071526;
+  --color-navy-900: #0c2340;
+  --color-navy-800: #12345c;
+  --color-navy-700: #194577;
+  --color-navy-600: #1f5592;
+  --color-navy-100: #e3ecf6;
+  --color-navy-50: #f1f5fa;
+
+  --color-amber-500: #f2b134;
+  --color-amber-600: #d99a1e;
+
+  --color-ink: #17212e;
+  --color-muted: #556070;
+  --color-line: #d9dfe7;
+  --color-line-strong: #b9c3cf;
+  --color-surface: #f5f7fa;
+
+  --color-success-700: #17663d;
+  --color-success-50: #e8f5ee;
+  --color-warning-700: #8a4f00;
+  --color-warning-50: #fff4dc;
+  --color-danger-700: #a6261a;
+  --color-danger-50: #fdeeec;
+  --color-progress-700: #0b6672;
+  --color-progress-50: #e4f3f4;
+
+  --color-whatsapp: #25d366;
+  --color-whatsapp-dark: #128c4b;
+
+  --shadow-card: 0 1px 2px rgb(12 35 64 / 0.06), 0 1px 1px rgb(12 35 64 / 0.04);
+  --shadow-float: 0 8px 24px rgb(7 21 38 / 0.18), 0 2px 6px rgb(7 21 38 / 0.12);
+}
+
+/* Floating support launchers — one positioning system for both buttons. */
+:root {
+  --fab-size: 3.5rem;
+  --fab-gap: 0.75rem;
+  --fab-inset: 1.25rem;
+  --fab-right: calc(var(--fab-inset) + env(safe-area-inset-right, 0px));
+  --fab-bottom: calc(var(--fab-inset) + env(safe-area-inset-bottom, 0px));
+  /* z-index scale: header 40 < floating widgets 60 < chat panel 70 < skip link 100 */
+  --z-header: 40;
+  --z-fab: 60;
+  --z-chat: 70;
+  --z-skip: 100;
+}
+
+@media (max-width: 639px) {
+  :root {
+    --fab-size: 3.25rem;
+    --fab-inset: 1rem;
+  }
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    background: #fff;
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    /* keeps the last content clear of the floating launchers on small screens */
+    padding-bottom: 0;
+  }
+  :focus-visible {
+    outline: 3px solid var(--color-amber-500);
+    outline-offset: 2px;
+  }
+  ::selection {
+    background: var(--color-navy-100);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Long-form policy text */
+.prose-policy h2 {
+  @apply mt-10 mb-3 text-xl font-semibold text-navy-900;
+}
+.prose-policy p,
+.prose-policy li {
+  @apply leading-7 text-ink;
+}
+.prose-policy p {
+  @apply mb-4;
+}
+.prose-policy ul {
+  @apply mb-4 list-disc space-y-1 pl-6;
+}
+.prose-policy a {
+  @apply font-medium text-navy-700 underline underline-offset-2 hover:text-navy-900;
+}

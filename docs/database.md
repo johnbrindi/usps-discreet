@@ -1,0 +1,57 @@
+# Database
+
+**Engine:** PostgreSQL 17.11 on Supabase (detected from `.env`; verified with `npm run db:check`).
+**ORM:** Prisma 6.19. Connection: `DATABASE_URL` (Session Pooler, IPv4).
+
+## Connection notes
+
+The original `.env` contained a direct connection string (`db.<ref>.supabase.co:5432`). That host resolves
+to **IPv6 only**, and the development machine has no IPv6 route ("Network is unreachable"). Setup appended a
+`DATABASE_URL` that points at the Supabase **Session Pooler** (`aws-0-eu-west-1.pooler.supabase.com:5432`,
+user `postgres.<ref>`). It reuses `${DB_PASSWORD}` through variable expansion, so the password is not
+duplicated. It adds `connection_limit=5&pool_timeout=20`, because the default pool (2×CPUs+1 = 25) can
+exhaust the pooler's client limit. The original `DB`, `DB_PASSWORD` and libpq-style lines were left
+unchanged.
+
+For serverless hosting, prefer the Transaction Pooler (`:6543`, `&pgbouncer=true`). Run migrations through
+the session pooler or direct connection.
+
+## Tables
+
+| Table | Purpose | Key constraints and indexes |
+| --- | --- | --- |
+| `shipments` | One row per parcel. Public-safe city/region/country plus private recipient/postcode/notes | `tracking_number` UNIQUE (lookup index); idx `status`, `created_at` |
+| `tracking_events` | Scan history | FK → shipments ON DELETE CASCADE; idx `(shipment_id, occurred_at DESC)`; FK `created_by_id` → users SET NULL |
+| `contact_inquiries` | Contact form submissions | idx `(status, created_at DESC)` |
+| `chat_conversations` | One per visitor cookie | `visitor_token_hash` UNIQUE (SHA-256); idx `(status, last_message_at DESC)` |
+| `chat_messages` | Visitor/agent messages | FK → conversations CASCADE; idx `(conversation_id, created_at)` |
+| `audit_logs` | Staff actions | idx `(entity_type, entity_id)`, `created_at DESC`; actor SET NULL |
+| `users`, `sessions`, `accounts`, `verifications` | Better Auth (staff only) | `email` UNIQUE, `token` UNIQUE |
+
+Enums: `ShipmentStatus` (8 lifecycle values), `EventSource` (MANUAL, CARRIER_API, DEMO), `InquiryStatus`,
+`ChatStatus`, `ChatSender`. Timestamps are `timestamptz`; estimated delivery is `date`.
+
+All app tables have **row-level security enabled with no policies**. Supabase's anon/authenticated roles get
+nothing through the REST/GraphQL API. Prisma connects as the owner and is unaffected.
+
+## Migrations
+
+- `prisma/migrations/20261015000000_init` creates all tables, enums, indexes and RLS. It was generated with
+  `prisma migrate diff --from-empty`, reviewed (no DROP/TRUNCATE), and applied with `prisma migrate deploy`
+  on 2026-10-15. Before applying, the `public` schema was confirmed to have no tables or types.
+- Workflow for changes: edit `schema.prisma` →
+  `npx prisma migrate diff --from-migrations prisma/migrations --to-schema-datamodel prisma/schema.prisma --script --shadow-database-url <scratch db>`
+  (or `prisma migrate dev` against a **non-production** database) → review the SQL → `npm run db:migrate:deploy`.
+  Never use `migrate reset` or `db push --accept-data-loss` against shared data.
+
+## Seeding
+
+`npm run db:seed` inserts three `DEMO…` shipments flagged `is_demo` with `DEMO` events. It is idempotent and
+never touches existing or non-demo rows. To remove the demo data:
+`DELETE FROM shipments WHERE is_demo;` (events cascade).
+
+## Staff accounts
+
+`npm run admin:create -- --email … --name …` reads the password from a hidden prompt or `ADMIN_PASSWORD`,
+hashes it with Better Auth's scrypt, and writes an audit entry. Running it again for the same email resets
+the password.

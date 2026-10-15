@@ -1,0 +1,243 @@
+// Prisma schema — PostgreSQL (Supabase). See docs/database.md.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Tracking domain ────────────────────────────────────────────────────────
+
+enum ShipmentStatus {
+  INFO_RECEIVED
+  ACCEPTED
+  IN_TRANSIT
+  ARRIVED_AT_FACILITY
+  OUT_FOR_DELIVERY
+  DELIVERED
+  EXCEPTION
+  RETURNED_TO_SENDER
+}
+
+/// Where a tracking event came from. DEMO events are sample data only.
+enum EventSource {
+  MANUAL
+  CARRIER_API
+  DEMO
+}
+
+model Shipment {
+  id             String         @id @default(cuid())
+  trackingNumber String         @unique @map("tracking_number") @db.VarChar(40)
+  status         ShipmentStatus @default(INFO_RECEIVED)
+  serviceLevel   String?        @map("service_level") @db.VarChar(80)
+
+  // Public-safe location summary (city/region/country only).
+  originCity         String? @map("origin_city") @db.VarChar(120)
+  originRegion       String? @map("origin_region") @db.VarChar(120)
+  originCountry      String? @map("origin_country") @db.Char(2)
+  destinationCity    String? @map("destination_city") @db.VarChar(120)
+  destinationRegion  String? @map("destination_region") @db.VarChar(120)
+  destinationCountry String? @map("destination_country") @db.Char(2)
+
+  // Private — never returned by the public tracking API.
+  recipientName       String? @map("recipient_name") @db.VarChar(160)
+  destinationPostcode String? @map("destination_postcode") @db.VarChar(20)
+  internalNotes       String? @map("internal_notes") @db.Text
+
+  /// Only set when a verified source supplies it; `estimateSource` must say which.
+  estimatedDeliveryDate DateTime? @map("estimated_delivery_date") @db.Date
+  estimateSource        String?   @map("estimate_source") @db.VarChar(120)
+  deliveredAt           DateTime? @map("delivered_at") @db.Timestamptz(6)
+
+  carrier           String? @db.VarChar(80)
+  externalReference String? @map("external_reference") @db.VarChar(120)
+
+  /// Sample record for development/demo. Shown with a conspicuous banner and hidden unless demo mode is on.
+  isDemo Boolean @default(false) @map("is_demo")
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  events TrackingEvent[]
+
+  @@index([status])
+  @@index([createdAt])
+  @@map("shipments")
+}
+
+model TrackingEvent {
+  id          String         @id @default(cuid())
+  shipmentId  String         @map("shipment_id")
+  status      ShipmentStatus
+  description String         @db.VarChar(280)
+  city        String?        @db.VarChar(120)
+  region      String?        @db.VarChar(120)
+  country     String?        @db.Char(2)
+  /// IANA zone of the event location, used to display local time (e.g. "America/Chicago").
+  timeZone    String?        @map("time_zone") @db.VarChar(64)
+  occurredAt  DateTime       @map("occurred_at") @db.Timestamptz(6)
+  source      EventSource    @default(MANUAL)
+  createdById String?        @map("created_by_id")
+  createdAt   DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  shipment  Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  createdBy User?    @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([shipmentId, occurredAt(sort: Desc)])
+  @@map("tracking_events")
+}
+
+// ─── Support ────────────────────────────────────────────────────────────────
+
+enum InquiryStatus {
+  NEW
+  IN_PROGRESS
+  CLOSED
+}
+
+model ContactInquiry {
+  id             String        @id @default(cuid())
+  name           String        @db.VarChar(120)
+  email          String        @db.VarChar(254)
+  trackingNumber String?       @map("tracking_number") @db.VarChar(40)
+  topic          String        @db.VarChar(40)
+  message        String        @db.Text
+  status         InquiryStatus @default(NEW)
+  createdAt      DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime      @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([status, createdAt(sort: Desc)])
+  @@map("contact_inquiries")
+}
+
+enum ChatStatus {
+  OPEN
+  CLOSED
+}
+
+enum ChatSender {
+  VISITOR
+  AGENT
+}
+
+model ChatConversation {
+  id               String     @id @default(cuid())
+  /// SHA-256 of the visitor's random cookie token; the raw token is never stored.
+  visitorTokenHash String     @unique @map("visitor_token_hash") @db.Char(64)
+  status           ChatStatus @default(OPEN)
+  lastMessageAt    DateTime   @default(now()) @map("last_message_at") @db.Timestamptz(6)
+  createdAt        DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  messages ChatMessage[]
+
+  @@index([status, lastMessageAt(sort: Desc)])
+  @@map("chat_conversations")
+}
+
+model ChatMessage {
+  id             String     @id @default(cuid())
+  conversationId String     @map("conversation_id")
+  sender         ChatSender
+  body           String     @db.VarChar(2000)
+  agentUserId    String?    @map("agent_user_id")
+  createdAt      DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  conversation ChatConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  agent        User?            @relation(fields: [agentUserId], references: [id], onDelete: SetNull)
+
+  @@index([conversationId, createdAt])
+  @@map("chat_messages")
+}
+
+// ─── Administration ─────────────────────────────────────────────────────────
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?  @map("actor_id")
+  action     String   @db.VarChar(80)
+  entityType String   @map("entity_type") @db.VarChar(40)
+  entityId   String   @map("entity_id") @db.VarChar(40)
+  /// Non-sensitive change summary. Never store secrets or full addresses here.
+  details    Json?
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  actor User? @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([entityType, entityId])
+  @@index([createdAt(sort: Desc)])
+  @@map("audit_logs")
+}
+
+// ─── Better Auth (admin accounts only; public sign-up is disabled) ─────────
+
+model User {
+  id            String   @id
+  name          String
+  email         String   @unique
+  emailVerified Boolean  @default(false) @map("email_verified")
+  image         String?
+  role          String   @default("staff")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  sessions     Session[]
+  accounts     Account[]
+  events       TrackingEvent[]
+  chatMessages ChatMessage[]
+  auditLogs    AuditLog[]
+
+  @@map("users")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime @map("expires_at") @db.Timestamptz(6)
+  token     String   @unique
+  ipAddress String?  @map("ip_address")
+  userAgent String?  @map("user_agent")
+  userId    String   @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String    @map("account_id")
+  providerId            String    @map("provider_id")
+  userId                String    @map("user_id")
+  accessToken           String?   @map("access_token")
+  refreshToken          String?   @map("refresh_token")
+  idToken               String?   @map("id_token")
+  accessTokenExpiresAt  DateTime? @map("access_token_expires_at") @db.Timestamptz(6)
+  refreshTokenExpiresAt DateTime? @map("refresh_token_expires_at") @db.Timestamptz(6)
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt             DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("accounts")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime @map("expires_at") @db.Timestamptz(6)
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([identifier])
+  @@map("verifications")
+}
