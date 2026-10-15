@@ -114,6 +114,35 @@ model ContactInquiry {
   @@map("contact_inquiries")
 }
 
+enum ServiceRequestType {
+  QUOTE
+  PICKUP
+  SHIPPING
+  ADDRESS_CHANGE
+  CLAIM
+}
+
+/// Customer requests submitted from the /tools pages, handled by staff in /admin/requests.
+model ServiceRequest {
+  id             String             @id @default(cuid())
+  /// Customer-facing reference, e.g. "PU-7K3M9Q2X".
+  reference      String             @unique @db.VarChar(16)
+  type           ServiceRequestType
+  status         InquiryStatus      @default(NEW)
+  name           String             @db.VarChar(120)
+  email          String             @db.VarChar(254)
+  phone          String?            @db.VarChar(40)
+  trackingNumber String?            @map("tracking_number") @db.VarChar(40)
+  /// Type-specific fields, validated by src/validation/service-request.ts before storage.
+  details        Json
+  createdAt      DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime           @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([status, createdAt(sort: Desc)])
+  @@index([type])
+  @@map("service_requests")
+}
+
 enum ChatStatus {
   OPEN
   CLOSED

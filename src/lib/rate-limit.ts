@@ -29,5 +29,6 @@ export function createRateLimiter(opts: { limit: number; windowMs: number; maxKe
 
 export const trackingLimiter = createRateLimiter({ limit: 30, windowMs: 60_000 });
 export const contactLimiter = createRateLimiter({ limit: 5, windowMs: 10 * 60_000 });
+export const serviceRequestLimiter = createRateLimiter({ limit: 5, windowMs: 10 * 60_000 });
 export const chatLimiter = createRateLimiter({ limit: 20, windowMs: 60_000 });
 export const loginLimiter = createRateLimiter({ limit: 10, windowMs: 15 * 60_000 });

@@ -1,6 +1,6 @@
 "use client";
 
-import { Inbox, LayoutDashboard, LogOut, MessagesSquare, Package } from "lucide-react";
+import { ClipboardList, Inbox, LayoutDashboard, LogOut, MessagesSquare, Package } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 const items = [
   { href: "/admin", label: "Overview", icon: LayoutDashboard, exact: true },
   { href: "/admin/shipments", label: "Shipments", icon: Package },
+  { href: "/admin/requests", label: "Requests", icon: ClipboardList },
   { href: "/admin/messages", label: "Chat", icon: MessagesSquare },
   { href: "/admin/inquiries", label: "Inquiries", icon: Inbox },
 ];
