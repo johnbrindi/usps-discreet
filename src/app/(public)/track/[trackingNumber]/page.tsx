@@ -47,6 +47,18 @@ export default async function TrackingResultPage({ params }: Props) {
             </>
           )}
 
+          {lookup.kind === "pending" && (
+            <Card className="p-6 sm:p-8">
+              <h1 className="text-2xl font-bold text-navy-900">Waiting for the carrier</h1>
+              <p className="mt-2 font-mono text-muted">{formatTrackingNumber(lookup.trackingNumber)}</p>
+              <p className="mt-4 leading-7 text-ink/90">
+                {lookup.carrierName ?? "The carrier"} hasn&apos;t published tracking events for this number yet. New labels can
+                take up to 24 hours to appear. We check again automatically — this page refreshes by itself.
+              </p>
+              <LiveRefresh intervalMs={60_000} />
+            </Card>
+          )}
+
           {lookup.kind === "not_found" && (
             <Card className="p-6 sm:p-8">
               <h1 className="text-2xl font-bold text-navy-900">We couldn&apos;t find that tracking number</h1>

@@ -29,6 +29,17 @@ enum EventSource {
   DEMO
 }
 
+/// MANUAL: staff record every scan. CARRIER: events are synced from a carrier API and cannot be hand-edited.
+enum TrackingMode {
+  MANUAL
+  CARRIER
+}
+
+enum ShipmentOrigin {
+  ADMIN
+  PUBLIC_LOOKUP
+}
+
 model Shipment {
   id             String         @id @default(cuid())
   trackingNumber String         @unique @map("tracking_number") @db.VarChar(40)
@@ -56,39 +67,86 @@ model Shipment {
   carrier           String? @db.VarChar(80)
   externalReference String? @map("external_reference") @db.VarChar(120)
 
+  // ── Carrier sync (trackingMode = CARRIER) ──
+  trackingMode          TrackingMode   @default(MANUAL) @map("tracking_mode")
+  createdVia            ShipmentOrigin @default(ADMIN) @map("created_via")
+  /// Which API is queried: "usps" | "dhl" | "ship24". See src/server/carriers/registry.ts.
+  carrierProvider       String?        @map("carrier_provider") @db.VarChar(20)
+  /// The number as the carrier knows it. Defaults to `trackingNumber`.
+  carrierTrackingNumber String?        @map("carrier_tracking_number") @db.VarChar(40)
+  /// The carrier's own wording of the current status, shown as-is.
+  carrierStatusText     String?        @map("carrier_status_text") @db.VarChar(280)
+  lastSyncedAt          DateTime?      @map("last_synced_at") @db.Timestamptz(6)
+  /// When the scheduler should next poll the carrier. NULL = never (terminal or manual).
+  nextSyncAt            DateTime?      @map("next_sync_at") @db.Timestamptz(6)
+  /// Lease that stops two workers polling the same shipment at once.
+  syncLeaseUntil        DateTime?      @map("sync_lease_until") @db.Timestamptz(6)
+  syncFailureCount      Int            @default(0) @map("sync_failure_count")
+  lastSyncError         String?        @map("last_sync_error") @db.VarChar(280)
+
   /// Sample record for development/demo. Shown with a conspicuous banner and hidden unless demo mode is on.
   isDemo Boolean @default(false) @map("is_demo")
 
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  events TrackingEvent[]
+  events   TrackingEvent[]
+  syncLogs CarrierSyncLog[]
 
   @@index([status])
   @@index([createdAt])
+  @@index([trackingMode, nextSyncAt])
+  @@index([carrierTrackingNumber])
   @@map("shipments")
 }
 
 model TrackingEvent {
-  id          String         @id @default(cuid())
-  shipmentId  String         @map("shipment_id")
-  status      ShipmentStatus
-  description String         @db.VarChar(280)
-  city        String?        @db.VarChar(120)
-  region      String?        @db.VarChar(120)
-  country     String?        @db.Char(2)
+  id                String         @id @default(cuid())
+  shipmentId        String         @map("shipment_id")
+  status            ShipmentStatus
+  description       String         @db.VarChar(280)
+  city              String?        @db.VarChar(120)
+  region            String?        @db.VarChar(120)
+  country           String?        @db.Char(2)
   /// IANA zone of the event location, used to display local time (e.g. "America/Chicago").
-  timeZone    String?        @map("time_zone") @db.VarChar(64)
-  occurredAt  DateTime       @map("occurred_at") @db.Timestamptz(6)
-  source      EventSource    @default(MANUAL)
-  createdById String?        @map("created_by_id")
-  createdAt   DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  timeZone          String?        @map("time_zone") @db.VarChar(64)
+  occurredAt        DateTime       @map("occurred_at") @db.Timestamptz(6)
+  source            EventSource    @default(MANUAL)
+  /// Stable carrier event id (or a content hash). Lets repeated syncs upsert instead of duplicating.
+  externalId        String?        @map("external_id") @db.VarChar(128)
+  carrierStatusCode String?        @map("carrier_status_code") @db.VarChar(64)
+  createdById       String?        @map("created_by_id")
+  createdAt         DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
 
   shipment  Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
   createdBy User?    @relation(fields: [createdById], references: [id], onDelete: SetNull)
 
+  @@unique([shipmentId, externalId])
   @@index([shipmentId, occurredAt(sort: Desc)])
   @@map("tracking_events")
+}
+
+/// One row per carrier API call. Kept 30 days; used for the admin sync panel and debugging.
+model CarrierSyncLog {
+  id            String   @id @default(cuid())
+  shipmentId    String   @map("shipment_id")
+  provider      String   @db.VarChar(20)
+  /// "read" | "cron" | "manual" | "create"
+  trigger       String   @db.VarChar(16)
+  /// "ok" | "not_found" | "rate_limited" | "auth" | "unavailable" | "bad_response" | "not_configured"
+  outcome       String   @db.VarChar(24)
+  httpStatus    Int?     @map("http_status")
+  durationMs    Int      @map("duration_ms")
+  eventsAdded   Int      @default(0) @map("events_added")
+  eventsRemoved Int      @default(0) @map("events_removed")
+  error         String?  @db.VarChar(280)
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  shipment Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+
+  @@index([shipmentId, createdAt(sort: Desc)])
+  @@index([createdAt])
+  @@map("carrier_sync_logs")
 }
 
 // ─── Support ────────────────────────────────────────────────────────────────

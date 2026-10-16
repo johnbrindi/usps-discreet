@@ -45,6 +45,9 @@ export default async function ShipmentsPage({ searchParams }: { searchParams: SP
         destinationRegion: true,
         isDemo: true,
         updatedAt: true,
+        trackingMode: true,
+        carrier: true,
+        lastSyncError: true,
       },
     }),
   ]);
@@ -111,6 +114,14 @@ export default async function ShipmentsPage({ searchParams }: { searchParams: SP
                       {s.trackingNumber}
                     </Link>
                     {s.isDemo && <span className="ml-2 rounded bg-warning-50 px-1.5 py-0.5 text-xs font-semibold text-warning-700">DEMO</span>}
+                    {s.trackingMode === "CARRIER" && (
+                      <span
+                        title={s.lastSyncError ? `Last sync failed: ${s.lastSyncError}` : "Synced from the carrier's API"}
+                        className={`ml-2 rounded px-1.5 py-0.5 text-xs font-semibold ${s.lastSyncError ? "bg-danger-50 text-danger-700" : "bg-navy-50 text-navy-800"}`}
+                      >
+                        {s.carrier ?? "API"}
+                      </span>
+                    )}
                   </td>
                   <td className="px-5 py-3"><StatusBadge status={s.status} size="sm" /></td>
                   <td className="px-5 py-3 text-muted">{[s.destinationCity, s.destinationRegion].filter(Boolean).join(", ") || "—"}</td>

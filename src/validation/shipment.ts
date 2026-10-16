@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { CARRIER_PROVIDERS } from "@/domain/carriers";
 import { SHIPMENT_STATUSES } from "@/domain/shipment-status";
 import { trackingNumberSchema } from "./tracking";
 
@@ -56,6 +57,18 @@ export const shipmentSchema = z
   .refine((d) => !d.estimatedDeliveryDate || !!d.estimateSource, {
     path: ["estimateSource"],
     message: "Say where the estimate comes from (e.g. carrier API, service standard).",
+  });
+
+/** Create-only fields choosing how the shipment is tracked. Fixed after creation. */
+export const trackingSetupSchema = z
+  .object({
+    trackingMode: z.enum(["MANUAL", "CARRIER"]).default("MANUAL"),
+    carrierProvider: z.enum(["auto", ...CARRIER_PROVIDERS]).default("auto"),
+    carrierTrackingNumber: trackingNumberSchema.optional().or(z.literal("").transform(() => undefined)),
+  })
+  .refine((d) => d.trackingMode === "MANUAL" || !!d.carrierTrackingNumber, {
+    path: ["carrierTrackingNumber"],
+    message: "Enter the number printed on the carrier's label.",
   });
 
 export const trackingEventSchema = z.object({

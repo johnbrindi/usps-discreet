@@ -1,4 +1,4 @@
-import { CalendarClock, Copy, FlaskConical, MapPin, Navigation } from "lucide-react";
+import { CalendarClock, Copy, FlaskConical, MapPin, Navigation, RadioTower } from "lucide-react";
 import { STATUS_META } from "@/domain/shipment-status";
 import { formatDateOnly, formatEventTime } from "@/domain/time";
 import { formatTrackingNumber } from "@/domain/tracking-number";
@@ -44,7 +44,7 @@ export function ShipmentSummary({ result }: { result: PublicTrackingResult }) {
               {result.status === "DELIVERED" && delivered ? `Delivered ${delivered.date}` : meta.label}
             </p>
             <p className="mt-1 text-muted">
-              {result.status === "DELIVERED" && delivered ? `at ${delivered.time}` : meta.summary}
+              {result.status === "DELIVERED" && delivered ? `at ${delivered.time}` : (result.carrier?.statusText ?? meta.summary)}
             </p>
           </div>
 
@@ -81,6 +81,20 @@ export function ShipmentSummary({ result }: { result: PublicTrackingResult }) {
           {result.serviceLevel && <p className="text-sm text-muted">Service: {result.serviceLevel}</p>}
         </div>
         <TrackingTimeline events={result.events} />
+        {result.carrier && (
+          <p className="mt-6 flex items-start gap-2 rounded-md bg-surface px-3 py-2.5 text-sm text-ink/85">
+            <RadioTower className="mt-0.5 size-4 shrink-0 text-navy-700" aria-hidden />
+            <span>
+              Live tracking from <strong className="font-semibold">{result.carrier.name}</strong>
+              {result.carrier.trackingNumber !== result.trackingNumber && (
+                <>
+                  {" "}(carrier number <span className="font-mono">{formatTrackingNumber(result.carrier.trackingNumber)}</span>)
+                </>
+              )}
+              .{result.carrier.checkedAt && <> Last checked {formatEventTime(result.carrier.checkedAt, null).date} at {formatEventTime(result.carrier.checkedAt, null).time}.</>}
+            </span>
+          </p>
+        )}
         <p className="mt-6 border-t border-line pt-4 text-xs text-muted">
           Times are shown in the local time of each scan location (UTC where the location&apos;s time zone is unknown).
           {result.isDemo && (

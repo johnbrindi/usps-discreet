@@ -25,6 +25,11 @@ export const databaseProvider: TrackingProvider = {
         deliveredAt: true,
         isDemo: true,
         updatedAt: true,
+        trackingMode: true,
+        carrier: true,
+        carrierTrackingNumber: true,
+        carrierStatusText: true,
+        lastSyncedAt: true,
         events: {
           orderBy: { occurredAt: "desc" },
           take: 200,
@@ -65,6 +70,15 @@ export const databaseProvider: TrackingProvider = {
       deliveredAt: shipment.deliveredAt?.toISOString() ?? null,
       isDemo: shipment.isDemo,
       lastUpdated: (shipment.events[0]?.occurredAt ?? shipment.updatedAt).toISOString(),
+      carrier:
+        shipment.trackingMode === "CARRIER"
+          ? {
+              name: shipment.carrier ?? "the carrier",
+              trackingNumber: shipment.carrierTrackingNumber ?? shipment.trackingNumber,
+              statusText: shipment.carrierStatusText,
+              checkedAt: shipment.lastSyncedAt?.toISOString() ?? null,
+            }
+          : null,
       events: shipment.events.map((e) => ({
         id: e.id,
         status: e.status,

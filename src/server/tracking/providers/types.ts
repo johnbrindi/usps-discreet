@@ -21,6 +21,14 @@ export type PublicTrackingResult = {
   deliveredAt: string | null;
   isDemo: boolean;
   lastUpdated: string;
+  /** Present when events come from a carrier API; used for attribution on the public page. */
+  carrier: {
+    name: string;
+    trackingNumber: string;
+    statusText: string | null;
+    /** Last successful carrier check (ISO-8601). */
+    checkedAt: string | null;
+  } | null;
   events: PublicTrackingEvent[]; // newest first
 };
 

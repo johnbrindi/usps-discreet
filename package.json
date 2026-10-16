@@ -9,6 +9,7 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "test:integration": "vitest run --config vitest.integration.mts",
     "test:e2e": "playwright test",
     "db:generate": "prisma generate",
     "db:validate": "prisma validate",
@@ -17,6 +18,8 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:check": "tsx scripts/db-check.ts",
     "admin:create": "tsx scripts/create-admin.ts",
+    "carriers:check": "tsx --conditions=react-server --tsconfig tsconfig.json scripts/carrier-check.ts",
+    "carriers:sync": "tsx --conditions=react-server --tsconfig tsconfig.json scripts/carrier-sync.ts",
     "postinstall": "prisma generate"
   },
   "dependencies": {
