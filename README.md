@@ -61,7 +61,7 @@ public tracking result page every 60 s until delivered, and the chat widget ever
 | `npm run test:integration` | Sync engine against a real PostgreSQL. Set `INTEGRATION_DATABASE_URL` to a **disposable** database with migrations applied |
 | `npm run carriers:check -- <number>` | Live call to the carrier APIs with your keys; prints what the site would show (no DB writes) |
 | `npm run carriers:sync` | One round of background carrier polling (alternative to the cron endpoint) |
-| `npm run test:e2e` | Playwright end-to-end tests (builds must exist; uses `/usr/bin/chromium` — override with `PLAYWRIGHT_CHROMIUM_PATH`). **Writes test chats/inquiries and needs seeded demo shipments — point `DATABASE_URL` at a separate test database, not your live one**, then run `npm run db:seed` there and `tsx scripts/e2e-cleanup.ts` afterwards |
+| `npm run test:e2e` | Playwright end-to-end tests (also starts `tests/e2e/mock-carrier.mjs`, a USPS API stand-in, to test carrier sync end to end) (builds must exist; uses `/usr/bin/chromium` — override with `PLAYWRIGHT_CHROMIUM_PATH`). **Writes test chats/inquiries and needs seeded demo shipments — point `DATABASE_URL` at a separate test database, not your live one**, then run `npm run db:seed` there and `tsx scripts/e2e-cleanup.ts` afterwards |
 | `npm run db:check` | Connectivity and migration status |
 | `npm run db:migrate:deploy` / `db:status` | Apply / inspect migrations |
 | `npm run db:seed` | Seed demo records (idempotent) |
@@ -71,18 +71,30 @@ To run the admin e2e flow, create a throwaway staff account and export `E2E_ADMI
 `E2E_ADMIN_PASSWORD`. Afterwards, `npx tsx scripts/e2e-cleanup.ts` removes only e2e-tagged data, plus the
 account if it uses an `@example.test` address.
 
-## Deployment
+## Deployment (Vercel)
 
-1. Provision environment variables from `.env.example` on your host (e.g. Vercel). For serverless, use the
-   Supabase **Transaction Pooler** URL (port 6543, `&pgbouncer=true`) as `DATABASE_URL`.
-2. Set `BETTER_AUTH_URL` and `NEXT_PUBLIC_SITE_URL` to the public HTTPS origin.
-3. Run `npm run db:migrate:deploy` from CI or a trusted machine.
-4. `npm run build && npm start` (or the platform's build).
+1. Push the repository to GitHub and import it in Vercel (framework: Next.js, detected automatically).
+2. **Environment variables:** Settings → Environment Variables → *Import .env* → paste `vercel.env`.
+   That file is git-ignored and holds the production values. Set `BETTER_AUTH_URL` and `NEXT_PUBLIC_SITE_URL`
+   to your domain, or delete both: the app then uses Vercel's production URL automatically.
+3. Deploy. `vercel.json` runs `npm run vercel-build` (`prisma generate` → `prisma migrate deploy` via
+   `DIRECT_URL` → `next build`), so new migrations are applied before each release. Functions run in `dub1`
+   (Dublin), next to the Supabase `eu-west-1` database.
+4. A daily Vercel Cron calls `/api/cron/sync-shipments`. Vercel sends `CRON_SECRET` automatically. On the
+   Pro plan you can raise it to every 10 minutes. Page views also refresh carrier data, so this is a safety net.
 5. Do **not** set `ENABLE_DEMO_DATA=true` in production unless you intend to show sample records.
+
+**Database URLs:** `DATABASE_URL` is the Supabase *Transaction pooler* (6543, `pgbouncer=true`,
+`connection_limit=1` on Vercel), used by the app. `DIRECT_URL` is the *Session pooler* (5432), used only by
+migrations. Both carry `connect_timeout=30`.
 
 See `docs/` for architecture, database, integrations, the route inventory and the reference audit.
 
 ## Troubleshooting
+
+- **`P1001 Can't reach database server` while the database is up:** the connection took longer than
+  Prisma's 5 s default. Keep `connect_timeout=30` in both URLs. Free Supabase projects also pause after a
+  week without use; resume the project in the dashboard.
 
 - **`Can't reach database server` / `Network is unreachable`**: the Supabase direct host is IPv6-only.
   Use the pooler connection string.

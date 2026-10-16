@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
@@ -20,7 +20,8 @@
     "admin:create": "tsx scripts/create-admin.ts",
     "carriers:check": "tsx --conditions=react-server --tsconfig tsconfig.json scripts/carrier-check.ts",
     "carriers:sync": "tsx --conditions=react-server --tsconfig tsconfig.json scripts/carrier-sync.ts",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "vercel-build": "prisma generate && prisma migrate deploy && next build"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",

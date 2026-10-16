@@ -6,7 +6,8 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url       = env("DATABASE_URL") // transaction pooler (runtime)
+  directUrl = env("DIRECT_URL") // session pooler (migrations)
 }
 
 // ─── Tracking domain ────────────────────────────────────────────────────────

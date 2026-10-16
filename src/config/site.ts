@@ -13,7 +13,10 @@ export const siteConfig = {
     "NEXT_PUBLIC_BRAND_DESCRIPTION",
     "Track your parcel, see every scan in order, and reach our support team when you need help.",
   ),
-  url: env("NEXT_PUBLIC_SITE_URL", "http://localhost:3000"),
+  url: env(
+    "NEXT_PUBLIC_SITE_URL",
+    process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : "http://localhost:3000",
+  ),
   supportEmail: env("NEXT_PUBLIC_SUPPORT_EMAIL", "support@example.com"),
   /** E.164 digits only, used to build the wa.me link. */
   whatsappNumber: env("NEXT_PUBLIC_WHATSAPP_NUMBER", "18603983750"),
