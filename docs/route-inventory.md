@@ -12,7 +12,9 @@ been removed (see `docs/reference-audit.md` and `docs/asset-inventory.md` for wh
 |---|---|---|
 | `/` | Homepage — hero, quick-tools, featured products, drop-off info, service updates | ✅ Exists |
 | `/track` | Track a package — search form | ✅ Exists |
-| `/track/[trackingNumber]` | Tracking result detail page | ✅ Exists |
+| `/track/[trackingNumber]` | Tracking result detail page (live-refreshes every 60 s until delivered) | ✅ Exists |
+| `/tools` | Quick tools index | ✅ Exists |
+| `/tools/price`, `/tools/pickup`, `/tools/ship`, `/tools/change-address`, `/tools/claim` | Service-request forms (`/tools/[tool]`; unknown slugs → 404). Each submission is stored in `service_requests` with a reference like `PU-7K3M9Q2X` | ✅ Exists |
 | `/help` | Help center | ✅ Exists (basic) |
 | `/contact` | Contact support / inquiry form | ✅ Exists |
 | `/privacy` | Privacy policy | ✅ Exists |
@@ -22,6 +24,7 @@ been removed (see `docs/reference-audit.md` and `docs/asset-inventory.md` for wh
 | `/admin/shipments`, `/admin/shipments/new`, `/admin/shipments/[id]` | Shipment CRUD + event recording | ✅ Exists |
 | `/admin/messages`, `/admin/messages/[id]` | Chat inbox + reply | ✅ Exists |
 | `/admin/inquiries` | Contact-form inquiries | ✅ Exists |
+| `/admin/requests`, `/admin/requests/[id]` | Service-request inbox (filter by type/status), detail, status changes, reply by email | ✅ Exists |
 | `/api/auth/[...all]` | Better Auth handler | ✅ Exists |
 | `/api/chat` | Visitor chat GET/POST | ✅ Exists |
 | `/robots.txt`, `/sitemap.xml`, `/icon.svg` | SEO/metadata routes | ✅ Exists |

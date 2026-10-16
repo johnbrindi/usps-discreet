@@ -1,5 +1,4 @@
-import { ArrowRight, ShieldAlert } from "lucide-react";
-import Image from "next/image";
+import { ArrowRight, Building2, House, ShieldAlert } from "lucide-react";
 import Link from "next/link";
 import { ToolGrid } from "@/components/tools/tool-grid";
 import { TrackingForm } from "@/components/tracking/tracking-form";
@@ -10,20 +9,16 @@ import { siteConfig } from "@/config/site";
 /* ─── Featured services ─────────────────────────────────────────────────── */
 const featured = [
   {
-    image: "/images/ship-from-home-1.jpg.jpeg",
-    imageAlt: "Shipping supplies and a label printed at home",
-    imageW: 675,
-    imageH: 450,
+    icon: House,
+    points: ["Book online in minutes", "Label and tracking number by email", "Drop off or schedule a pickup"],
     title: "Ship from home in 3 easy steps",
     body: "Book online, we email your label and tracking number, then drop the parcel off or schedule a pickup.",
     cta: "Book a shipment",
     href: "/tools/ship",
   },
   {
-    image: "/images/ga-business-03-25.jpg.jpeg",
-    imageAlt: "Business owner packing a shipping box",
-    imageW: 679,
-    imageH: 450,
+    icon: Building2,
+    points: ["Pricing for regular volumes", "Scheduled collections", "One reference for every request"],
     title: "Shipping for your business",
     body: "Sending regularly? Tell us about your parcels and we'll price your shipments and arrange collections.",
     cta: "Get a quote",
@@ -91,19 +86,20 @@ export default function HomePage() {
           <div className="grid gap-6 md:grid-cols-2">
             {featured.map((f) => (
               <article key={f.title} className="flex flex-col overflow-hidden rounded-lg border border-line bg-white">
-                <div className="relative aspect-[16/9] overflow-hidden bg-surface">
-                  <Image
-                    src={f.image}
-                    alt={f.imageAlt}
-                    width={f.imageW}
-                    height={f.imageH}
-                    sizes="(min-width: 768px) 50vw, 100vw"
-                    className="h-full w-full object-cover"
-                  />
-                </div>
-                <div className="flex flex-1 flex-col items-start gap-3 p-6">
-                  <h3 className="text-lg font-semibold text-navy-900">{f.title}</h3>
+                <div className="flex flex-1 flex-col items-start gap-3 p-6 sm:p-8">
+                  <span className="flex size-12 items-center justify-center rounded-lg bg-navy-700 text-white">
+                    <f.icon className="size-6" strokeWidth={1.75} aria-hidden />
+                  </span>
+                  <h3 className="mt-2 text-lg font-semibold text-navy-900">{f.title}</h3>
                   <p className="text-sm leading-6 text-muted">{f.body}</p>
+                  <ul className="mb-3 space-y-1.5 text-sm text-ink">
+                    {f.points.map((pt) => (
+                      <li key={pt} className="flex items-center gap-2">
+                        <span aria-hidden className="size-1.5 rounded-full bg-amber-500" />
+                        {pt}
+                      </li>
+                    ))}
+                  </ul>
                   <Link href={f.href} className={buttonClasses("primary", "md", "mt-auto")}>
                     {f.cta}
                   </Link>

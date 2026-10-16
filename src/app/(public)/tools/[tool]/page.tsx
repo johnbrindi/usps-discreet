@@ -1,9 +1,9 @@
 import { Clock3, Mail } from "lucide-react";
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ServiceRequestForm } from "@/components/forms/service-request-form";
+import { ToolIconBadge } from "@/components/tools/tool-icon";
 import { Card, Container } from "@/components/ui/card";
 import { TOOLS, toolBySlug } from "@/config/service-requests";
 import { siteConfig } from "@/config/site";
@@ -41,9 +41,7 @@ export default async function ToolPage({ params, searchParams }: Props) {
             </ol>
           </nav>
           <div className="flex items-start gap-4">
-            <span className="hidden size-14 shrink-0 items-center justify-center rounded-lg border border-line bg-white sm:flex">
-              <Image src={tool.icon} alt="" width={32} height={32} aria-hidden className="size-8 object-contain" />
-            </span>
+            <ToolIconBadge icon={tool.icon} className="hidden size-14 rounded-lg border border-line bg-white sm:flex" />
             <div>
               <h1 className="text-3xl font-bold tracking-tight text-navy-900 sm:text-4xl">{tool.title}</h1>
               <p className="mt-2 max-w-2xl text-lg leading-8 text-muted">{tool.summary}</p>

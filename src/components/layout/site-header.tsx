@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { Search } from "lucide-react";
 import Link from "next/link";
 import { siteConfig } from "@/config/site";
 import { Container } from "@/components/ui/card";
@@ -55,7 +55,7 @@ export function SiteHeader() {
           aria-label="Search / Track a package"
           className="inline-flex size-10 items-center justify-center text-usps-blue md:hidden"
         >
-          <Image src="/images/search.svg" alt="" width={22} height={22} aria-hidden />
+          <Search className="size-[1.375rem]" aria-hidden />
         </Link>
       </div>
 

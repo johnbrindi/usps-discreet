@@ -29,6 +29,8 @@ export type FieldDef = {
   step?: number;
 };
 
+export type ToolIcon = "track" | "quote" | "pickup" | "ship" | "address" | "claim";
+
 export type SectionDef = { title: string; description?: string; fields: FieldDef[] };
 
 export type ToolDef = {
@@ -40,7 +42,7 @@ export type ToolDef = {
   summary: string;
   /** What happens after submitting — shown on the form page and the confirmation. */
   nextSteps: string;
-  icon: string;
+  icon: ToolIcon;
   referencePrefix: string;
   sections: SectionDef[];
 };
@@ -108,7 +110,7 @@ export const TOOLS: readonly ToolDef[] = [
     title: "Get a price quote",
     summary: "Tell us where your parcel is going and how big it is, and we'll send you an exact price.",
     nextSteps: "Our team prices your shipment and emails the quote, usually within one business day.",
-    icon: "/images/calculate_price.svg",
+    icon: "quote",
     referencePrefix: "QT",
     sections: [
       {
@@ -136,7 +138,7 @@ export const TOOLS: readonly ToolDef[] = [
     title: "Schedule a pickup",
     summary: "Book a courier to collect parcels from your home or business.",
     nextSteps: "We confirm the pickup slot by email. Please have parcels labelled and ready at the address.",
-    icon: "/images/schedule_pickup.svg",
+    icon: "pickup",
     referencePrefix: "PU",
     sections: [
       { title: "Pickup address", fields: address("pickup") },
@@ -182,7 +184,7 @@ export const TOOLS: readonly ToolDef[] = [
     title: "Ship a parcel",
     summary: "Book a shipment online. We create the label and tracking number for you.",
     nextSteps: "We review the booking, email your shipping label and tracking number, and confirm the price.",
-    icon: "/images/featured_clicknship.svg",
+    icon: "ship",
     referencePrefix: "SH",
     sections: [
       { title: "Sender", fields: address("from") },
@@ -214,7 +216,7 @@ export const TOOLS: readonly ToolDef[] = [
     summary: "Redirect a parcel that hasn't been delivered yet to a new address.",
     nextSteps:
       "We check whether the parcel can still be redirected and email you the outcome. The tracking page updates once it's rerouted.",
-    icon: "/images/change_address.svg",
+    icon: "address",
     referencePrefix: "AC",
     sections: [
       {
@@ -243,7 +245,7 @@ export const TOOLS: readonly ToolDef[] = [
     summary: "Report a parcel that was lost, damaged, delayed or arrived with items missing.",
     nextSteps:
       "A claims specialist reviews your case and emails you within two business days. Keep the packaging and any damaged items until the claim is settled.",
-    icon: "/images/holdmail.svg",
+    icon: "claim",
     referencePrefix: "CL",
     sections: [
       {

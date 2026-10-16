@@ -68,7 +68,9 @@ export function TrackingForm({
           aria-invalid={error ? true : undefined}
           aria-describedby={error ? `${inputId}-error` : `${inputId}-hint`}
           className={cn(
-            "w-full min-w-0 rounded-md sm:flex-1 border border-line-strong bg-white px-4 font-mono tracking-wide text-ink",
+            // flex-1 only in the row layout (lg): in the stacked md layout it would set a 0 height basis and collapse the input.
+            "w-full min-w-0 rounded-md border border-line-strong bg-white px-4 font-mono tracking-wide text-ink",
+            size === "lg" && "sm:flex-1",
             "placeholder:font-sans placeholder:tracking-normal placeholder:text-muted/80",
             "focus:border-navy-600 focus:ring-3 focus:ring-navy-600/20 focus:outline-none",
             "aria-[invalid=true]:border-danger-700",

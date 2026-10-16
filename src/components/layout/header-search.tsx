@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import { Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useId, useTransition, useState } from "react";
 import { siteConfig } from "@/config/site";
@@ -71,7 +71,7 @@ export function HeaderSearch() {
           focus-visible:outline-2 focus-visible:outline-usps-blue focus-visible:outline-offset-1
         "
       >
-        <Image src="/images/search.svg" alt="" width={18} height={18} aria-hidden />
+        <Search className="size-[1.125rem] text-navy-700" aria-hidden />
         <span className="sr-only">Search</span>
       </button>
     </form>

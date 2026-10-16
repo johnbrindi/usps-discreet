@@ -1,5 +1,12 @@
 # Asset Inventory
 
+> **Update (2026-10-15, later pass): `src/` no longer references any file in `public/images/`.** The two
+> homepage photos turned out to be USPS marketing photography (one shows a "United States Postal Service /
+> Priority Mail" label), and the tile/search/menu icons were USPS's SVGs. They were replaced with Lucide icons
+> (ISC licence, `src/components/tools/tool-icon.tsx`) and text-based cards. Every file listed below is now
+> unused; the "Used by" columns describe the earlier pass. The files are still on disk; delete
+> `public/images/` (and the stray `public/*.jpg` copies) before launch.
+
 All assets live in `public/images/` (except the component-rendered logo, see below). This
 inventory was regenerated from the files actually on disk and cross-checked against what `src/`
 currently references (`grep -r "/images/" src`), so "Used by" below reflects real usage, not intent.

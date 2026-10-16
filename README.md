@@ -16,6 +16,9 @@ TypeScript, Tailwind CSS, Prisma and PostgreSQL (Supabase).
 - Result page: status, 4-step progress, ordered event timeline in each scan's local time zone, city-level
   origin/destination, and an estimate only when a source is recorded
 - Clear states for not found, invalid, rate limited, unavailable, and loading
+- Quick tools (`/tools`): price quote, pickup booking, shipment booking, delivery-address change and claims.
+  Each is a validated form that creates a referenced service request; address changes and claims are checked
+  against real shipments
 - Staff admin (`/admin`): shipments CRUD, lifecycle-enforced event recording, chat inbox, contact inquiries,
   and an audit log
 - Floating **Chat with James** widget (stored in the database; staff reply from `/admin/messages`) and a

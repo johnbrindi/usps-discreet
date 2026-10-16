@@ -1,8 +1,7 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
-import { X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useEffect, useId, useState } from "react";
 import { cn } from "@/lib/utils";
@@ -58,7 +57,7 @@ export function MobileNav() {
         {open ? (
           <X className="size-6" aria-hidden />
         ) : (
-          <Image src="/images/hamburger.svg" alt="" width={24} height={24} aria-hidden />
+          <Menu className="size-6" aria-hidden />
         )}
       </button>
 
