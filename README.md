@@ -15,7 +15,9 @@ TypeScript, Tailwind CSS, Prisma and PostgreSQL (Supabase).
 - Tracking search with instant client validation, server validation, and a no-JavaScript fallback
 - Result page: status, 4-step progress, ordered event timeline in each scan's local time zone, city-level
   origin/destination, and an estimate only when a source is recorded
-- Clear states for not found, invalid, rate limited, unavailable, and loading
+- **Live carrier tracking**: USPS, DHL and 1,500+ carriers via Ship24. Real API data is synced into the
+  database with leases, idempotent reconciliation, backoff and a per-call log (see `docs/integrations.md`)
+- Clear states for not found, waiting for carrier, invalid, rate limited, unavailable, and loading
 - Quick tools (`/tools`): price quote, pickup booking, shipment booking, delivery-address change and claims.
   Each is a validated form that creates a referenced service request; address changes and claims are checked
   against real shipments
@@ -55,7 +57,10 @@ public tracking result page every 60 s until delivered, and the chat widget ever
 | --- | --- |
 | `npm run dev` / `build` / `start` | Develop, build, serve production build |
 | `npm run typecheck` / `lint` | TypeScript (strict) and ESLint |
-| `npm test` | Unit tests (Vitest) |
+| `npm test` | Unit tests (Vitest) — includes carrier parsers, detection, schedule and HTTP retry logic |
+| `npm run test:integration` | Sync engine against a real PostgreSQL. Set `INTEGRATION_DATABASE_URL` to a **disposable** database with migrations applied |
+| `npm run carriers:check -- <number>` | Live call to the carrier APIs with your keys; prints what the site would show (no DB writes) |
+| `npm run carriers:sync` | One round of background carrier polling (alternative to the cron endpoint) |
 | `npm run test:e2e` | Playwright end-to-end tests (builds must exist; uses `/usr/bin/chromium` — override with `PLAYWRIGHT_CHROMIUM_PATH`). **Writes test chats/inquiries and needs seeded demo shipments — point `DATABASE_URL` at a separate test database, not your live one**, then run `npm run db:seed` there and `tsx scripts/e2e-cleanup.ts` afterwards |
 | `npm run db:check` | Connectivity and migration status |
 | `npm run db:migrate:deploy` / `db:status` | Apply / inspect migrations |

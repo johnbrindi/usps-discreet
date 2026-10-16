@@ -147,6 +147,7 @@ describe("USPS parser", () => {
     expect(r.deliveredAt?.toISOString()).toBe("2026-10-14T16:02:00.000Z");
     expect(r.events.map((e) => e.status)).toEqual(["DELIVERED", "OUT_FOR_DELIVERY", "ARRIVED_AT_FACILITY", "INFO_RECEIVED"]);
     expect(r.events[0]).toMatchObject({ city: "Austin", region: "TX", country: "US", timeZone: "-05:00", carrierStatusCode: "01" });
+    expect(r.events[2]?.city).toBe("Austin TX Distribution Center");
   });
 
   it("produces the same event ids on every sync (idempotent upserts)", () => {

@@ -15,11 +15,18 @@ export function countryCode(value: unknown): string | null {
   return null;
 }
 
-/** Title-cases carrier SHOUTING ("SAN FRANCISCO" → "San Francisco"); leaves mixed case alone. */
+const US_STATES = new Set(
+  "AL AK AZ AR CA CO CT DE DC FL GA HI ID IL IN IA KS KY LA ME MD MA MI MN MS MO MT NE NV NH NJ NM NY NC ND OH OK OR PA PR RI SC SD TN TX UT VT VA WA WV WI WY".split(" "),
+);
+
+/**
+ * Title-cases carrier SHOUTING ("SAN FRANCISCO" → "San Francisco") while keeping state codes and
+ * acronyms such as "TX" or "USPS" in capitals. Mixed-case input is left alone.
+ */
 export function tidyPlace(value: unknown, max = 120): string | null {
   const v = cleanText(value, max);
-  if (!v) return null;
-  return v === v.toUpperCase() ? v.toLowerCase().replace(/\b\p{L}/gu, (c) => c.toUpperCase()) : v;
+  if (!v || v !== v.toUpperCase()) return v;
+  return v.replace(/\p{L}+/gu, (w) => (US_STATES.has(w) || w === "USPS" || w === "DHL" || w === "UPS" ? w : w[0] + w.slice(1).toLowerCase()));
 }
 
 /**

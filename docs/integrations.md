@@ -1,24 +1,72 @@
 # Integrations
 
-## Carrier tracking — not connected
+## Carrier tracking — built in (needs your API keys)
 
-No carrier API credentials were provided, so no live carrier integration exists. Tracking data comes from the
-app's own database: shipments and events recorded by authorized staff (`MANUAL`), plus labelled demo records
-(`DEMO`). Nothing is scraped or fabricated.
+Shipments can be **Recorded by staff** (manual scans, as before) or **Live from carrier API**. Carrier-tracked
+shipments take every event, status and estimate from the carrier. Staff can't add or remove those events,
+so the public page only ever shows what the carrier reported.
 
-To add a carrier (e.g. the official USPS Tracking API at developers.usps.com, or UPS, FedEx, DHL, or an
-aggregator such as EasyPost or Shippo):
+| Provider | Covers | Cost | Get credentials |
+| --- | --- | --- | --- |
+| **USPS** Tracking API v3 | USPS domestic + USPS-origin international | Free | developers.usps.com → create an app → Consumer Key / Secret (`USPS_CLIENT_ID` / `USPS_CLIENT_SECRET`) |
+| **DHL** Shipment Tracking – Unified | DHL Express, Parcel, eCommerce, Freight | Free tier (250 calls/day) | developer.dhl.com → My Apps → add "Shipment Tracking – Unified" → API key (`DHL_API_KEY`) |
+| **Ship24** | 1,500+ carriers: UPS, FedEx, Royal Mail, Canada Post, national posts | Free/trial plan, then paid per shipment (check current pricing) | ship24.com → dashboard → API key (`SHIP24_API_KEY`) |
 
-1. Obtain an account, API credentials, and written permission to display the data under **your** brand.
-2. Add `src/server/tracking/providers/<carrier>.ts` implementing `TrackingProvider.lookup()`. Map the
-   carrier's status codes onto `ShipmentStatus`, return a `PublicTrackingResult` with only public-safe fields,
-   and set `source: "CARRIER_API"`.
-3. Register it in `server/tracking/service.ts` and the `TRACKING_PROVIDER` enum in `lib/env.ts`. Keep
-   credentials in server-only env vars (never `NEXT_PUBLIC_`).
-4. Optionally persist carrier events to `tracking_events` with webhooks or a cron sync, so lookups don't hit
-   the carrier on every request; add caching (`unstable_cache` / revalidate).
+A provider turns on as soon as its credentials are set. Check them with:
 
-**Needed from you:** which carrier(s), the account and credentials, and the display terms of service.
+```bash
+npm run carriers:check                                  # which providers are configured
+npm run carriers:check -- <real tracking number>         # live call, prints the normalized events (no DB writes)
+npm run carriers:check -- <number> --provider ship24     # force one provider
+```
+
+Each carrier's terms of use apply to displaying its data. Read them before launch. Showing a customer's own
+parcel status, with the carrier named, is the standard permitted use.
+
+### How it works
+
+- **Detection** (`src/domain/carriers.ts`): the number's format picks the providers to try. USPS IMpb (with
+  `420`+ZIP prefixes stripped), UPU S10 with check digit, UPS `1Z`, DHL, and FedEx formats are recognised.
+  Anything else goes to Ship24.
+- **Clients** (`src/server/carriers/*`): each response is validated with zod and normalized to one shape.
+  USPS uses OAuth client-credentials with a cached single-flight token, refreshed once on 401. Unexpected
+  shapes become `bad_response`; nothing is invented.
+- **HTTP** (`http.ts`): 8 s timeout per attempt, 2 retries with jittered backoff on network/5xx errors,
+  `Retry-After` honoured, and a per-provider circuit breaker (5 straight outages → 60 s pause). The
+  connect-attempt timeout is raised to 2 s, because Node's 250 ms default fails on high-latency links where
+  IPv6 isn't routable.
+- **Sync** (`src/server/tracking/sync.ts`): a database **lease** (`sync_lease_until`) means only one worker
+  polls a shipment at a time. Events are **reconciled** in one transaction: new scans are inserted
+  (unique on `shipment_id, external_id`), scans the carrier withdrew are deleted, and an empty response
+  never erases history. Every call is written to `carrier_sync_logs` (kept 30 days).
+- **Schedule** (`src/domain/sync-policy.ts`): every `CARRIER_SYNC_INTERVAL_MINUTES` (default 60), every 20 min
+  while out for delivery, every 6 h after 3 idle days. Failures back off exponentially (5 min → 12 h).
+  Polling stops when the parcel is delivered or returned, after 7 days of "not found", or after 45 days with
+  no activity.
+- **Read path**: a page view of a due shipment serves stored data immediately and refreshes in the
+  background (`after()`). The first view of a never-synced shipment waits up to 9 s for the carrier.
+- **Public lookups** (`PUBLIC_CARRIER_LOOKUP=true`, off by default): customers can track any carrier number,
+  even one staff never added. Hits are stored (`created_via = PUBLIC_LOOKUP`), so repeat views cost no API
+  calls. Misses are cached for 10 min, and a daily cap (`PUBLIC_CARRIER_LOOKUP_DAILY_LIMIT`) protects your
+  quota.
+
+### Scheduling background polls
+
+Page views keep viewed shipments fresh. To keep *every* active shipment fresh, call the cron endpoint
+every 10–15 minutes:
+
+```bash
+curl -fsS -H "Authorization: Bearer $CRON_SECRET" https://your-site.example/api/cron/sync-shipments
+```
+
+- **Vercel Pro**: add `{"crons":[{"path":"/api/cron/sync-shipments","schedule":"*/10 * * * *"}]}` to
+  `vercel.json`. Vercel sends `CRON_SECRET` automatically. (The Hobby plan only allows daily crons.)
+- **Any host**: a system crontab with the `curl` above, GitHub Actions `schedule`, or an uptime monitor
+  that sends the header.
+- **No HTTP**: `npm run carriers:sync` runs one round from the server shell.
+
+Staff can always press **Sync now** on a shipment. The admin page shows the last sync, the next scheduled
+sync, consecutive failures and the 10 most recent API calls.
 
 ## Chat ("Chat with James") — working, built in
 
