@@ -15,7 +15,7 @@ TypeScript, Tailwind CSS, Prisma and PostgreSQL (Supabase).
 - Tracking search with instant client validation, server validation, and a no-JavaScript fallback
 - Result page: status, 4-step progress, ordered event timeline in each scan's local time zone, city-level
   origin/destination, and an estimate only when a source is recorded
-- **Live carrier tracking**: USPS, DHL and 1,500+ carriers via Ship24. Real API data is synced into the
+- **Live carrier tracking**: USPS, DHL and 1,500+ carriers via Ship24, with TrackingMore as an automatic backup. Real API data is synced into the
   database with leases, idempotent reconciliation, backoff and a per-call log (see `docs/integrations.md`)
 - Clear states for not found, waiting for carrier, invalid, rate limited, unavailable, and loading
 - Quick tools (`/tools`): price quote, pickup booking, shipment booking, delivery-address change and claims.

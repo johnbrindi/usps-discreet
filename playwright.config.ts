@@ -39,6 +39,10 @@ export default defineConfig({
         USPS_CLIENT_ID: "e2e",
         USPS_CLIENT_SECRET: "e2e",
         USPS_API_BASE: "http://127.0.0.1:4010",
+        // Real keys from .env must never be used by tests: they spend live quota.
+        DHL_API_KEY: "",
+        SHIP24_API_KEY: "",
+        TRACKINGMORE_API_KEY: "",
         PUBLIC_CARRIER_LOOKUP: "true",
         CRON_SECRET: "e2e-cron-secret-0123456789abcdefghijklmnop",
       },

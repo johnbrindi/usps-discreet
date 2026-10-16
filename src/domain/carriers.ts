@@ -1,17 +1,22 @@
 import type { ShipmentStatus } from "./shipment-status";
 
 /**
- * Carrier APIs the app can query. `ship24` is an aggregator covering 1,500+ carriers (UPS, FedEx,
- * Royal Mail, national posts, …) and is the fallback for anything not handled by a direct integration.
+ * Carrier APIs the app can query. `ship24` and `trackingmore` are aggregators covering 1,000+ carriers
+ * (UPS, FedEx, Royal Mail, national posts, …). They back up the direct integrations and each other, so
+ * one running out of quota or going down doesn't stop tracking.
  */
-export const CARRIER_PROVIDERS = ["usps", "dhl", "ship24"] as const;
+export const CARRIER_PROVIDERS = ["usps", "dhl", "ship24", "trackingmore"] as const;
 export type CarrierProviderId = (typeof CARRIER_PROVIDERS)[number];
 
 export const PROVIDER_LABELS: Record<CarrierProviderId, string> = {
   usps: "USPS",
   dhl: "DHL",
   ship24: "Ship24 (any carrier)",
+  trackingmore: "TrackingMore (any carrier)",
 };
+
+/** Aggregators, in order of preference, appended to every detection as fallbacks. */
+const AGGREGATORS = ["ship24", "trackingmore"] as const satisfies readonly CarrierProviderId[];
 
 export type CarrierDetection = {
   /** Best guess at who issued the number, for display. null when unknown. */
@@ -45,26 +50,26 @@ export function detectCarrier(normalized: string): CarrierDetection {
 
   // USPS label with a "420" + ZIP5/ZIP9 routing prefix in front of the IMpb.
   const routed = /^420(?:\d{5}|\d{9})(9[1-5]\d{18,20})$/.exec(n);
-  if (routed) return { carrier: "USPS", trackingNumber: routed[1]!, providers: ["usps", "ship24"] };
+  if (routed) return { carrier: "USPS", trackingNumber: routed[1]!, providers: ["usps", ...AGGREGATORS] };
   // USPS IMpb (Intelligent Mail package barcode): 20–22 digits beginning 91–95.
-  if (/^9[1-5]\d{18,20}$/.test(n)) return { carrier: "USPS", trackingNumber: n, providers: ["usps", "ship24"] };
+  if (/^9[1-5]\d{18,20}$/.test(n)) return { carrier: "USPS", trackingNumber: n, providers: ["usps", ...AGGREGATORS] };
 
   if (isValidS10(n)) {
-    if (n.endsWith("US")) return { carrier: "USPS", trackingNumber: n, providers: ["usps", "ship24"] };
-    return { carrier: null, trackingNumber: n, providers: ["ship24"] };
+    if (n.endsWith("US")) return { carrier: "USPS", trackingNumber: n, providers: ["usps", ...AGGREGATORS] };
+    return { carrier: null, trackingNumber: n, providers: [...AGGREGATORS] };
   }
 
-  if (/^1Z[0-9A-Z]{16}$/.test(n)) return { carrier: "UPS", trackingNumber: n, providers: ["ship24"] };
+  if (/^1Z[0-9A-Z]{16}$/.test(n)) return { carrier: "UPS", trackingNumber: n, providers: [...AGGREGATORS] };
 
   // DHL Express waybills (10 digits), DHL Parcel/eCommerce (JJD…, JVGL…, GM…, 3S…).
   if (/^\d{10}$/.test(n) || /^(JJD|JVGL)\d{8,}$/.test(n) || /^GM\d{16,18}$/.test(n) || /^3S[A-Z0-9]{8,}$/.test(n)) {
-    return { carrier: "DHL", trackingNumber: n, providers: ["dhl", "ship24"] };
+    return { carrier: "DHL", trackingNumber: n, providers: ["dhl", ...AGGREGATORS] };
   }
 
   // FedEx: 12, 15 or 20-digit (96…) numbers. Format overlaps others, so it's a hint only.
-  if (/^(\d{12}|\d{15}|96\d{18})$/.test(n)) return { carrier: "FedEx", trackingNumber: n, providers: ["ship24"] };
+  if (/^(\d{12}|\d{15}|96\d{18})$/.test(n)) return { carrier: "FedEx", trackingNumber: n, providers: [...AGGREGATORS] };
 
-  return { carrier: null, trackingNumber: n, providers: ["ship24"] };
+  return { carrier: null, trackingNumber: n, providers: [...AGGREGATORS] };
 }
 
 /**

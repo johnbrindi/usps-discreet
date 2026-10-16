@@ -131,6 +131,21 @@ export function parseShip24Tracking(trackingNumber: string, body: unknown) {
   };
 }
 
+const errorBodySchema = z.object({ errors: z.array(z.object({ code: z.string() }).loose()) }).loose();
+
+/** Ship24 error codes (docs: "Error management") take precedence over the HTTP status. */
+export function classifyShip24Error(status: number, body: unknown): CarrierError | undefined {
+  const codes = errorBodySchema.safeParse(body).data?.errors.map((e) => e.code) ?? [];
+  if (codes.includes("quota_limit_reached")) {
+    // Plan quota used up for the billing period: back off for a day, the sync engine fails over meanwhile.
+    return new CarrierError("rate_limited", "ship24: plan quota reached", { httpStatus: status, retryAfterMs: 24 * 60 * 60_000 });
+  }
+  if (codes.includes("no_active_subscription")) return new CarrierError("auth", "ship24: no active subscription", { httpStatus: status });
+  if (codes.includes("parcel_not_found")) return new CarrierError("pending", "ship24: carrier has no data yet", { httpStatus: status });
+  if (status === 400 || status === 404 || status === 422) return new CarrierError("not_found", "ship24: tracking number not accepted", { httpStatus: status });
+  return undefined;
+}
+
 export function createShip24Client(cfg: { apiKey: string; baseUrl?: string; fetch?: FetchLike }): CarrierClient {
   const base = (cfg.baseUrl ?? "https://api.ship24.com").replace(/\/+$/, "");
   return {
@@ -148,10 +163,7 @@ export function createShip24Client(cfg: { apiKey: string; baseUrl?: string; fetc
           breakerKey: "ship24",
           fetch: cfg.fetch,
           timeoutMs: 12_000,
-          classify: (status) =>
-            status === 400 || status === 404 || status === 422
-              ? new CarrierError("not_found", "ship24: tracking number not accepted", { httpStatus: status })
-              : undefined,
+          classify: classifyShip24Error,
         },
       );
       return parseShip24Tracking(trackingNumber, body);

@@ -15,6 +15,7 @@ const schema = z.object({
   USPS_API_BASE: z.url().optional(),
   DHL_API_KEY: z.string().min(1).optional(),
   SHIP24_API_KEY: z.string().min(1).optional(),
+  TRACKINGMORE_API_KEY: z.string().min(1).optional(),
   /** Let the public look up carrier numbers that staff haven't added (uses API quota). */
   PUBLIC_CARRIER_LOOKUP: z.enum(["true", "false"]).default("false"),
   /** Daily cap on new public carrier lookups, per server instance. */

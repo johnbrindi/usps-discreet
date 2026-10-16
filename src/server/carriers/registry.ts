@@ -3,6 +3,7 @@ import { CARRIER_PROVIDERS, type CarrierProviderId } from "@/domain/carriers";
 import { serverEnv } from "@/lib/env";
 import { createDhlClient } from "./dhl";
 import { createShip24Client } from "./ship24";
+import { createTrackingMoreClient } from "./trackingmore";
 import type { CarrierClient } from "./types";
 import { createUspsClient } from "./usps";
 
@@ -18,6 +19,7 @@ function configured() {
   }
   if (env.DHL_API_KEY) clients.dhl = createDhlClient({ apiKey: env.DHL_API_KEY });
   if (env.SHIP24_API_KEY) clients.ship24 = createShip24Client({ apiKey: env.SHIP24_API_KEY });
+  if (env.TRACKINGMORE_API_KEY) clients.trackingmore = createTrackingMoreClient({ apiKey: env.TRACKINGMORE_API_KEY });
   return clients;
 }
 

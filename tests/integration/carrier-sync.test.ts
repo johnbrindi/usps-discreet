@@ -6,10 +6,11 @@ vi.mock("server-only", () => ({}));
 vi.mock("next/server", () => ({ after: (fn: () => unknown) => void fn() }));
 
 /** The carrier the code under test talks to; each test sets its behaviour. */
-const fake = { track: vi.fn<CarrierClient["track"]>() };
+const fake = { track: vi.fn<CarrierClient["track"]>(), backup: vi.fn<CarrierClient["track"]>(), backupEnabled: false };
 vi.mock("@/server/carriers/registry", () => ({
-  getCarrierClient: (id: string | null) => (id === "usps" ? { id: "usps", track: fake.track } : undefined),
-  configuredProviders: () => ["usps"],
+  getCarrierClient: (id: string | null) =>
+    id === "usps" ? { id: "usps", track: fake.track } : id === "ship24" && fake.backupEnabled ? { id: "ship24", track: fake.backup } : undefined,
+  configuredProviders: () => (fake.backupEnabled ? ["usps", "ship24"] : ["usps"]),
 }));
 
 if (!process.env.INTEGRATION_DATABASE_URL) throw new Error("Set INTEGRATION_DATABASE_URL to a disposable database.");
@@ -56,6 +57,8 @@ async function newShipment(n = Math.random().toString().slice(2, 24).padEnd(22, 
 
 beforeEach(async () => {
   fake.track.mockReset();
+  fake.backup.mockReset();
+  fake.backupEnabled = false;
   await db.shipment.deleteMany({});
 });
 afterAll(async () => {
@@ -169,5 +172,43 @@ describe("carrier sync against PostgreSQL", () => {
     expect(rows).toHaveLength(1);
     expect(rows[0]).toMatchObject({ createdVia: "PUBLIC_LOOKUP", trackingMode: "CARRIER", status: "ARRIVED_AT_FACILITY" });
     expect(rows[0]!.events).toHaveLength(2);
+  });
+  it("fails over to a backup provider when the primary is out of quota, and sticks with it", async () => {
+    const s = await newShipment();
+    fake.backupEnabled = true;
+    fake.track.mockRejectedValue(new CarrierError("rate_limited", "usps: plan quota reached", { httpStatus: 429, retryAfterMs: 86_400_000 }));
+    fake.backup.mockResolvedValue(tracking([E2, E1], { provider: "ship24" }));
+
+    expect(await syncShipment(s.id, "cron")).toMatchObject({ outcome: "ok", eventsAdded: 2 });
+    const after = await db.shipment.findUniqueOrThrow({ where: { id: s.id }, include: { syncLogs: { orderBy: { createdAt: "asc" } } } });
+    expect(after).toMatchObject({ carrierProvider: "ship24", status: "ARRIVED_AT_FACILITY", syncFailureCount: 0, lastSyncError: null });
+    expect(after.syncLogs.map((l) => [l.provider, l.outcome])).toEqual([
+      ["usps", "rate_limited"],
+      ["ship24", "ok"],
+    ]);
+
+    // Next sync goes straight to the provider that worked.
+    fake.track.mockClear();
+    await syncShipment(s.id, "manual", { force: true });
+    expect(fake.track).not.toHaveBeenCalled();
+    expect(fake.backup).toHaveBeenCalledTimes(2);
+  });
+
+  it("does not fail over on a definite answer such as not found", async () => {
+    const s = await newShipment();
+    fake.backupEnabled = true;
+    fake.track.mockRejectedValue(new CarrierError("not_found", "usps: tracking number not found", { httpStatus: 404 }));
+    expect(await syncShipment(s.id, "cron")).toMatchObject({ outcome: "not_found" });
+    expect(fake.backup).not.toHaveBeenCalled();
+  });
+
+  it("records the last provider's failure when every provider is down", async () => {
+    const s = await newShipment();
+    fake.backupEnabled = true;
+    fake.track.mockRejectedValue(new CarrierError("unavailable", "usps: HTTP 503", { httpStatus: 503 }));
+    fake.backup.mockRejectedValue(new CarrierError("unavailable", "ship24: HTTP 502", { httpStatus: 502 }));
+    expect(await syncShipment(s.id, "cron")).toMatchObject({ outcome: "unavailable", error: "ship24: HTTP 502" });
+    const after = await db.shipment.findUniqueOrThrow({ where: { id: s.id } });
+    expect(after).toMatchObject({ carrierProvider: "usps", syncFailureCount: 1, syncLeaseUntil: null });
   });
 });

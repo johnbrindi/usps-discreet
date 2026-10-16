@@ -4,7 +4,7 @@ import { nextSyncAt } from "@/domain/sync-policy";
 
 describe("carrier detection", () => {
   it("recognises USPS IMpb numbers and strips the 420+ZIP routing prefix", () => {
-    expect(detectCarrier("9400111899223197428490")).toMatchObject({ carrier: "USPS", providers: ["usps", "ship24"] });
+    expect(detectCarrier("9400111899223197428490")).toMatchObject({ carrier: "USPS", providers: ["usps", "ship24", "trackingmore"] });
     expect(detectCarrier("420902109400111899223197428490")).toMatchObject({ carrier: "USPS", trackingNumber: "9400111899223197428490" });
     // ZIP+4 routing prefix (420 + 9 digits).
     expect(detectCarrier("4209021012349400111899223197428490")).toMatchObject({ trackingNumber: "9400111899223197428490" });
@@ -12,21 +12,21 @@ describe("carrier detection", () => {
 
   it("validates UPU S10 check digits and routes by origin country", () => {
     expect(s10CheckDigit("12345678")).toBe(5);
-    expect(detectCarrier("RR123456785US")).toMatchObject({ carrier: "USPS", providers: ["usps", "ship24"] });
-    expect(detectCarrier("RR123456785GB")).toMatchObject({ carrier: null, providers: ["ship24"] });
+    expect(detectCarrier("RR123456785US")).toMatchObject({ carrier: "USPS", providers: ["usps", "ship24", "trackingmore"] });
+    expect(detectCarrier("RR123456785GB")).toMatchObject({ carrier: null, providers: ["ship24", "trackingmore"] });
     // Wrong check digit: not treated as S10.
     expect(detectCarrier("RR123456784US").carrier).toBeNull();
   });
 
   it("recognises UPS, DHL and FedEx formats", () => {
-    expect(detectCarrier("1Z999AA10123456784")).toMatchObject({ carrier: "UPS", providers: ["ship24"] });
-    expect(detectCarrier("1234567890")).toMatchObject({ carrier: "DHL", providers: ["dhl", "ship24"] });
+    expect(detectCarrier("1Z999AA10123456784")).toMatchObject({ carrier: "UPS", providers: ["ship24", "trackingmore"] });
+    expect(detectCarrier("1234567890")).toMatchObject({ carrier: "DHL", providers: ["dhl", "ship24", "trackingmore"] });
     expect(detectCarrier("JJD000390007827470").carrier).toBe("DHL");
-    expect(detectCarrier("123456789012")).toMatchObject({ carrier: "FedEx", providers: ["ship24"] });
+    expect(detectCarrier("123456789012")).toMatchObject({ carrier: "FedEx", providers: ["ship24", "trackingmore"] });
   });
 
   it("falls back to the aggregator for anything else, including our own numbers", () => {
-    expect(detectCarrier("MP12345678901234567890")).toEqual({ carrier: null, trackingNumber: "MP12345678901234567890", providers: ["ship24"] });
+    expect(detectCarrier("MP12345678901234567890")).toEqual({ carrier: null, trackingNumber: "MP12345678901234567890", providers: ["ship24", "trackingmore"] });
   });
 });
 

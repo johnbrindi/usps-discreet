@@ -10,14 +10,15 @@ so the public page only ever shows what the carrier reported.
 | --- | --- | --- | --- |
 | **USPS** Tracking API v3 | USPS domestic + USPS-origin international | Free | developers.usps.com → create an app → Consumer Key / Secret (`USPS_CLIENT_ID` / `USPS_CLIENT_SECRET`) |
 | **DHL** Shipment Tracking – Unified | DHL Express, Parcel, eCommerce, Freight | Free tier (250 calls/day) | developer.dhl.com → My Apps → add "Shipment Tracking – Unified" → API key (`DHL_API_KEY`) |
-| **Ship24** | 1,500+ carriers: UPS, FedEx, Royal Mail, Canada Post, national posts | Free/trial plan, then paid per shipment (check current pricing) | ship24.com → dashboard → API key (`SHIP24_API_KEY`) |
+| **Ship24** | 1,500+ carriers: UPS, FedEx, Royal Mail, Canada Post, national posts | Free: 10 shipments/month (Tracking API, "per-shipment" plan); Pro $39/month for 1,000 | ship24.com → Tracking API → Free → Developers → API keys (`SHIP24_API_KEY`) |
+| **TrackingMore** API v4 | 1,300+ carriers, same coverage as Ship24 | Free: 50 shipments/month; paid plans per shipment | trackingmore.com → sign up → Developer → API Key (`TRACKINGMORE_API_KEY`) |
 
 A provider turns on as soon as its credentials are set. Check them with:
 
 ```bash
 npm run carriers:check                                  # which providers are configured
 npm run carriers:check -- <real tracking number>         # live call, prints the normalized events (no DB writes)
-npm run carriers:check -- <number> --provider ship24     # force one provider
+npm run carriers:check -- <number> --provider ship24     # force one provider (usps, dhl, ship24, trackingmore)
 ```
 
 Each carrier's terms of use apply to displaying its data. Read them before launch. Showing a customer's own
@@ -27,7 +28,11 @@ parcel status, with the carrier named, is the standard permitted use.
 
 - **Detection** (`src/domain/carriers.ts`): the number's format picks the providers to try. USPS IMpb (with
   `420`+ZIP prefixes stripped), UPU S10 with check digit, UPS `1Z`, DHL, and FedEx formats are recognised.
-  Anything else goes to Ship24.
+  Anything else goes to the aggregators (Ship24, then TrackingMore).
+- **Failover**: if a shipment's provider is out of quota, rejects the key, is down or returns garbage, the
+  sync tries the next configured provider for that number's format (direct carrier → Ship24 →
+  TrackingMore). The shipment then stays on the provider that answered, and each failed attempt is logged in
+  `carrier_sync_logs`. A definite "not found" or "pending" doesn't trigger failover.
 - **Clients** (`src/server/carriers/*`): each response is validated with zod and normalized to one shape.
   USPS uses OAuth client-credentials with a cached single-flight token, refreshed once on 401. Unexpected
   shapes become `bad_response`; nothing is invented.

@@ -1,6 +1,6 @@
 import "server-only";
 import { Prisma } from "@prisma/client";
-import type { CarrierProviderId } from "@/domain/carriers";
+import { CARRIER_PROVIDERS, detectCarrier, type CarrierProviderId } from "@/domain/carriers";
 import { READ_SYNC_MIN_INTERVAL_MS, nextSyncAt, type SyncOutcome } from "@/domain/sync-policy";
 import { db } from "@/lib/db";
 import { serverEnv } from "@/lib/env";
@@ -158,29 +158,60 @@ async function recordFailure(
   return { outcome, eventsAdded: 0, eventsRemoved: 0, error };
 }
 
-/** Calls the carrier for an already-loaded shipment and stores the outcome. Caller holds the lease. */
+/** Failures where another provider may still answer. "not_found" and "pending" are answers, not outages. */
+const FAILOVER_KINDS = new Set<SyncOutcome>(["rate_limited", "auth", "unavailable", "bad_response"]);
+
+/**
+ * Providers to try for a shipment: its own first, then every other configured provider that handles
+ * the number's format (aggregators last), so an exhausted quota or an outage at one source doesn't
+ * stop tracking.
+ */
+function providerOrder(s: SyncShipment): CarrierProviderId[] {
+  const number = s.carrierTrackingNumber ?? s.trackingNumber;
+  const own = (CARRIER_PROVIDERS as readonly string[]).includes(s.carrierProvider ?? "") ? [s.carrierProvider as CarrierProviderId] : [];
+  return [...new Set([...own, ...detectCarrier(number).providers])].filter((p) => getCarrierClient(p));
+}
+
+/** Calls the carrier(s) for an already-loaded shipment and stores the outcome. Caller holds the lease. */
 async function runSync(s: SyncShipment, trigger: SyncTrigger): Promise<SyncResult> {
-  const provider = s.carrierProvider ?? "unknown";
-  const client = getCarrierClient(s.carrierProvider);
-  if (!client) {
+  const order = providerOrder(s);
+  if (order.length === 0) {
+    const provider = s.carrierProvider ?? "unknown";
     return recordFailure(s, provider, trigger, "not_configured", { message: `No credentials configured for provider "${provider}".` }, 0);
   }
-  const started = Date.now();
-  let data: CarrierTracking;
-  try {
-    data = await client.track(s.carrierTrackingNumber ?? s.trackingNumber);
-  } catch (err) {
-    const ms = Date.now() - started;
-    if (err instanceof CarrierError) {
-      return recordFailure(s, provider, trigger, err.kind, { message: err.message, ...err.opts }, ms);
+
+  for (const [i, provider] of order.entries()) {
+    const started = Date.now();
+    let data: CarrierTracking;
+    try {
+      data = await getCarrierClient(provider)!.track(s.carrierTrackingNumber ?? s.trackingNumber);
+    } catch (err) {
+      const ms = Date.now() - started;
+      const failure =
+        err instanceof CarrierError
+          ? { kind: err.kind, message: err.message, ...err.opts }
+          : { kind: "bad_response" as const, message: "Unexpected error while reading the carrier response." };
+      if (!(err instanceof CarrierError)) logger.error("carrier.sync_crashed", err, { shipmentId: s.id, provider });
+      const { kind, ...detail } = failure;
+      if (FAILOVER_KINDS.has(kind) && i < order.length - 1) {
+        await db.carrierSyncLog.create({
+          data: { shipmentId: s.id, provider, trigger, outcome: kind, httpStatus: detail.httpStatus ?? null, durationMs: ms, error: detail.message.slice(0, 280) },
+        });
+        logger.warn("carrier.failover", { shipmentId: s.id, from: provider, to: order[i + 1], kind });
+        continue;
+      }
+      return recordFailure(s, provider, trigger, kind, detail, ms);
     }
-    logger.error("carrier.sync_crashed", err, { shipmentId: s.id, provider });
-    return recordFailure(s, provider, trigger, "bad_response", { message: "Unexpected error while reading the carrier response." }, ms);
+    const ms = Date.now() - started;
+    const result = await db.$transaction(async (tx) => {
+      // A backup provider answered: keep using it, so events aren't swapped back and forth between sources.
+      if (provider !== s.carrierProvider) await tx.shipment.update({ where: { id: s.id }, data: { carrierProvider: provider } });
+      return applyTracking(tx, s, data, trigger, ms);
+    });
+    logger.info("carrier.sync_ok", { shipmentId: s.id, provider, trigger, added: result.eventsAdded, removed: result.eventsRemoved, ms });
+    return result;
   }
-  const ms = Date.now() - started;
-  const result = await db.$transaction((tx) => applyTracking(tx, s, data, trigger, ms));
-  logger.info("carrier.sync_ok", { shipmentId: s.id, provider, trigger, added: result.eventsAdded, removed: result.eventsRemoved, ms });
-  return result;
+  throw new Error("unreachable");
 }
 
 /**
