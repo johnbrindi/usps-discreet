@@ -1,9 +1,9 @@
-# Meridian Parcel — package tracking web application
+# usps-discreet — package tracking web application
 
 An independent parcel-tracking website with a staff admin console, built with Next.js (App Router),
 TypeScript, Tailwind CSS, Prisma and PostgreSQL (Supabase).
 
-> **Brand notice.** "Meridian Parcel" is a neutral placeholder. This app is **not** affiliated with USPS or
+> **Brand notice.** "usps-discreet" is a neutral placeholder. This app is **not** affiliated with USPS or
 > any postal service. The visible UI (header, footer, homepage copy, logo) no longer uses USPS's name, logo
 > or trademarked service names — see `docs/asset-inventory.md` for exactly what changed and which legacy
 > image files from the original scaffold are still unused on disk (not deleted, but not wired into any page;

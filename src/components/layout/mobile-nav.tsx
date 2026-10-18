@@ -4,12 +4,12 @@ import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useEffect, useId, useState } from "react";
+import { mainNav } from "@/config/site";
 import { cn } from "@/lib/utils";
 
 const mobileNavItems = [
   { href: "/track", label: "Track a Package" },
-  { href: "/tools", label: "Quick Tools" },
-  { href: "/help", label: "Help" },
+  ...mainNav,
   { href: "/contact", label: "Contact Us" },
   { href: "/privacy", label: "Privacy Policy" },
   { href: "/terms", label: "Terms of Service" },

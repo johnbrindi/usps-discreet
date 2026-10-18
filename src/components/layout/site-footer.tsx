@@ -6,6 +6,7 @@ import { WhatsAppIcon } from "@/components/widgets/whatsapp-icon";
 import { TOOLS } from "@/config/service-requests";
 import { siteConfig, whatsappUrl } from "@/config/site";
 import { describeSupportHours } from "@/lib/support-hours";
+import { Logo } from "./logo";
 
 // Every link points at a real route or section — no placeholder pages.
 const footerColumns = [
@@ -54,9 +55,7 @@ export function SiteFooter() {
     <footer className="mt-auto bg-[#333366] text-sm text-white">
       <Container className="grid gap-10 py-12 lg:grid-cols-[16rem_1fr]">
         <div className="space-y-4">
-          <Link href="/" aria-label={`${siteConfig.name} home`}>
-            <Image src="/images/footer-logo.png" alt={siteConfig.name} width={160} height={40} className="h-auto w-40" />
-          </Link>
+          <Logo inverted />
           <ul className="space-y-2">
             <li>
               <a href={`mailto:${siteConfig.supportEmail}`} className="inline-flex items-center gap-2 break-all hover:underline">
@@ -73,7 +72,9 @@ export function SiteFooter() {
           <ul className="flex flex-wrap gap-3 pt-2">
             {social.map((s) => (
               <li key={s.label}>
-                <Image src={s.src} alt={s.label} width={28} height={28} className="size-7 object-contain" />
+                <span className="flex size-9 items-center justify-center rounded-full bg-white">
+                  <Image src={s.src} alt={s.label} width={24} height={24} className="size-6 object-contain" />
+                </span>
               </li>
             ))}
           </ul>

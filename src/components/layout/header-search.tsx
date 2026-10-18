@@ -32,7 +32,7 @@ export function HeaderSearch() {
       className="flex w-full items-stretch"
     >
       <label htmlFor={inputId} className="sr-only">
-        Search USPS.com or Enter Tracking Number(s)
+        Search or enter tracking number(s)
       </label>
       <input
         id={inputId}
@@ -40,7 +40,7 @@ export function HeaderSearch() {
         type="text"
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        placeholder="Search USPS.com or Enter Tracking Number(s)"
+        placeholder="Search or enter tracking number(s)"
         autoComplete="off"
         autoCapitalize="characters"
         spellCheck={false}

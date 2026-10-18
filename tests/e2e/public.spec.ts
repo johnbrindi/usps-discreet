@@ -24,7 +24,7 @@ test.describe("public routes", () => {
       const res = await page.goto(path);
       expect(res?.status()).toBe(200);
       await expect(page.getByRole("heading", { level: 1, name: heading })).toBeVisible();
-      await expect(page).toHaveTitle(/Meridian Parcel/);
+      await expect(page).toHaveTitle(/usps-discreet/);
       // No horizontal overflow at this viewport.
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
       expect(overflow).toBeLessThanOrEqual(0);
