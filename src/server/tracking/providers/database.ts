@@ -63,6 +63,12 @@ export const databaseProvider: TrackingProvider = {
           region: shipment.destinationRegion,
           country: shipment.destinationCountry,
         }) || null,
+      originPlace: { city: shipment.originCity, region: shipment.originRegion, country: shipment.originCountry },
+      destinationPlace: {
+        city: shipment.destinationCity,
+        region: shipment.destinationRegion,
+        country: shipment.destinationCountry,
+      },
       estimatedDelivery:
         shipment.estimatedDeliveryDate && shipment.estimateSource && !shipment.deliveredAt
           ? { date: shipment.estimatedDeliveryDate.toISOString().slice(0, 10), source: shipment.estimateSource }
@@ -84,6 +90,7 @@ export const databaseProvider: TrackingProvider = {
         status: e.status,
         description: e.description,
         location: formatPlace(e) || null,
+        place: { city: e.city, region: e.region, country: e.country },
         timeZone: e.timeZone,
         occurredAt: e.occurredAt.toISOString(),
         source: e.source,

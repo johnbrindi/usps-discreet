@@ -27,11 +27,22 @@ const securityHeaders = [
   { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" },
 ];
 
+const MAP_DATA = [
+  "./src/server/geo/cities.json",
+  "./node_modules/world-atlas/countries-50m.json",
+  "./node_modules/us-atlas/states-10m.json",
+];
+
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   // The dev-only "N" badge sits bottom-left, on top of the admin sidebar's Sign out button.
   devIndicators: false,
   reactStrictMode: true,
+  // Route-map data is read from disk at runtime (src/server/geo/places.ts), so ship it with these routes.
+  outputFileTracingIncludes: {
+    "/track/[trackingNumber]": MAP_DATA,
+    "/summary/[trackingNumber]": MAP_DATA,
+  },
   experimental: { serverActions: { bodySizeLimit: "64kb" } },
   async headers() {
     return [

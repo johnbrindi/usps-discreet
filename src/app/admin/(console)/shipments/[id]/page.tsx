@@ -99,7 +99,16 @@ export default async function ShipmentDetailPage({
               <p className="mb-4 text-sm text-muted">
                 Only record scans that actually happened. Allowed next statuses follow the shipment lifecycle.
               </p>
-              <EventForm action={addTrackingEvent.bind(null, shipment.id)} options={options} defaultTimeZone={latestTz} />
+              <EventForm
+                action={addTrackingEvent.bind(null, shipment.id)}
+                options={options}
+                defaultTimeZone={latestTz}
+                places={{
+                  origin: { city: shipment.originCity, region: shipment.originRegion, country: shipment.originCountry },
+                  last: shipment.events[0] && { city: shipment.events[0].city, region: shipment.events[0].region, country: shipment.events[0].country },
+                  destination: { city: shipment.destinationCity, region: shipment.destinationRegion, country: shipment.destinationCountry },
+                }}
+              />
             </Card>
           )}
           <Card className="p-5 sm:p-6">
