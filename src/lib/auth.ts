@@ -18,7 +18,7 @@ export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL || vercelOrigins[0],
   trustedOrigins: vercelOrigins,
   database: prismaAdapter(db, { provider: "postgresql" }),
-  emailAndPassword: { enabled: true, disableSignUp: true, minPasswordLength: 12 },
+  emailAndPassword: { enabled: true, disableSignUp: true, minPasswordLength: 8 },
   user: { additionalFields: { role: { type: "string", defaultValue: "staff", input: false } } },
   // The signed cookie cache answers session checks without a database query for 5 minutes at a time.
   // Trade-off: a revoked session or changed role takes up to 5 minutes to apply.

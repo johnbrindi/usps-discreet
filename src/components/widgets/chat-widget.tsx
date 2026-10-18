@@ -188,7 +188,9 @@ export function ChatWidget({ agentName, hoursLabel, alwaysOpen = false }: { agen
           aria-busy={load === "loading"}
         >
           <p className="flex items-center justify-center gap-1.5 text-center text-[0.6875rem] text-muted">
-            <Lock className="size-3" aria-hidden /> rounded-md border border-line bg-white p-3 text-xs leading-5 text-muted">
+            <Lock className="size-3" aria-hidden /> Secure chat
+          </p>
+          <p className="rounded-md border border-line bg-white p-3 text-xs leading-5 text-muted">
             {alwaysOpen
               ? `Messages are saved and answered by our support team (${agentName}) around the clock — replies may take a few minutes.`
               : `Messages are saved and answered by our support team (${agentName}) during support hours — replies are not instant.`}{" "}
