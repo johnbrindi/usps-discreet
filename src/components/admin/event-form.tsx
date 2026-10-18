@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Field, Input, Select, fieldAria } from "@/components/ui/form";
 import { statusIcons } from "@/components/tracking/status-badge";
 import { STATUS_META, type ShipmentStatus } from "@/domain/shipment-status";
+import { suggestTimeZone } from "@/server/actions/admin-shipments";
 import type { ActionState } from "@/server/actions/types";
 import { idleState } from "@/server/actions/types";
 
@@ -59,7 +60,23 @@ export function EventForm({
     const el = field(name);
     if (el) el.value = value ?? "";
   };
-  const fillNow = () => set("occurredAt", nowLocal(field("timeZone")?.value ?? ""));
+  // The time zone follows the city unless staff type one themselves; a time set with "Now" follows it too.
+  const tzTyped = useRef(false);
+  const timeIsNow = useRef(false);
+  const fillNow = () => {
+    set("occurredAt", nowLocal(field("timeZone")?.value ?? ""));
+    timeIsNow.current = true;
+  };
+  async function syncTimeZone() {
+    if (tzTyped.current) return;
+    const value = (name: string) => field(name)?.value.trim() || undefined;
+    const city = value("city");
+    if (!city) return;
+    const tz = await suggestTimeZone({ city, region: value("region"), country: value("country") }).catch(() => null);
+    if (!tz || tzTyped.current) return;
+    set("timeZone", tz);
+    if (timeIsNow.current) fillNow();
+  }
 
   function applyPreset(status: ShipmentStatus) {
     const preset = PRESETS[status];
@@ -70,6 +87,7 @@ export function EventForm({
     set("region", place.region);
     set("country", place.country);
     fillNow();
+    void syncTimeZone();
     setFilled(status);
     (preset.place === "new" ? field("city") : field("description"))?.focus();
   }
@@ -119,7 +137,7 @@ export function EventForm({
         </Field>
         <Field id="ev-occurredAt" label="Date & time (local to the location)" error={err("occurredAt")}>
           <div className="flex gap-2">
-            <Input {...fieldAria("ev-occurredAt", err("occurredAt"))} name="occurredAt" type="datetime-local" defaultValue={val("occurredAt")} required />
+            <Input {...fieldAria("ev-occurredAt", err("occurredAt"))} name="occurredAt" type="datetime-local" defaultValue={val("occurredAt")} required onInput={() => (timeIsNow.current = false)} />
             <Button type="button" variant="secondary" onClick={fillNow} className="shrink-0">
               <Clock className="size-4" aria-hidden /> Now
             </Button>
@@ -131,16 +149,16 @@ export function EventForm({
       </Field>
       <div className="grid gap-4 sm:grid-cols-4">
         <Field id="ev-city" label="City" optional error={err("city")}>
-          <Input {...fieldAria("ev-city", err("city"))} name="city" defaultValue={val("city")} maxLength={120} placeholder="e.g. Memphis" />
+          <Input {...fieldAria("ev-city", err("city"))} name="city" defaultValue={val("city")} maxLength={120} placeholder="e.g. Memphis" onBlur={syncTimeZone} />
         </Field>
         <Field id="ev-region" label="Region" optional error={err("region")}>
-          <Input {...fieldAria("ev-region", err("region"))} name="region" defaultValue={val("region")} maxLength={120} placeholder="e.g. TN" />
+          <Input {...fieldAria("ev-region", err("region"))} name="region" defaultValue={val("region")} maxLength={120} placeholder="e.g. TN" onBlur={syncTimeZone} />
         </Field>
         <Field id="ev-country" label="Country" optional error={err("country")}>
-          <Input {...fieldAria("ev-country", err("country"))} name="country" defaultValue={val("country")} maxLength={2} placeholder="US" />
+          <Input {...fieldAria("ev-country", err("country"))} name="country" defaultValue={val("country")} maxLength={2} placeholder="US" onBlur={syncTimeZone} />
         </Field>
         <Field id="ev-timeZone" label="Time zone" optional error={err("timeZone")}>
-          <Input {...fieldAria("ev-timeZone", err("timeZone"))} name="timeZone" defaultValue={val("timeZone", defaultTimeZone ?? "")} placeholder="America/Chicago" maxLength={64} />
+          <Input {...fieldAria("ev-timeZone", err("timeZone"))} name="timeZone" defaultValue={val("timeZone", defaultTimeZone ?? "")} placeholder="Filled in from the city" maxLength={64} onInput={(e) => (tzTyped.current = e.currentTarget.value.trim() !== "")} />
         </Field>
       </div>
       <div className="flex justify-end">

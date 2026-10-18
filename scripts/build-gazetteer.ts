@@ -18,22 +18,26 @@ for (const line of readFileSync(path.join(dir, "admin1CodesASCII.txt"), "utf8").
   if (code && ascii) admin1[code] = ascii;
 }
 
-type Row = [name: string, country: string, admin1: string, lat: number, lng: number, pop: number];
+type Row = [name: string, country: string, admin1: string, lat: number, lng: number, pop: number, timeZone: string];
 const rows: Row[] = [];
 for (const line of readFileSync(path.join(dir, "cities5000.txt"), "utf8").split("\n")) {
   const f = line.split("\t");
   if (f.length < 15) continue;
-  // asciiname, country code, admin1 code, latitude, longitude, population
-  rows.push([f[2]!, f[8]!, f[10]!, Number(Number(f[4]).toFixed(2)), Number(Number(f[5]).toFixed(2)), Number(f[14]) || 0]);
+  // asciiname, country code, admin1 code, latitude, longitude, population, IANA time zone
+  rows.push([f[2]!, f[8]!, f[10]!, Number(Number(f[4]).toFixed(2)), Number(Number(f[5]).toFixed(2)), Number(f[14]) || 0, f[17]!]);
 }
 // Most populous first, so the first match for an ambiguous name is the likeliest one.
 rows.sort((a, b) => b[5] - a[5]);
 
 const usedAdmin1 = new Set(rows.map((r) => `${r[1]}.${r[2]}`));
+// Time zones are stored once and referenced by index to keep the file small.
+const timeZones = [...new Set(rows.map((r) => r[6]))].sort();
+const tzIndex = new Map(timeZones.map((tz, i) => [tz, i]));
 const out = {
   attribution: "GeoNames (CC BY 4.0)",
   admin1: Object.fromEntries(Object.entries(admin1).filter(([k]) => usedAdmin1.has(k))),
-  cities: rows.map(([name, cc, a1, lat, lng]) => [name, cc, a1, lat, lng]),
+  timeZones,
+  cities: rows.map(([name, cc, a1, lat, lng, , tz]) => [name, cc, a1, lat, lng, tzIndex.get(tz)!]),
 };
 const file = path.join(import.meta.dirname, "../src/server/geo/cities.json");
 writeFileSync(file, JSON.stringify(out));

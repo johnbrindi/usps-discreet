@@ -6,13 +6,14 @@ import { createGazetteer, normalizePlace, type GazetteerData } from "@/server/ge
 const fixture: GazetteerData = {
   attribution: "test",
   admin1: { "US.TX": "Texas", "US.MO": "Missouri", "US.NY": "New York", "US.IL": "Illinois", "GB.ENG": "England" },
+  timeZones: ["America/Chicago", "America/New_York", "Europe/London"],
   cities: [
-    ["New York City", "US", "NY", 40.71, -74.01],
-    ["London", "GB", "ENG", 51.51, -0.13],
-    ["Austin", "US", "TX", 30.27, -97.74],
-    ["Saint Louis", "US", "MO", 38.63, -90.2],
-    ["Paris", "US", "TX", 33.66, -95.56],
-    ["Paris", "US", "IL", 39.61, -87.7],
+    ["New York City", "US", "NY", 40.71, -74.01, 1],
+    ["London", "GB", "ENG", 51.51, -0.13, 2],
+    ["Austin", "US", "TX", 30.27, -97.74, 0],
+    ["Saint Louis", "US", "MO", 38.63, -90.2, 0],
+    ["Paris", "US", "TX", 33.66, -95.56, 0],
+    ["Paris", "US", "IL", 39.61, -87.7, 0],
   ],
 };
 const g = createGazetteer(fixture);
@@ -24,15 +25,15 @@ describe("gazetteer", () => {
   });
 
   it("matches city with region code or name", () => {
-    expect(g.lookup({ city: "Austin", region: "TX", country: "US" })).toEqual({ lat: 30.27, lng: -97.74 });
-    expect(g.lookup({ city: "paris", region: "Illinois" })).toEqual({ lat: 39.61, lng: -87.7 });
-    expect(g.lookup({ city: "St Louis", region: "MO" })).toEqual({ lat: 38.63, lng: -90.2 });
+    expect(g.lookup({ city: "Austin", region: "TX", country: "US" })).toEqual({ lat: 30.27, lng: -97.74, timeZone: "America/Chicago" });
+    expect(g.lookup({ city: "paris", region: "Illinois" })).toMatchObject({ lat: 39.61, lng: -87.7 });
+    expect(g.lookup({ city: "St Louis", region: "MO" })).toMatchObject({ lat: 38.63, lng: -90.2 });
   });
 
   it("understands carrier facility strings", () => {
-    expect(g.lookup({ city: "AUSTIN TX DISTRIBUTION CENTER" })).toEqual({ lat: 30.27, lng: -97.74 });
-    expect(g.lookup({ city: "AUSTIN, TX 78701" })).toEqual({ lat: 30.27, lng: -97.74 });
-    expect(g.lookup({ city: "New York", country: "US" })).toEqual({ lat: 40.71, lng: -74.01 });
+    expect(g.lookup({ city: "AUSTIN TX DISTRIBUTION CENTER" })).toMatchObject({ lat: 30.27, lng: -97.74 });
+    expect(g.lookup({ city: "AUSTIN, TX 78701" })).toMatchObject({ lat: 30.27, lng: -97.74 });
+    expect(g.lookup({ city: "New York", country: "US" })).toEqual({ lat: 40.71, lng: -74.01, timeZone: "America/New_York" });
   });
 
   it("returns null rather than guessing when nothing matches", () => {
@@ -46,15 +47,17 @@ describe("bundled place list", () => {
   const data = JSON.parse(readFileSync(path.join(process.cwd(), "src/server/geo/cities.json"), "utf8")) as GazetteerData;
   const real = createGazetteer(data);
   it.each([
-    [{ city: "Brooklyn", region: "NY", country: "US" }, 40.6, -73.9],
-    [{ city: "Austin", region: "TX", country: "US" }, 30.3, -97.7],
-    [{ city: "Newark", region: "NJ", country: "US" }, 40.7, -74.2],
-    [{ city: "CINCINNATI HUB - USA" }, 39.1, -84.5],
-    [{ city: "Leipzig", country: "DE" }, 51.3, 12.4],
-  ])("places %o", (q, lat, lng) => {
+    [{ city: "Brooklyn", region: "NY", country: "US" }, 40.6, -73.9, "America/New_York"],
+    [{ city: "Austin", region: "TX", country: "US" }, 30.3, -97.7, "America/Chicago"],
+    [{ city: "Newark", region: "NJ", country: "US" }, 40.7, -74.2, "America/New_York"],
+    [{ city: "CINCINNATI HUB - USA" }, 39.1, -84.5, "America/New_York"],
+    [{ city: "Leipzig", country: "DE" }, 51.3, 12.4, "Europe/Berlin"],
+    [{ city: "Denver", region: "CO", country: "US" }, 39.7, -105.0, "America/Denver"],
+  ])("places %o", (q, lat, lng, timeZone) => {
     const hit = real.lookup(q);
     expect(hit).not.toBeNull();
     expect(Math.abs(hit!.lat - lat)).toBeLessThan(0.5);
     expect(Math.abs(hit!.lng - lng)).toBeLessThan(0.5);
+    expect(hit!.timeZone).toBe(timeZone);
   });
 });

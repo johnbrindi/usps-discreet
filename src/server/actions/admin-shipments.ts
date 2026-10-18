@@ -12,6 +12,7 @@ import { db } from "@/lib/db";
 import { logger } from "@/lib/logger";
 import { audit } from "@/server/audit";
 import { configuredProviders } from "@/server/carriers/registry";
+import { places } from "@/server/geo/places";
 import { syncShipment } from "@/server/tracking/sync";
 import { shipmentSchema, trackingEventSchema, trackingSetupSchema } from "@/validation/shipment";
 import { echoValues, type ActionState } from "./types";
@@ -152,7 +153,9 @@ export async function addTrackingEvent(
   const parsed = trackingEventSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return invalid(formData, parsed.error);
   const input = parsed.data;
-  const occurredAt = zonedLocalToUtc(input.occurredAt, input.timeZone);
+  // A blank time zone is taken from the scan's city, so local times are right without typing one.
+  const timeZone = input.timeZone || places().lookup(input)?.timeZone || null;
+  const occurredAt = zonedLocalToUtc(input.occurredAt, timeZone);
 
   if (occurredAt.getTime() > Date.now() + 5 * 60_000) {
     return fail(formData, { fieldErrors: { occurredAt: ["Events can't be recorded in the future."] } });
@@ -190,7 +193,7 @@ export async function addTrackingEvent(
           city: input.city,
           region: input.region,
           country: input.country,
-          timeZone: input.timeZone,
+          timeZone,
           occurredAt,
           source: shipment.isDemo ? "DEMO" : "MANUAL",
           createdById: user.id,
@@ -216,6 +219,13 @@ export async function addTrackingEvent(
   }
   revalidatePath(`/admin/shipments/${shipmentId}`);
   return { status: "success", message: "Event recorded.", attempt: Date.now() };
+}
+
+/** The time zone of a city, for the event form to fill in as staff type the location. */
+export async function suggestTimeZone(place: { city?: string; region?: string; country?: string }): Promise<string | null> {
+  await requireStaff();
+  const clip = (v?: string) => (typeof v === "string" ? v.slice(0, 120) : undefined);
+  return places().lookup({ city: clip(place.city), region: clip(place.region), country: clip(place.country) })?.timeZone ?? null;
 }
 
 /** Removes the most recent event (to correct a mistake) and restores the previous status. */

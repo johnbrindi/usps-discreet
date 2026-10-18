@@ -8,12 +8,15 @@ export type GazetteerData = {
   attribution: string;
   /** "US.TX" → "Texas" */
   admin1: Record<string, string>;
-  /** [name, country code, admin1 code, lat, lng], most populous first. */
-  cities: [string, string, string, number, number][];
+  /** IANA time zones, referenced by index from `cities`. */
+  timeZones: string[];
+  /** [name, country code, admin1 code, lat, lng, time zone index], most populous first. */
+  cities: [string, string, string, number, number, number][];
 };
 
 export type PlaceQuery = { city?: string | null; region?: string | null; country?: string | null };
 export type Coordinates = { lat: number; lng: number };
+export type Place = Coordinates & { timeZone: string | null };
 
 const ABBREVIATIONS: [RegExp, string][] = [
   [/\bst\b/g, "saint"],
@@ -74,7 +77,7 @@ export function createGazetteer(data: GazetteerData) {
 
   return {
     attribution: data.attribution,
-    lookup(q: PlaceQuery): Coordinates | null {
+    lookup(q: PlaceQuery): Place | null {
       if (!q.city?.trim()) return null;
       const country = q.country?.trim().toUpperCase() || null;
       let region = q.region?.trim() || null;
@@ -84,7 +87,7 @@ export function createGazetteer(data: GazetteerData) {
       if (!region && words.length > 1 && words.at(-1)!.length === 2) region = words.pop()!;
       for (let n = words.length; n > 0; n--) {
         const hit = pick(words.slice(0, n).join(" "), region, country);
-        if (hit) return { lat: hit[3], lng: hit[4] };
+        if (hit) return { lat: hit[3], lng: hit[4], timeZone: data.timeZones[hit[5]] ?? null };
       }
       return null;
     },

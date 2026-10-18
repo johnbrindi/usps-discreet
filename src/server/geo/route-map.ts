@@ -48,7 +48,7 @@ export function resolveRoute(result: PublicTrackingResult, gazetteer: Gazetteer 
       last.status = e.status;
       last.scans.push(scan);
     } else {
-      stops.push({ ...at, label: placeLabel(e.place), status: e.status, scans: [scan] });
+      stops.push({ lat: at.lat, lng: at.lng, label: placeLabel(e.place), status: e.status, scans: [scan] });
     }
   }
 
@@ -61,8 +61,8 @@ export function resolveRoute(result: PublicTrackingResult, gazetteer: Gazetteer 
 
   return {
     stops,
-    destination: showDestination ? { ...destAt, label: placeLabel(result.destinationPlace) } : null,
-    origin: originAt ? { ...originAt, label: placeLabel(result.originPlace) } : null,
+    destination: showDestination ? { lat: destAt.lat, lng: destAt.lng, label: placeLabel(result.destinationPlace) } : null,
+    origin: originAt ? { lat: originAt.lat, lng: originAt.lng, label: placeLabel(result.originPlace) } : null,
     status: result.status,
     unplaced,
     attribution: gazetteer.attribution,
