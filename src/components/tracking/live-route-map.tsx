@@ -197,7 +197,7 @@ export function LiveRouteMap({ route, variant = "screen" }: { route: RouteData; 
         : [lf.polyline([], { className: "rm-flow", color: "#dbeafe", weight: 2.5, opacity: 0.95, dashArray: "2 16", lineCap: "round", interactive: false })]),
     ].map((l) => l.addTo(group));
     const line = covered[2]!;
-    const setCovered = (pts: LatLng[] | Leaflet.LatLng[]) => covered.forEach((l) => l.setLatLngs(pts));
+    const setCovered = (pts: Leaflet.LatLngExpression[]) => covered.forEach((l) => l.setLatLngs(pts));
     const keep = firstDraw ? 0 : Math.max(0, Math.min(previousPoints - 1, segments.length));
     setCovered(joinSegments(segments.slice(0, keep)));
 
