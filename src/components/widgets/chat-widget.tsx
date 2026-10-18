@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertCircle, Loader2, MessageCircle, RefreshCw, Send, X } from "lucide-react";
+import { AlertCircle, Loader2, Lock, MessageCircle, RefreshCw, Send, X } from "lucide-react";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
@@ -187,11 +187,11 @@ export function ChatWidget({ agentName, hoursLabel, alwaysOpen = false }: { agen
           aria-live="polite"
           aria-busy={load === "loading"}
         >
-          <p className="rounded-md border border-line bg-white p-3 text-xs leading-5 text-muted">
+          <p className="flex items-center justify-center gap-1.5 text-center text-[0.6875rem] text-muted">
+            <Lock className="size-3" aria-hidden /> rounded-md border border-line bg-white p-3 text-xs leading-5 text-muted">
             {alwaysOpen
               ? `Messages are saved and answered by our support team (${agentName}) around the clock — replies may take a few minutes.`
               : `Messages are saved and answered by our support team (${agentName}) during support hours — replies are not instant.`}{" "}
-            Never share passwords or payment card details in chat.
           </p>
 
           {load === "loading" && (
