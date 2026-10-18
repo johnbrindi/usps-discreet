@@ -67,7 +67,7 @@ test.describe("admin shipment workflow", () => {
     await page.getByLabel(/Date & time/).fill("2099-01-01T09:00");
     await page.getByLabel("Description (shown publicly)").fill("Accepted (e2e)");
     await page.getByRole("button", { name: "Record event" }).click();
-    await expect(page.getByText("Events can't be recorded in the future.")).toBeVisible();
+    await expect(page.getByText(/That time is in the future/)).toBeVisible();
 
     // Public view hides private fields.
     await page.goto(`/track/${tn}`);

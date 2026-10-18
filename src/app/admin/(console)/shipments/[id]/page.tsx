@@ -89,8 +89,8 @@ export default async function ShipmentDetailPage({
         </Alert>
       )}
 
-      <div className="grid gap-6 xl:grid-cols-[1fr_28rem]">
-        <div className="space-y-6">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_28rem]">
+        <div className="min-w-0 space-y-6">
           {carrierTracked ? (
             <CarrierSyncCard shipment={shipment} />
           ) : (

@@ -129,7 +129,7 @@ export function EventForm({
             : "Fills the form with the usual wording, location and the current time. Nothing is saved until you press Record event."}
         </p>
       </div>
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 [&>*]:min-w-0">
         <Field id="ev-status" label="Status" error={err("status")}>
           <Select
             {...fieldAria("ev-status", err("status"))}
@@ -148,8 +148,8 @@ export function EventForm({
           </Select>
         </Field>
         <Field id="ev-occurredAt" label="Date & time (local to the location)" error={err("occurredAt")}>
-          <div className="flex gap-2">
-            <Input {...fieldAria("ev-occurredAt", err("occurredAt"))} name="occurredAt" type="datetime-local" defaultValue={val("occurredAt")} required onInput={() => (timeIsNow.current = false)} />
+          <div className="flex min-w-0 gap-2">
+            <Input className="min-w-0 flex-1" {...fieldAria("ev-occurredAt", err("occurredAt"))} name="occurredAt" type="datetime-local" defaultValue={val("occurredAt")} required onInput={() => (timeIsNow.current = false)} />
             <Button type="button" variant="secondary" onClick={fillNow} className="shrink-0">
               <Clock className="size-4" aria-hidden /> Now
             </Button>
@@ -159,7 +159,7 @@ export function EventForm({
       <Field id="ev-description" label="Description (shown publicly)" error={err("description")}>
         <Input {...fieldAria("ev-description", err("description"))} name="description" defaultValue={val("description")} maxLength={280} required placeholder="e.g. Arrived at sorting facility" />
       </Field>
-      <div className="grid gap-4 sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 [&>*]:min-w-0">
         <Field id="ev-city" label="City" optional error={err("city")}>
           <Input {...fieldAria("ev-city", err("city"))} name="city" defaultValue={val("city")} maxLength={120} placeholder="e.g. Memphis" onBlur={syncTimeZone} />
         </Field>
@@ -174,7 +174,7 @@ export function EventForm({
         </Field>
       </div>
       <div className="flex justify-end">
-        <Button type="submit" disabled={pending}>
+        <Button type="submit" disabled={pending} className="max-sm:w-full">
           {pending ? <Loader2 className="size-4 animate-spin" aria-hidden /> : <Plus className="size-4" aria-hidden />}
           Record event
         </Button>

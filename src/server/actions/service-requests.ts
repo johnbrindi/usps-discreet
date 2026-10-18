@@ -3,6 +3,7 @@
 import { randomInt } from "node:crypto";
 import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { toolBySlug, type ToolDef } from "@/config/service-requests";
 import { requireStaff } from "@/lib/authz";
 import { db } from "@/lib/db";
@@ -10,6 +11,7 @@ import { demoDataEnabled } from "@/lib/env";
 import { logger } from "@/lib/logger";
 import { serviceRequestLimiter } from "@/lib/rate-limit";
 import { clientIp } from "@/lib/request";
+import { notifyStaff } from "@/server/push";
 import { audit } from "@/server/audit";
 import { serviceRequestSchema, splitServiceRequest } from "@/validation/service-request";
 import { echoValues, type ActionState } from "./types";
@@ -75,10 +77,19 @@ export async function submitServiceRequest(
     for (let attempt = 0; attempt < 3; attempt++) {
       const reference = newReference(tool.referencePrefix);
       try {
-        await db.serviceRequest.create({
+        const created = await db.serviceRequest.create({
           data: { ...data, details: data.details as Prisma.InputJsonObject, type: tool.type, reference },
+          select: { id: true },
         });
         logger.info("service_request.created", { type: tool.type, reference });
+        after(() =>
+          notifyStaff({
+            title: `New request: ${tool.title}`,
+            body: `${data.name} · ${reference}`,
+            url: `/admin/requests/${created.id}`,
+            tag: `request-${created.id}`,
+          }),
+        );
         revalidatePath("/admin/requests");
         return { status: "success", reference };
       } catch (err) {

@@ -1,10 +1,12 @@
 "use server";
 
+import { after } from "next/server";
 import { db } from "@/lib/db";
 import { logger } from "@/lib/logger";
 import { contactLimiter } from "@/lib/rate-limit";
 import { clientIp } from "@/lib/request";
 import { contactSchema } from "@/validation/contact";
+import { notifyStaff } from "@/server/push";
 import { echoValues, type ActionState } from "./types";
 
 export async function submitContact(_prev: ActionState, formData: FormData): Promise<ActionState> {
@@ -40,6 +42,9 @@ export async function submitContact(_prev: ActionState, formData: FormData): Pro
       select: { id: true },
     });
     logger.info("contact.created", { id: inquiry.id, topic: data.topic });
+    after(() =>
+      notifyStaff({ title: `New inquiry from ${data.name}`, body: data.message, url: "/admin/inquiries", tag: `inquiry-${inquiry.id}` }),
+    );
     return {
       status: "success",
       message: `Thanks — your message has been received. Reference: ${inquiry.id.slice(-8).toUpperCase()}.`,

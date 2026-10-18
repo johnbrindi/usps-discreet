@@ -64,7 +64,26 @@ export default async function RequestsPage({ searchParams }: { searchParams: SP 
             )}
           </div>
         ) : (
-          <table className="w-full min-w-[44rem] text-left text-sm">
+          <>
+          <ul className="divide-y divide-line sm:hidden">
+            {requests.map((r) => (
+              <li key={r.id}>
+                <Link href={`/admin/requests/${r.id}`} className="block px-4 py-3.5 active:bg-slate-50">
+                  <div className="flex items-start justify-between gap-3">
+                    <span className="font-mono text-[0.8125rem] font-semibold text-navy-700">{r.reference}</span>
+                    <RequestStatusBadge status={r.status} />
+                  </div>
+                  <p className="mt-1 text-sm text-ink">
+                    {toolByType(r.type).label} · {r.name}
+                  </p>
+                  <p className="text-xs text-muted">
+                    {r.createdAt.toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short", timeZone: "UTC" })} UTC
+                  </p>
+                </Link>
+              </li>
+            ))}
+          </ul>
+          <table className="hidden w-full min-w-[44rem] text-left text-sm sm:table">
             <thead className="border-b border-line bg-slate-50/70 text-xs text-muted">
               <tr>
                 <th scope="col" className="px-5 py-2.5 font-medium">Reference</th>
@@ -95,6 +114,7 @@ export default async function RequestsPage({ searchParams }: { searchParams: SP 
               ))}
             </tbody>
           </table>
+          </>
         )}
       </Card>
     </>

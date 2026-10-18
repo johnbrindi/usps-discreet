@@ -62,7 +62,7 @@ export function ShipmentForm({
       {state.status === "success" && state.message && <Alert tone="success" live>{state.message}</Alert>}
 
       {mode === "create" && (
-        <fieldset className="space-y-4">
+        <fieldset className="min-w-0 space-y-4">
           <legend className="mb-3 text-sm font-bold tracking-wide text-navy-900 uppercase">Tracking method</legend>
           <div className="grid gap-3 sm:grid-cols-2">
             {([
@@ -121,7 +121,7 @@ export function ShipmentForm({
         </fieldset>
       )}
 
-      <fieldset className="grid gap-5 sm:grid-cols-2">
+      <fieldset className="grid min-w-0 grid-cols-1 gap-5 sm:grid-cols-2">
         <legend className="mb-3 text-sm font-bold tracking-wide text-navy-900 uppercase">Shipment</legend>
         {mode === "create" ? (
           text("trackingNumber", "Tracking number customers enter", {
@@ -142,14 +142,14 @@ export function ShipmentForm({
         })}
       </fieldset>
 
-      <fieldset className="grid gap-5 sm:grid-cols-3">
+      <fieldset className="grid min-w-0 grid-cols-1 gap-5 sm:grid-cols-3">
         <legend className="mb-3 text-sm font-bold tracking-wide text-navy-900 uppercase">Origin (shown publicly)</legend>
         {text("originCity", "City", { max: 120, placeholder: "e.g. Brooklyn", hint: "Where the parcel starts. Spell the city in full so it shows on the map." })}
         {text("originRegion", "State / region", { max: 120, placeholder: "e.g. NY or New York" })}
         {text("originCountry", "Country", { max: 2, hint: "2-letter code, e.g. US", placeholder: "US" })}
       </fieldset>
 
-      <fieldset className="grid gap-5 sm:grid-cols-3">
+      <fieldset className="grid min-w-0 grid-cols-1 gap-5 sm:grid-cols-3">
         <legend className="mb-3 text-sm font-bold tracking-wide text-navy-900 uppercase">Destination</legend>
         {text("destinationCity", "City (public)", { max: 120, placeholder: "e.g. Austin", hint: "Where it's going. Shown on the map as the destination." })}
         {text("destinationRegion", "State / region (public)", { max: 120, placeholder: "e.g. TX or Texas" })}
@@ -168,7 +168,7 @@ export function ShipmentForm({
           Status, delivery estimate and any blank origin/destination fields are filled in from the carrier on each sync.
         </p>
       ) : (
-        <fieldset className="grid gap-5 sm:grid-cols-2">
+        <fieldset className="grid min-w-0 grid-cols-1 gap-5 sm:grid-cols-2">
           <legend className="mb-3 text-sm font-bold tracking-wide text-navy-900 uppercase">Delivery estimate</legend>
           {text("estimatedDeliveryDate", "Estimated delivery date", { type: "date", hint: "Leave blank if you don't know yet." })}
           {text("estimateSource", "Source of estimate", {

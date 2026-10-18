@@ -99,7 +99,30 @@ export default async function ShipmentsPage({ searchParams }: { searchParams: SP
             )}
           </div>
         ) : (
-          <table className="w-full min-w-[40rem] text-left text-sm">
+          <>
+          <ul className="divide-y divide-line sm:hidden">
+            {shipments.map((s) => (
+              <li key={s.id}>
+                <Link href={`/admin/shipments/${s.id}`} className="block px-4 py-3.5 active:bg-slate-50">
+                  <div className="flex items-start justify-between gap-3">
+                    <span className="min-w-0 font-mono text-[0.8125rem] font-semibold break-all text-navy-700">{s.trackingNumber}</span>
+                    <span className="shrink-0 text-xs text-muted tabular-nums">{s.updatedAt.toISOString().slice(0, 10)}</span>
+                  </div>
+                  <div className="mt-1.5 flex flex-wrap items-center gap-2">
+                    <StatusBadge status={s.status} size="sm" />
+                    {s.isDemo && <span className="rounded bg-warning-50 px-1.5 py-0.5 text-xs font-semibold text-warning-700">DEMO</span>}
+                    {s.trackingMode === "CARRIER" && (
+                      <span className={`rounded px-1.5 py-0.5 text-xs font-semibold ${s.lastSyncError ? "bg-danger-50 text-danger-700" : "bg-navy-50 text-navy-800"}`}>
+                        {s.carrier ?? "API"}
+                      </span>
+                    )}
+                    <span className="text-xs text-muted">→ {[s.destinationCity, s.destinationRegion].filter(Boolean).join(", ") || "—"}</span>
+                  </div>
+                </Link>
+              </li>
+            ))}
+          </ul>
+          <table className="hidden w-full min-w-[40rem] text-left text-sm sm:table">
             <thead className="border-b border-line bg-slate-50/70 text-xs text-muted">
               <tr>
                 <th scope="col" className="px-5 py-2.5 font-medium">Tracking number</th>
@@ -132,6 +155,7 @@ export default async function ShipmentsPage({ searchParams }: { searchParams: SP
               ))}
             </tbody>
           </table>
+          </>
         )}
       </Card>
 

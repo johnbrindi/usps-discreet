@@ -14,12 +14,41 @@ const items = [
   { href: "/admin/inquiries", label: "Inquiries", icon: Inbox },
 ];
 
-export function AdminNav() {
+export function AdminNav({ variant = "sidebar" }: { variant?: "sidebar" | "tabs" }) {
   const pathname = usePathname();
+  const isActive = (item: (typeof items)[number]) => (item.exact ? pathname === item.href : pathname.startsWith(item.href));
+
+  if (variant === "tabs") {
+    return (
+      <ul className="grid grid-cols-5">
+        {items.map((item) => {
+          const active = isActive(item);
+          return (
+            <li key={item.href}>
+              <Link
+                href={item.href}
+                aria-current={active ? "page" : undefined}
+                className={cn(
+                  "flex flex-col items-center gap-0.5 px-1 pt-2 pb-1.5 text-[0.6875rem] font-semibold transition-colors",
+                  active ? "text-navy-800" : "text-muted hover:text-navy-900",
+                )}
+              >
+                <span className={cn("rounded-full px-3.5 py-1 transition-colors", active && "bg-navy-50")}>
+                  <item.icon className={cn("size-5", active && "text-navy-700")} aria-hidden />
+                </span>
+                {item.label}
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    );
+  }
+
   return (
-    <ul className="flex gap-1 overflow-x-auto md:flex-col">
+    <ul className="flex flex-col gap-1">
       {items.map((item) => {
-        const active = item.exact ? pathname === item.href : pathname.startsWith(item.href);
+        const active = isActive(item);
         return (
           <li key={item.href}>
             <Link
@@ -56,7 +85,7 @@ export function SignOutButton() {
       className="flex shrink-0 items-center gap-2 rounded-md px-2.5 py-2 text-sm font-medium whitespace-nowrap text-navy-100/70 transition-colors hover:bg-white/[0.05] hover:text-white"
     >
       <LogOut className="size-4" aria-hidden />
-      <span className="hidden md:inline">Sign out</span>
+      <span>Sign out</span>
     </button>
   );
 }

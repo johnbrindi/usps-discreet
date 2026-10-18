@@ -1,9 +1,10 @@
-import { NextResponse, type NextRequest } from "next/server";
+import { after, NextResponse, type NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { logger } from "@/lib/logger";
 import { chatLimiter } from "@/lib/rate-limit";
 import { isWithinSupportHours } from "@/lib/support-hours";
 import { CHAT_COOKIE, hashVisitorToken, newVisitorToken, type ChatMessageDTO } from "@/server/chat";
+import { notifyStaff } from "@/server/push";
 import { chatMessageSchema } from "@/validation/chat";
 
 export const dynamic = "force-dynamic";
@@ -71,7 +72,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const tokenHash = hashVisitorToken(token);
-    await db.$transaction(async (tx) => {
+    const conversationId = await db.$transaction(async (tx) => {
       const convo = await tx.chatConversation.upsert({
         where: { visitorTokenHash: tokenHash },
         create: { visitorTokenHash: tokenHash },
@@ -79,7 +80,17 @@ export async function POST(req: NextRequest) {
         select: { id: true },
       });
       await tx.chatMessage.create({ data: { conversationId: convo.id, sender: "VISITOR", body: parsed.data.body } });
+      return convo.id;
     });
+    // Alert staff devices after the response is sent, so the visitor never waits on it.
+    after(() =>
+      notifyStaff({
+        title: "New chat message",
+        body: parsed.data.body,
+        url: `/admin/messages/${conversationId}`,
+        tag: `chat-${conversationId}`,
+      }),
+    );
     const res = NextResponse.json(
       { messages: await loadMessages(token), withinSupportHours: isWithinSupportHours() },
       { status: 201 },

@@ -23,6 +23,11 @@ const schema = z.object({
   CARRIER_SYNC_INTERVAL_MINUTES: z.coerce.number().int().min(5).max(1440).default(60),
   /** Bearer token for /api/cron/sync-shipments. */
   CRON_SECRET: z.string().min(32, "CRON_SECRET must be at least 32 characters").optional(),
+
+  // Web Push to staff devices. Push is off until both keys are set.
+  NEXT_PUBLIC_VAPID_PUBLIC_KEY: z.string().min(1).optional(),
+  VAPID_PRIVATE_KEY: z.string().min(1).optional(),
+  VAPID_SUBJECT: z.string().regex(/^(mailto:|https:)/, "VAPID_SUBJECT must start with mailto: or https:").optional(),
 });
 
 let cached: z.infer<typeof schema> | undefined;

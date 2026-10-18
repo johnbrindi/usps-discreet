@@ -1,9 +1,10 @@
 /*
- * Service worker: makes the site installable, starts it quickly, and shows an offline screen.
+ * Service worker: makes the site installable, starts it quickly, shows an offline screen, and shows
+ * push notifications to staff (new chats, inquiries, requests — sent by src/server/push.ts).
  * Tracking results, admin pages and API calls are never cached — they must always be live.
  * Bump VERSION to drop old caches after changing this file.
  */
-const VERSION = "v1";
+const VERSION = "v2";
 const STATIC_CACHE = `meridian-static-${VERSION}`;
 const PAGE_CACHE = `meridian-pages-${VERSION}`;
 const OFFLINE_URL = "/offline";
@@ -63,4 +64,38 @@ self.addEventListener("fetch", (event) => {
         .catch(async () => (cacheable && (await caches.match(url.pathname))) || caches.match(OFFLINE_URL)),
     );
   }
+});
+
+self.addEventListener("push", (event) => {
+  let data = {};
+  try {
+    data = event.data ? event.data.json() : {};
+  } catch {
+    data = { body: event.data ? event.data.text() : "" };
+  }
+  event.waitUntil(
+    self.registration.showNotification(data.title || "New message", {
+      body: data.body || "",
+      icon: "/icons/icon-192.png",
+      badge: "/icons/maskable-192.png",
+      tag: data.tag,
+      // A new message in the same conversation alerts again instead of updating silently.
+      renotify: Boolean(data.tag),
+      data: { url: data.url || "/admin" },
+      vibrate: [120, 60, 120],
+    }),
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const target = new URL(event.notification.data?.url || "/admin", self.location.origin).href;
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((windows) => {
+      // Reuse an open admin window (the installed app, or a tab) if there is one.
+      const open = windows.find((w) => new URL(w.url).pathname.startsWith("/admin")) || windows[0];
+      if (open) return open.navigate(target).then((w) => (w || open).focus());
+      return self.clients.openWindow(target);
+    }),
+  );
 });
