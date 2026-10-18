@@ -21,7 +21,7 @@ const country = z
   .nullable()
   .optional();
 
-const isValidTimeZone = (tz: string) => {
+export const isValidTimeZone = (tz: string) => {
   try {
     new Intl.DateTimeFormat("en-US", { timeZone: tz });
     return true;

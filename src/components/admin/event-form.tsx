@@ -98,6 +98,8 @@ export function EventForm({
 
   return (
     <form key={state.attempt} ref={formRef} action={formAction} onSubmit={() => setFilled(null)} className="space-y-4" noValidate>
+      {/* This device's time zone, so a time typed without any location is read as local time. */}
+      <input type="hidden" name="clientTimeZone" ref={(el) => void (el && (el.value = Intl.DateTimeFormat().resolvedOptions().timeZone))} />
       {state.status === "error" && state.message && <Alert tone="danger" live>{state.message}</Alert>}
       {state.status === "success" && state.message && <Alert tone="success" live>{state.message}</Alert>}
       <div className="rounded-md border border-line bg-surface/70 p-3">
@@ -129,7 +131,17 @@ export function EventForm({
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <Field id="ev-status" label="Status" error={err("status")}>
-          <Select {...fieldAria("ev-status", err("status"))} name="status" defaultValue={val("status", options[0])}>
+          <Select
+            {...fieldAria("ev-status", err("status"))}
+            name="status"
+            defaultValue={val("status", options[0])}
+            onChange={(e) => {
+              // Keep the wording in step with the status unless staff wrote their own.
+              const desc = field("description")?.value.trim() ?? "";
+              const isPreset = desc === "" || Object.values(PRESETS).some((p) => p.description === desc);
+              if (isPreset) set("description", PRESETS[e.currentTarget.value as ShipmentStatus].description);
+            }}
+          >
             {options.map((s) => (
               <option key={s} value={s}>{STATUS_META[s].label}</option>
             ))}

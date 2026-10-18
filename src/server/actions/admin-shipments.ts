@@ -1,6 +1,6 @@
 "use server";
 
-import { randomInt } from "node:crypto";
+import { randomInt, randomUUID } from "node:crypto";
 import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -14,7 +14,7 @@ import { audit } from "@/server/audit";
 import { configuredProviders } from "@/server/carriers/registry";
 import { places } from "@/server/geo/places";
 import { syncShipment } from "@/server/tracking/sync";
-import { shipmentSchema, trackingEventSchema, trackingSetupSchema } from "@/validation/shipment";
+import { isValidTimeZone, shipmentSchema, trackingEventSchema, trackingSetupSchema } from "@/validation/shipment";
 import { echoValues, type ActionState } from "./types";
 
 const PREFIX = (process.env.TRACKING_NUMBER_PREFIX || "MP").toUpperCase().replace(/[^A-Z]/g, "").slice(0, 4);
@@ -155,64 +155,63 @@ export async function addTrackingEvent(
   const input = parsed.data;
   // A blank time zone is taken from the scan's city, so local times are right without typing one.
   const timeZone = input.timeZone || places().lookup(input)?.timeZone || null;
-  const occurredAt = zonedLocalToUtc(input.occurredAt, timeZone);
+  // With no location at all, the time typed is the staff member's own local time (what "Now" fills in).
+  const browserZone = String(formData.get("clientTimeZone") ?? "").slice(0, 64);
+  const wallClockZone = timeZone ?? (browserZone && isValidTimeZone(browserZone) ? browserZone : null);
+  const occurredAt = zonedLocalToUtc(input.occurredAt, wallClockZone);
 
   if (occurredAt.getTime() > Date.now() + 5 * 60_000) {
-    return fail(formData, { fieldErrors: { occurredAt: ["Events can't be recorded in the future."] } });
+    return fail(formData, {
+      fieldErrors: { occurredAt: ["That time is in the future. Check AM/PM, or press “Now” for the current time."] },
+    });
   }
 
   try {
-    const outcome = await db.$transaction(async (tx) => {
-      const shipment = await tx.shipment.findUnique({
-        where: { id: shipmentId },
-        select: {
-          status: true,
-          isDemo: true,
-          trackingMode: true,
-          events: { orderBy: { occurredAt: "desc" }, take: 1, select: { occurredAt: true } },
-        },
-      });
-      if (!shipment) return { error: "Shipment not found." };
-      if (shipment.trackingMode === "CARRIER") {
-        return { error: "This shipment is tracked by the carrier's API. Its events can't be added by hand." };
-      }
-      const latest = shipment.events[0];
-      const allowed = latest
-        ? canTransition(shipment.status, input.status)
-        : input.status === "INFO_RECEIVED" || canTransition("INFO_RECEIVED", input.status);
-      if (!allowed) return { error: `A shipment that is "${shipment.status}" can't move to "${input.status}".` };
-      if (latest && occurredAt < latest.occurredAt) {
-        return { error: "This event is earlier than the latest recorded event. Events must be added in order." };
-      }
-
-      await tx.trackingEvent.create({
-        data: {
-          shipmentId,
-          status: input.status,
-          description: input.description,
-          city: input.city,
-          region: input.region,
-          country: input.country,
-          timeZone,
-          occurredAt,
-          source: shipment.isDemo ? "DEMO" : "MANUAL",
-          createdById: user.id,
-        },
-      });
-      await tx.shipment.update({
-        where: { id: shipmentId },
-        data: { status: input.status, deliveredAt: input.status === "DELIVERED" ? occurredAt : undefined },
-      });
-      await audit(tx, {
-        actorId: user.id,
-        action: "event.create",
-        entityType: "shipment",
-        entityId: shipmentId,
-        details: { status: input.status },
-      });
-      return { error: null };
+    // Two database round trips in total (one read, one write) — each costs a full trip to the
+    // database, so the action stays quick even far from it.
+    const shipment = await db.shipment.findUnique({
+      where: { id: shipmentId },
+      select: {
+        status: true,
+        isDemo: true,
+        trackingMode: true,
+        events: { orderBy: { occurredAt: "desc" }, take: 1, select: { occurredAt: true } },
+      },
     });
-    if (outcome.error) return fail(formData, { message: outcome.error });
+    if (!shipment) return fail(formData, { message: "Shipment not found." });
+    if (shipment.trackingMode === "CARRIER") {
+      return fail(formData, { message: "This shipment is tracked by the carrier's API. Its events can't be added by hand." });
+    }
+    const latest = shipment.events[0];
+    const allowed = latest
+      ? canTransition(shipment.status, input.status)
+      : input.status === "INFO_RECEIVED" || canTransition("INFO_RECEIVED", input.status);
+    if (!allowed) return fail(formData, { message: `A shipment that is "${shipment.status}" can't move to "${input.status}".` });
+    if (latest && occurredAt < latest.occurredAt) {
+      return fail(formData, { message: "This event is earlier than the latest recorded event. Events must be added in order." });
+    }
+
+    // Status update, event and audit entry in one atomic statement. The status guard makes it a no-op
+    // if someone else recorded an event since the read above.
+    const delivered = input.status === "DELIVERED" ? occurredAt : null;
+    const [row] = await db.$queryRaw<{ n: number }[]>`
+      WITH s AS (
+        UPDATE shipments
+        SET status = ${input.status}::"ShipmentStatus", delivered_at = COALESCE(${delivered}::timestamptz, delivered_at), updated_at = now()
+        WHERE id = ${shipmentId} AND status = ${shipment.status}::"ShipmentStatus"
+        RETURNING id
+      ), e AS (
+        INSERT INTO tracking_events (id, shipment_id, status, description, city, region, country, time_zone, occurred_at, source, created_by_id)
+        SELECT ${randomUUID()}, s.id, ${input.status}::"ShipmentStatus", ${input.description}, ${input.city ?? null}, ${input.region ?? null},
+               ${input.country ?? null}, ${wallClockZone}, ${occurredAt}, ${shipment.isDemo ? "DEMO" : "MANUAL"}::"EventSource", ${user.id}
+        FROM s
+      ), a AS (
+        INSERT INTO audit_logs (id, actor_id, action, entity_type, entity_id, details)
+        SELECT ${randomUUID()}, ${user.id}, 'event.create', 'shipment', s.id, ${JSON.stringify({ status: input.status })}::jsonb
+        FROM s
+      )
+      SELECT count(*)::int AS n FROM s`;
+    if (!row?.n) return fail(formData, { message: "This shipment was updated by someone else. Reload the page and try again." });
   } catch (err) {
     logger.error("event.create_failed", err, { shipmentId });
     return fail(formData, { message: "Could not record the event." });

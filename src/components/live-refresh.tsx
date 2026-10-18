@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { cn } from "@/lib/utils";
 
 const EDITABLE = "input, textarea, select, [contenteditable='true']";
@@ -22,6 +22,12 @@ export function LiveRefresh({
 }) {
   const router = useRouter();
   const [lastSync, setLastSync] = useState<Date | null>(null);
+  // Skip a tick while the previous refresh is still loading, so slow connections don't pile requests up.
+  const [refreshing, startRefresh] = useTransition();
+  const busy = useRef(false);
+  useEffect(() => {
+    busy.current = refreshing;
+  }, [refreshing]);
 
   useEffect(() => {
     let dirty = false;
@@ -34,8 +40,8 @@ export function LiveRefresh({
 
     const tick = () => {
       if (document.visibilityState !== "visible") return;
-      if (dirty || document.activeElement?.matches(EDITABLE)) return;
-      router.refresh();
+      if (busy.current || dirty || document.activeElement?.matches(EDITABLE)) return;
+      startRefresh(() => router.refresh());
       setLastSync(new Date());
     };
     const onVisible = () => document.visibilityState === "visible" && tick();
