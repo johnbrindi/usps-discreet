@@ -463,3 +463,20 @@
 .prose-policy a {
   @apply font-medium text-usps-blue underline underline-offset-2 hover:text-usps-blue-dark;
 }
+
+/* ── Image carousel: continuously scrolls left → right, pauses on hover ── */
+.carousel { overflow: hidden; }
+.carousel-track {
+  display: flex;
+  width: max-content;
+  animation: carousel-ltr 40s linear infinite;
+}
+.carousel-track > * { margin-right: 0.75rem; }
+.carousel:hover .carousel-track { animation-play-state: paused; }
+@keyframes carousel-ltr {
+  from { transform: translateX(-50%); }
+  to   { transform: translateX(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .carousel-track { animation: none; }
+}

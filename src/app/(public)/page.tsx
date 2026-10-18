@@ -79,9 +79,11 @@ const featuredProducts = [
 
 /** oct26 stamp + gift images for the Stamps carousel (static in our implementation) */
 const stampImages = [
-  { src: "/images/oct26-stamps.jpg.jpeg",  alt: "October 2026 stamp collection",  w: 700, h: 280 },
-  { src: "/images/oct26-cards.jpg.jpeg",   alt: "October 2026 cards & envelopes", w: 692, h: 280 },
+  { src: "/images/oct26-stamps.jpg.jpeg",  alt: "October 2026 stamp collection",   w: 700, h: 280 },
+  { src: "/images/oct26-cards.jpg.jpeg",   alt: "October 2026 cards & envelopes",  w: 692, h: 280 },
   { src: "/images/oct26-gifts.jpg.jpeg",   alt: "October 2026 gift stamps",        w: 692, h: 280 },
+  { src: "/images/bcr-3-stamps.jpg.jpeg",  alt: "Featured stamp collection",       w: 668, h: 452 },
+  { src: "/images/sustain-supplies-dotcom8.jpg.jpeg", alt: "Sustainable shipping supplies", w: 626, h: 277 },
 ] as const;
 
 /** Go-Now tiles */
@@ -106,7 +108,7 @@ export default function HomePage() {
         {/* Photo: strip on top (mobile) / full-bleed backdrop (desktop) */}
         <div className="relative h-28 w-full overflow-hidden sm:h-40 md:absolute md:inset-0 md:h-full">
           <Image
-            src="/images/ga-business-03-25.jpg.jpeg"
+            src="/images/hero-shipping.jpg"
             alt=""
             fill
             sizes="100vw"
@@ -127,13 +129,7 @@ export default function HomePage() {
             Our simplified ground shipping solution helps your business deliver in 2–5 days*, with no hidden fees and
             tracking<sup className="text-xs">®</sup> included in the cost.
           </p>
-          <Link
-            href={serviceHref("ground-advantage")}
-            className="relative mt-5 inline-flex w-fit items-center justify-center rounded border-2 border-white px-6 py-2 text-sm font-bold text-white transition-colors hover:bg-white hover:text-usps-blue"
-          >
-            Learn More
-          </Link>
-          <p className="relative mt-4 max-w-md text-[11px] leading-4 text-white/70">
+          <p className="relative mt-5 max-w-md text-[11px] leading-4 text-white/70">
             *For mailable items up to 70 lbs. Expected delivery in 2–5 days. Packages going to certain places
             (including Alaska, Hawaii, and offshore destinations), or containing hazardous materials may receive
             slower service.
@@ -311,22 +307,21 @@ export default function HomePage() {
           USPS STAMPS SHOWCASE  — oct26 promo + stamp pricing
       ════════════════════════════════════════════════════════ */}
       <section aria-labelledby="stamps-title" className="border-t border-line bg-[#f5f5f5] py-10 sm:py-12">
+        <div className="carousel mb-8" aria-label="Featured stamp collections" role="region">
+          <div className="carousel-track">
+            {[...stampImages, ...stampImages].map((img, i) => (
+              <div
+                key={`${img.src}-${i}`}
+                className="h-28 w-56 shrink-0 overflow-hidden rounded border border-line bg-white shadow-card sm:h-36 sm:w-72"
+                aria-hidden={i >= stampImages.length}
+              >
+                <Image src={img.src} alt={i >= stampImages.length ? "" : img.alt} width={img.w} height={img.h} className="h-full w-full object-cover" />
+              </div>
+            ))}
+          </div>
+        </div>
         <Container className="px-4">
           <div className="mx-auto max-w-xl text-center">
-            {/* Stamp images row */}
-            <div className="flex items-center justify-center gap-1 sm:gap-2">
-              {stampImages.map((s) => (
-                <div key={s.src} className="overflow-hidden rounded border border-line bg-white shadow-card" style={{ flex: 1 }}>
-                  <Image
-                    src={s.src}
-                    alt={s.alt}
-                    width={s.w}
-                    height={s.h}
-                    className="w-full object-cover"
-                  />
-                </div>
-              ))}
-            </div>
             <h2 id="stamps-title" className="mt-5 text-xl font-bold text-ink sm:text-2xl">
               Stamps
             </h2>
