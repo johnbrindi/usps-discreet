@@ -175,7 +175,8 @@ export function LiveRouteMap({ route, variant = "screen" }: { route: RouteData; 
       const remaining = arcPoints(path.at(-1)!, [route.destination.lat, route.destination.lng], 48);
       lf.polyline(remaining, { color: "#ffffff", weight: 9, opacity: 0.85, lineCap: "round", interactive: false }).addTo(group);
       lf.polyline(remaining, {
-        className: "rm-remaining",
+        // Dashes stream toward the destination (globals.css → .rm-flow-remaining).
+        className: print ? undefined : "rm-flow-remaining",
         color: "#3b82f6",
         weight: 5,
         opacity: 0.75,
@@ -185,13 +186,20 @@ export function LiveRouteMap({ route, variant = "screen" }: { route: RouteData; 
       }).addTo(group);
     }
 
-    // Covered route: a white casing under a thick solid blue line, drawn progressively.
-    const casing = lf.polyline([], { color: "#ffffff", weight: 11, opacity: 0.95, lineCap: "round", interactive: false }).addTo(group);
-    const line = lf.polyline([], { color: "#1d4ed8", weight: 6, opacity: 1, lineCap: "round", lineJoin: "round", interactive: false }).addTo(group);
+    // Covered route, bottom to top: a soft pulsing glow, a white casing, the thick blue line, and light
+    // dots streaming along it in the direction of travel. Drawn progressively.
+    const covered = [
+      lf.polyline([], { className: print ? undefined : "rm-glow", color: "#3b82f6", weight: 18, opacity: 0.2, lineCap: "round", interactive: false }),
+      lf.polyline([], { color: "#ffffff", weight: 11, opacity: 0.95, lineCap: "round", interactive: false }),
+      lf.polyline([], { color: "#1d4ed8", weight: 6, opacity: 1, lineCap: "round", lineJoin: "round", interactive: false }),
+      ...(print
+        ? []
+        : [lf.polyline([], { className: "rm-flow", color: "#dbeafe", weight: 2.5, opacity: 0.95, dashArray: "2 16", lineCap: "round", interactive: false })]),
+    ].map((l) => l.addTo(group));
+    const line = covered[2]!;
+    const setCovered = (pts: LatLng[] | Leaflet.LatLng[]) => covered.forEach((l) => l.setLatLngs(pts));
     const keep = firstDraw ? 0 : Math.max(0, Math.min(previousPoints - 1, segments.length));
-    const shown = joinSegments(segments.slice(0, keep));
-    line.setLatLngs(shown);
-    casing.setLatLngs(shown);
+    setCovered(joinSegments(segments.slice(0, keep)));
 
     // Pins. The latest stop sits outside the cluster so it is always visible.
     // Print shows every pin; on screen, nearby pins fold into clusters.
@@ -283,8 +291,7 @@ export function LiveRouteMap({ route, variant = "screen" }: { route: RouteData; 
       markers.current[i].setIcon(makeIcon(i, "pop"));
     };
     const finish = () => {
-      line.setLatLngs(joinSegments(segments));
-      casing.setLatLngs(joinSegments(segments));
+      setCovered(joinSegments(segments));
       route.stops.forEach((_, i) => reveal(i));
     };
     if (!animate || segments.length === keep) {
@@ -316,8 +323,7 @@ export function LiveRouteMap({ route, variant = "screen" }: { route: RouteData; 
             if (cancelled) return done();
             const n = Math.max(1, Math.round(((now - start) / perSegment) * (seg.length - 1)));
             const pts = [...(line.getLatLngs() as Leaflet.LatLng[]).slice(0, base), ...seg.slice(base === 0 ? 0 : 1, n + 1)];
-            line.setLatLngs(pts);
-            casing.setLatLngs(pts);
+            setCovered(pts);
             if (n < seg.length - 1) raf = requestAnimationFrame(step);
             else done();
           };

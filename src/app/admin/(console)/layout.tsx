@@ -2,6 +2,7 @@ import Link from "next/link";
 import { AdminNav, SignOutButton } from "@/components/admin/admin-nav";
 import { LiveRefresh } from "@/components/live-refresh";
 import { LogoMark } from "@/components/layout/logo";
+import { InstallPrompt } from "@/components/pwa/install-prompt";
 import { siteConfig } from "@/config/site";
 import { requireStaffPage } from "@/lib/authz";
 
@@ -21,6 +22,7 @@ export default async function ConsoleLayout({ children }: { children: React.Reac
             <AdminNav />
           </nav>
           <div className="flex items-center justify-between gap-3 border-t border-white/10 pt-4 md:mt-auto md:flex-col md:items-stretch">
+            <InstallPrompt appName={`${siteConfig.shortName} Admin`} variant="inline" />
             <LiveRefresh showIndicator className="px-2 text-navy-100/60" />
             <div className="flex min-w-0 items-center gap-2.5 px-2">
               <span

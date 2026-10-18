@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Public_Sans } from "next/font/google";
+import { ServiceWorker } from "@/components/pwa/service-worker";
 import { siteConfig } from "@/config/site";
 import "./globals.css";
 
@@ -12,6 +13,8 @@ export const metadata: Metadata = {
   applicationName: siteConfig.name,
   openGraph: { type: "website", siteName: siteConfig.name, title: siteConfig.name, description: siteConfig.description },
   formatDetection: { telephone: false },
+  // iPhone home-screen install (iOS ignores most of the web manifest).
+  appleWebApp: { capable: true, title: siteConfig.shortName, statusBarStyle: "default" },
 };
 
 export const viewport: Viewport = {
@@ -26,7 +29,10 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={publicSans.variable}>
-      <body className="flex min-h-dvh flex-col">{children}</body>
+      <body className="flex min-h-dvh flex-col">
+        {children}
+        <ServiceWorker />
+      </body>
     </html>
   );
 }

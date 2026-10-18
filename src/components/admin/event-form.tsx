@@ -127,17 +127,17 @@ export function EventForm({
         </Field>
       </div>
       <Field id="ev-description" label="Description (shown publicly)" error={err("description")}>
-        <Input {...fieldAria("ev-description", err("description"))} name="description" defaultValue={val("description")} maxLength={280} required />
+        <Input {...fieldAria("ev-description", err("description"))} name="description" defaultValue={val("description")} maxLength={280} required placeholder="e.g. Arrived at sorting facility" />
       </Field>
       <div className="grid gap-4 sm:grid-cols-4">
         <Field id="ev-city" label="City" optional error={err("city")}>
-          <Input {...fieldAria("ev-city", err("city"))} name="city" defaultValue={val("city")} maxLength={120} />
+          <Input {...fieldAria("ev-city", err("city"))} name="city" defaultValue={val("city")} maxLength={120} placeholder="e.g. Memphis" />
         </Field>
         <Field id="ev-region" label="Region" optional error={err("region")}>
-          <Input {...fieldAria("ev-region", err("region"))} name="region" defaultValue={val("region")} maxLength={120} />
+          <Input {...fieldAria("ev-region", err("region"))} name="region" defaultValue={val("region")} maxLength={120} placeholder="e.g. TN" />
         </Field>
         <Field id="ev-country" label="Country" optional error={err("country")}>
-          <Input {...fieldAria("ev-country", err("country"))} name="country" defaultValue={val("country")} maxLength={2} />
+          <Input {...fieldAria("ev-country", err("country"))} name="country" defaultValue={val("country")} maxLength={2} placeholder="US" />
         </Field>
         <Field id="ev-timeZone" label="Time zone" optional error={err("timeZone")}>
           <Input {...fieldAria("ev-timeZone", err("timeZone"))} name="timeZone" defaultValue={val("timeZone", defaultTimeZone ?? "")} placeholder="America/Chicago" maxLength={64} />

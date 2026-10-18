@@ -46,6 +46,8 @@ const nextConfig: NextConfig = {
     return [
       { source: "/:path*", headers: securityHeaders },
       { source: "/admin/:path*", headers: [{ key: "Cache-Control", value: "no-store" }] },
+      // Browsers must always fetch the latest service worker, or updates to the site get stuck behind it.
+      { source: "/sw.js", headers: [{ key: "Cache-Control", value: "no-cache, no-store, must-revalidate" }] },
     ];
   },
 };

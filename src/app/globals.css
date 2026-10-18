@@ -330,6 +330,42 @@
   box-shadow: 0 0 0 5px rgb(31 85 146 / 0.18), 0 2px 6px rgb(16 24 40 / 0.3);
   cursor: pointer;
 }
+/* Route motion: dots stream along the covered line, dashes stream along the remaining leg, and the
+   covered line's glow breathes. Offsets equal each dash pattern's length so the loop is seamless. */
+.rm-flow {
+  animation: rm-flow 0.9s linear infinite;
+}
+@keyframes rm-flow {
+  from {
+    stroke-dashoffset: 18;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.rm-flow-remaining {
+  animation: rm-flow-remaining 1.4s linear infinite;
+}
+@keyframes rm-flow-remaining {
+  from {
+    stroke-dashoffset: 19;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.rm-glow {
+  animation: rm-glow 2.4s ease-in-out infinite;
+}
+@keyframes rm-glow {
+  0%,
+  100% {
+    stroke-opacity: 0.12;
+  }
+  50% {
+    stroke-opacity: 0.34;
+  }
+}
 .rm-hidden {
   opacity: 0;
   transform: scale(0.3);

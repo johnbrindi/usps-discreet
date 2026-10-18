@@ -39,9 +39,20 @@ export function ShipmentForm({
   const [trackingMode, setTrackingMode] = useState(val("trackingMode") === "CARRIER" ? "CARRIER" : "MANUAL");
   const carrierMode = mode === "create" && trackingMode === "CARRIER";
 
-  const text = (name: keyof ShipmentFormValues, label: string, opts: { optional?: boolean; hint?: string; className?: string; max?: number; type?: string } = {}) => (
+  const text = (
+    name: keyof ShipmentFormValues,
+    label: string,
+    opts: { optional?: boolean; hint?: string; className?: string; max?: number; type?: string; placeholder?: string } = {},
+  ) => (
     <Field id={name} label={label} optional={opts.optional ?? true} hint={opts.hint} error={err(name)} className={opts.className}>
-      <Input {...fieldAria(name, err(name), !!opts.hint)} name={name} defaultValue={val(name)} maxLength={opts.max} type={opts.type ?? "text"} />
+      <Input
+        {...fieldAria(name, err(name), !!opts.hint)}
+        name={name}
+        defaultValue={val(name)}
+        maxLength={opts.max}
+        type={opts.type ?? "text"}
+        placeholder={opts.placeholder}
+      />
     </Field>
   );
 
@@ -82,6 +93,7 @@ export function ShipmentForm({
               {text("carrierTrackingNumber", "Carrier tracking number", {
                 optional: false,
                 max: 60,
+                placeholder: "e.g. 9400 1112 0206 2111 2233 44",
                 hint: "Exactly as printed on the carrier's label or receipt.",
               })}
               <Field
@@ -118,27 +130,37 @@ export function ShipmentForm({
               : "Leave blank to generate a secure random number.",
             className: "sm:col-span-2",
             max: 40,
+            placeholder: carrierMode ? "Leave blank to reuse the carrier number" : "Leave blank — a number like MP 4821 7730 1956 is created for you",
           })
         ) : null}
-        {text("serviceLevel", "Service level", { max: 80 })}
-        {text("carrier", "Carrier", { max: 80, hint: "Only if handed to a partner carrier." })}
-        {text("externalReference", "External reference", { max: 120 })}
+        {text("serviceLevel", "Service level", { max: 80, placeholder: "e.g. Standard, Express or Overnight" })}
+        {text("carrier", "Carrier", { max: 80, hint: "Only if handed to a partner carrier.", placeholder: "e.g. DHL — leave blank if you deliver it" })}
+        {text("externalReference", "External reference", {
+          max: 120,
+          placeholder: "e.g. Order #10482 or invoice INV-2291",
+          hint: "Your own reference, to find the shipment later. Not shown to customers.",
+        })}
       </fieldset>
 
       <fieldset className="grid gap-5 sm:grid-cols-3">
         <legend className="mb-3 text-sm font-bold tracking-wide text-navy-900 uppercase">Origin (shown publicly)</legend>
-        {text("originCity", "City", { max: 120 })}
-        {text("originRegion", "State / region", { max: 120 })}
-        {text("originCountry", "Country", { max: 2, hint: "2-letter code, e.g. US" })}
+        {text("originCity", "City", { max: 120, placeholder: "e.g. Brooklyn", hint: "Where the parcel starts. Spell the city in full so it shows on the map." })}
+        {text("originRegion", "State / region", { max: 120, placeholder: "e.g. NY or New York" })}
+        {text("originCountry", "Country", { max: 2, hint: "2-letter code, e.g. US", placeholder: "US" })}
       </fieldset>
 
       <fieldset className="grid gap-5 sm:grid-cols-3">
         <legend className="mb-3 text-sm font-bold tracking-wide text-navy-900 uppercase">Destination</legend>
-        {text("destinationCity", "City (public)", { max: 120 })}
-        {text("destinationRegion", "State / region (public)", { max: 120 })}
-        {text("destinationCountry", "Country (public)", { max: 2 })}
-        {text("destinationPostcode", "Postcode (private)", { max: 20 })}
-        {text("recipientName", "Recipient name (private)", { max: 160, className: "sm:col-span-2" })}
+        {text("destinationCity", "City (public)", { max: 120, placeholder: "e.g. Austin", hint: "Where it's going. Shown on the map as the destination." })}
+        {text("destinationRegion", "State / region (public)", { max: 120, placeholder: "e.g. TX or Texas" })}
+        {text("destinationCountry", "Country (public)", { max: 2, hint: "2-letter code, e.g. US", placeholder: "US" })}
+        {text("destinationPostcode", "Postcode (private)", { max: 20, placeholder: "e.g. 78701", hint: "Staff only — never shown publicly." })}
+        {text("recipientName", "Recipient name (private)", {
+          max: 160,
+          className: "sm:col-span-2",
+          placeholder: "e.g. Jane Smith",
+          hint: "Staff only — never shown publicly.",
+        })}
       </fieldset>
 
       {carrierMode || carrierTracked ? (
@@ -148,13 +170,24 @@ export function ShipmentForm({
       ) : (
         <fieldset className="grid gap-5 sm:grid-cols-2">
           <legend className="mb-3 text-sm font-bold tracking-wide text-navy-900 uppercase">Delivery estimate</legend>
-          {text("estimatedDeliveryDate", "Estimated delivery date", { type: "date" })}
-          {text("estimateSource", "Source of estimate", { max: 120, hint: "Required with a date, e.g. “Carrier API” or “2-day service standard”." })}
+          {text("estimatedDeliveryDate", "Estimated delivery date", { type: "date", hint: "Leave blank if you don't know yet." })}
+          {text("estimateSource", "Source of estimate", {
+            max: 120,
+            placeholder: "e.g. 2-day service standard",
+            hint: "Required with a date, so customers know where it comes from.",
+          })}
         </fieldset>
       )}
 
       <Field id="internalNotes" label="Internal notes (private)" optional error={err("internalNotes")}>
-        <Textarea {...fieldAria("internalNotes", err("internalNotes"))} name="internalNotes" defaultValue={val("internalNotes")} maxLength={4000} rows={3} />
+        <Textarea
+          {...fieldAria("internalNotes", err("internalNotes"))}
+          name="internalNotes"
+          defaultValue={val("internalNotes")}
+          maxLength={4000}
+          rows={3}
+          placeholder="Staff only — e.g. fragile, call the recipient before delivery"
+        />
       </Field>
 
       <div className="flex justify-end border-t border-line pt-5">
