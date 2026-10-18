@@ -83,6 +83,7 @@ const stampImages = [
   { src: "/images/oct26-cards.jpg.jpeg",   alt: "October 2026 cards & envelopes",  w: 692, h: 280 },
   { src: "/images/oct26-gifts.jpg.jpeg",   alt: "October 2026 gift stamps",        w: 692, h: 280 },
   { src: "/images/bcr-3-stamps.jpg.jpeg",  alt: "Featured stamp collection",       w: 668, h: 452 },
+  { src: "/images/supplies-boxes-clr.jpg",    alt: "Free shipping boxes and supplies", w: 626, h: 277 },
   { src: "/images/sustain-supplies-dotcom8.jpg.jpeg", alt: "Sustainable shipping supplies", w: 626, h: 277 },
 ] as const;
 
@@ -106,22 +107,22 @@ export default function HomePage() {
       ════════════════════════════════════════════════════════ */}
       <section aria-labelledby="hero-title" className="bg-[#003875] md:relative md:min-h-[22rem]">
         {/* Photo: strip on top (mobile) / full-bleed backdrop (desktop) */}
-        <div className="relative h-28 w-full overflow-hidden sm:h-40 md:absolute md:inset-0 md:h-full">
+        <div className="relative aspect-[990/225] w-full overflow-hidden md:absolute md:inset-0 md:aspect-auto">
           <Image
-            src="/images/hero-shipping.jpg"
+            src="/images/hero-shipping-m.jpg"
             alt=""
             fill
             sizes="100vw"
-            className="object-cover object-[50%_30%] md:object-[50%_35%]"
+            className="object-cover"
             priority
           />
         </div>
         {/* Navy panel: centred on mobile, left diagonal overlay on desktop */}
         <div
-          className="relative flex flex-col items-center px-5 py-8 text-center md:absolute md:inset-y-0 md:left-0 md:w-[52%] md:items-start md:justify-center md:px-10 md:text-left lg:pl-[max(2.5rem,calc((100vw-72rem)/2+2rem))]"
+          className="relative flex flex-col items-center px-5 py-8 text-center md:absolute md:inset-y-0 md:left-0 md:w-[44%] md:items-start md:justify-center md:px-10 md:text-left lg:pl-[max(2.5rem,calc((100vw-72rem)/2+2rem))]"
           style={{ clipPath: undefined }}
         >
-          <div className="hidden md:absolute md:inset-0 md:block" style={{ background: "linear-gradient(100deg,#003875 78%,rgba(0,56,117,0) 100%)" }} aria-hidden />
+          <div className="hidden md:absolute md:inset-0 md:block" style={{ background: "linear-gradient(100deg,#003875 60%,rgba(0,56,117,0) 100%)" }} aria-hidden />
           <h1 id="hero-title" className="relative text-3xl font-bold leading-tight text-white md:text-4xl">
             Ship with Ground Advantage<sup className="text-base">®</sup>
           </h1>
