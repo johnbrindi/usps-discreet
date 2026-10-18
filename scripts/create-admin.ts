@@ -47,8 +47,8 @@ async function main() {
   const role = arg("role") === "staff" ? "staff" : "admin";
   if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) throw new Error("Pass a valid --email");
 
-  const password = process.env.ADMIN_PASSWORD || (await promptHidden("Password (min 12 chars): "));
-  if (password.length < 8) throw new Error("Password must be at least 12 characters");
+  const password = process.env.ADMIN_PASSWORD || (await promptHidden("Password (min 8 chars): "));
+  if (password.length < 8) throw new Error("Password must be at least 8 characters");
 
   const db = new PrismaClient({ transactionOptions: { maxWait: 10_000, timeout: 15_000 } });
   try {
