@@ -8,6 +8,7 @@ import { Input, Select } from "@/components/ui/form";
 import { SHIPMENT_STATUSES, STATUS_META, type ShipmentStatus } from "@/domain/shipment-status";
 import { normalizeTrackingNumber } from "@/domain/tracking-number";
 import { db } from "@/lib/db";
+import { requireStaffPage } from "@/lib/authz";
 
 export const metadata = { title: "Shipments" };
 const PAGE_SIZE = 25;
@@ -15,6 +16,7 @@ const PAGE_SIZE = 25;
 type SP = Promise<{ q?: string; status?: string; page?: string }>;
 
 export default async function ShipmentsPage({ searchParams }: { searchParams: SP }) {
+  await requireStaffPage();
   const sp = await searchParams;
   const q = (sp.q ?? "").trim().slice(0, 60);
   const status = SHIPMENT_STATUSES.includes(sp.status as ShipmentStatus) ? (sp.status as ShipmentStatus) : undefined;

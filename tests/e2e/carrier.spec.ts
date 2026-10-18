@@ -5,7 +5,8 @@ const email = process.env.E2E_ADMIN_EMAIL;
 const password = process.env.E2E_ADMIN_PASSWORD;
 const CRON = "e2e-cron-secret-0123456789abcdefghijklmnop";
 
-const uspsNumber = () => `9400${String(Date.now()).padStart(18, "1")}`;
+// Unique per run; the fixed "7" suffix keeps it clear of the mock's "ends in 0000 = not found" rule.
+const uspsNumber = () => `9400${String(Date.now()).padStart(17, "1")}7`;
 
 test.describe("carrier tracking", () => {
   test("a public lookup of a USPS number shows live carrier data", async ({ page }) => {

@@ -9,7 +9,7 @@ type LoadState = "idle" | "loading" | "ready" | "error";
 
 const POLL_MS = 5_000;
 
-export function ChatWidget({ agentName, hoursLabel }: { agentName: string; hoursLabel: string }) {
+export function ChatWidget({ agentName, hoursLabel, alwaysOpen = false }: { agentName: string; hoursLabel: string; alwaysOpen?: boolean }) {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [load, setLoad] = useState<LoadState>("idle");
@@ -162,11 +162,13 @@ export function ChatWidget({ agentName, hoursLabel }: { agentName: string; hours
                   className={cn("size-2 rounded-full", withinHours ? "bg-whatsapp" : "bg-navy-100/50")}
                 />
               )}
-              {withinHours === null
-                ? `Support hours: ${hoursLabel}`
-                : withinHours
-                  ? "Within support hours — replies are sent here"
-                  : `Outside support hours (${hoursLabel})`}
+              {alwaysOpen
+                ? "Available 24/7 — replies are sent here"
+                : withinHours === null
+                  ? `Support hours: ${hoursLabel}`
+                  : withinHours
+                    ? "Within support hours — replies are sent here"
+                    : `Outside support hours (${hoursLabel})`}
             </p>
           </div>
           <button
@@ -186,8 +188,10 @@ export function ChatWidget({ agentName, hoursLabel }: { agentName: string; hours
           aria-busy={load === "loading"}
         >
           <p className="rounded-md border border-line bg-white p-3 text-xs leading-5 text-muted">
-            Messages are saved and answered by our support team ({agentName}) during support hours — replies are not
-            instant. Never share passwords or payment card details in chat.
+            {alwaysOpen
+              ? `Messages are saved and answered by our support team (${agentName}) around the clock — replies may take a few minutes.`
+              : `Messages are saved and answered by our support team (${agentName}) during support hours — replies are not instant.`}{" "}
+            Never share passwords or payment card details in chat.
           </p>
 
           {load === "loading" && (

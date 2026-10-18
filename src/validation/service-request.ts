@@ -46,7 +46,10 @@ function fieldSchema(f: FieldDef): z.ZodType {
         .min(f.kind === "textarea" ? 10 : 1, f.kind === "textarea" ? "Please add a little more detail." : `Enter ${f.label.toLowerCase()}.`)
         .max(f.maxLength ?? 200, `${f.label} is too long.`);
   }
-  return f.optional ? z.preprocess(emptyToUndefined, s.optional()) : z.preprocess(emptyToUndefined, s);
+  if (f.optional) return z.preprocess(emptyToUndefined, s.optional());
+  // Required: a blank or missing value gets the field's own message, never zod's generic "expected string".
+  const required = f.kind === "select" ? `Choose ${f.label.toLowerCase()}.` : f.kind === "date" ? "Choose a date." : f.kind === "number" ? `Enter a number for ${f.label.toLowerCase()}.` : `Enter ${f.label.toLowerCase()}.`;
+  return z.preprocess(emptyToUndefined, z.any().refine((v) => v !== undefined && v !== null, required).pipe(s));
 }
 
 /** YYYY-MM-DD for "today" in UTC. */

@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card";
 import { REQUEST_STATUS_LABEL, contactSection, toolByType, type FieldDef } from "@/config/service-requests";
 import { db } from "@/lib/db";
 import { setServiceRequestStatus } from "@/server/actions/service-requests";
+import { requireStaffPage } from "@/lib/authz";
 
 export const metadata = { title: "Request" };
 
@@ -18,6 +19,7 @@ function display(f: FieldDef, raw: unknown) {
 }
 
 export default async function RequestDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  await requireStaffPage();
   const { id } = await params;
   const r = await db.serviceRequest.findUnique({ where: { id } });
   if (!r) notFound();

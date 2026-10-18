@@ -8,10 +8,12 @@ import { siteConfig } from "@/config/site";
 import { db } from "@/lib/db";
 import { cn } from "@/lib/utils";
 import { replyToConversation, setConversationStatus } from "@/server/actions/admin-support";
+import { requireStaffPage } from "@/lib/authz";
 
 export const metadata = { title: "Conversation" };
 
 export default async function ConversationPage({ params }: { params: Promise<{ id: string }> }) {
+  await requireStaffPage();
   const { id } = await params;
   const convo = await db.chatConversation.findUnique({
     where: { id },

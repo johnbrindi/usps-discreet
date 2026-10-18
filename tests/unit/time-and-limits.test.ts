@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { formatEventTime, zonedLocalToUtc } from "@/domain/time";
 import { createRateLimiter } from "@/lib/rate-limit";
-import { isWithinSupportHours } from "@/lib/support-hours";
+import { describeSupportHours, isWithinSupportHours } from "@/lib/support-hours";
 
 describe("time zones", () => {
   it("interprets wall-clock time in the event's zone (DST and standard time)", () => {
@@ -42,5 +42,13 @@ describe("support hours", () => {
   it("is closed at night and on weekends", () => {
     expect(isWithinSupportHours(new Date("2026-10-14T03:00:00Z"), hours)).toBe(false); // Tue 23:00 EDT
     expect(isWithinSupportHours(new Date("2026-10-17T16:00:00Z"), hours)).toBe(false); // Sat
+  });
+  it("is always open with the default 24/7 setup", () => {
+    const allDay = { timeZone: "America/New_York", days: [0, 1, 2, 3, 4, 5, 6], openHour: 0, closeHour: 24 };
+    for (const iso of ["2026-10-17T16:00:00Z", "2026-10-18T03:59:00Z", "2026-10-14T04:00:00Z"]) {
+      expect(isWithinSupportHours(new Date(iso), allDay)).toBe(true);
+    }
+    expect(describeSupportHours(allDay)).toBe("24/7, every day");
+    expect(describeSupportHours(hours)).toMatch(/^Mon–Fri, 8 am–6 pm E[DS]T$/);
   });
 });

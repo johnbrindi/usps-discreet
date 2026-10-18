@@ -26,13 +26,13 @@ export const siteConfig = {
   legalName: env("NEXT_PUBLIC_LEGAL_NAME", "Meridian Parcel (placeholder operator)"),
 } as const;
 
-/** Staffed support hours. Drives the chat availability indicator — no fake "online" badge. */
+/** Staffed support hours. Default is 24/7; set open/close hours (0–24) to limit them. */
 export const supportHours = {
   timeZone: env("NEXT_PUBLIC_SUPPORT_TIMEZONE", "America/New_York"),
   /** 0 = Sunday … 6 = Saturday */
-  days: [1, 2, 3, 4, 5],
-  openHour: Number(env("NEXT_PUBLIC_SUPPORT_OPEN_HOUR", "8")),
-  closeHour: Number(env("NEXT_PUBLIC_SUPPORT_CLOSE_HOUR", "18")),
+  days: [0, 1, 2, 3, 4, 5, 6],
+  openHour: Number(env("NEXT_PUBLIC_SUPPORT_OPEN_HOUR", "0")),
+  closeHour: Number(env("NEXT_PUBLIC_SUPPORT_CLOSE_HOUR", "24")),
 } as const;
 
 export const whatsappUrl = `https://wa.me/${siteConfig.whatsappNumber.replace(/\D/g, "")}`;

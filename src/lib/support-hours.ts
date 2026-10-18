@@ -17,7 +17,13 @@ export function isWithinSupportHours(now: Date = new Date(), hours: Hours = supp
   return hours.days.includes(day) && hour >= hours.openHour && hour < hours.closeHour;
 }
 
+/** Open every day, around the clock. */
+export function isAlwaysOpen(hours: Hours = supportHours) {
+  return hours.days.length === 7 && hours.openHour <= 0 && hours.closeHour >= 24;
+}
+
 export function describeSupportHours(hours: Hours = supportHours) {
+  if (isAlwaysOpen(hours)) return "24/7, every day";
   const fmt = (h: number) => `${((h + 11) % 12) + 1}${h < 12 ? " am" : " pm"}`;
   const zone =
     new Intl.DateTimeFormat("en-US", { timeZone: hours.timeZone, timeZoneName: "short" })

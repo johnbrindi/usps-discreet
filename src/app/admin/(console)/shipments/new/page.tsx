@@ -4,10 +4,12 @@ import { ShipmentForm } from "@/components/admin/shipment-form";
 import { Card } from "@/components/ui/card";
 import { createShipment } from "@/server/actions/admin-shipments";
 import { configuredProviders } from "@/server/carriers/registry";
+import { requireStaffPage } from "@/lib/authz";
 
 export const metadata = { title: "New shipment" };
 
-export default function NewShipmentPage() {
+export default async function NewShipmentPage() {
+  await requireStaffPage();
   return (
     <>
       <Link href="/admin/shipments" className="text-sm text-muted hover:text-navy-900 hover:underline">← Shipments</Link>

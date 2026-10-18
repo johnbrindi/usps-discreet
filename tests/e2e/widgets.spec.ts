@@ -39,7 +39,8 @@ test.describe("floating support widgets", () => {
     const panel = page.getByRole("dialog", { name: /James · Customer support/ });
     await expect(panel).toBeVisible();
     await expect(launcher).toHaveAttribute("aria-expanded", "true");
-    await expect(panel.getByText(/replies are not\s+instant/)).toBeVisible();
+    await expect(panel.getByText(/around the clock/)).toBeVisible();
+    await expect(panel.getByText("Available 24/7 — replies are sent here")).toBeVisible();
     await expect(panel.getByText("No messages yet.", { exact: false })).toBeVisible();
 
     const input = panel.getByLabel("Message");

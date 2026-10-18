@@ -5,10 +5,12 @@ import { ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { db } from "@/lib/db";
 import { cn } from "@/lib/utils";
+import { requireStaffPage } from "@/lib/authz";
 
 export const metadata = { title: "Overview" };
 
 export default async function AdminHome() {
+  await requireStaffPage();
   const [byStatus, openChats, newInquiries, recentEvents, openRequests] = await Promise.all([
     db.shipment.groupBy({ by: ["status"], _count: { _all: true } }),
     db.chatConversation.count({ where: { status: "OPEN" } }),

@@ -3,10 +3,12 @@ import { AdminPageTitle } from "@/components/admin/page-title";
 import { Card } from "@/components/ui/card";
 import { db } from "@/lib/db";
 import { cn } from "@/lib/utils";
+import { requireStaffPage } from "@/lib/authz";
 
 export const metadata = { title: "Chat" };
 
 export default async function MessagesPage({ searchParams }: { searchParams: Promise<{ status?: string }> }) {
+  await requireStaffPage();
   const { status: raw } = await searchParams;
   const status = raw === "CLOSED" ? "CLOSED" : "OPEN";
   const conversations = await db.chatConversation.findMany({

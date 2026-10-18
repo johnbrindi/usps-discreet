@@ -1,5 +1,5 @@
 import { siteConfig, whatsappUrl } from "@/config/site";
-import { describeSupportHours } from "@/lib/support-hours";
+import { describeSupportHours, isAlwaysOpen } from "@/lib/support-hours";
 import { ChatWidget } from "./chat-widget";
 import { WhatsAppIcon } from "./whatsapp-icon";
 
@@ -13,7 +13,7 @@ export function FloatingWidgets() {
       className="pointer-events-none fixed flex flex-col items-end"
       style={{ right: "var(--fab-right)", bottom: "var(--fab-bottom)", gap: "var(--fab-gap)", zIndex: "var(--z-fab)" }}
     >
-      <ChatWidget agentName={siteConfig.chatAgentName} hoursLabel={describeSupportHours()} />
+      <ChatWidget agentName={siteConfig.chatAgentName} hoursLabel={describeSupportHours()} alwaysOpen={isAlwaysOpen()} />
       <a
         href={whatsappUrl}
         target="_blank"

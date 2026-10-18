@@ -4,12 +4,14 @@ import { Card } from "@/components/ui/card";
 import { db } from "@/lib/db";
 import { setInquiryStatus } from "@/server/actions/admin-support";
 import { CONTACT_TOPICS } from "@/validation/contact";
+import { requireStaffPage } from "@/lib/authz";
 
 export const metadata = { title: "Inquiries" };
 
 const LABEL = { NEW: "New", IN_PROGRESS: "In progress", CLOSED: "Closed" } as const;
 
 export default async function InquiriesPage() {
+  await requireStaffPage();
   const inquiries = await db.contactInquiry.findMany({ orderBy: [{ status: "asc" }, { createdAt: "desc" }], take: 100 });
   return (
     <>

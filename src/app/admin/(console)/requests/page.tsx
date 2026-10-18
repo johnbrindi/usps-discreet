@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Select } from "@/components/ui/form";
 import { REQUEST_STATUS_LABEL, TOOLS, toolByType } from "@/config/service-requests";
 import { db } from "@/lib/db";
+import { requireStaffPage } from "@/lib/authz";
 
 export const metadata = { title: "Requests" };
 
@@ -14,6 +15,7 @@ type SP = Promise<{ type?: string; status?: string }>;
 const STATUSES = ["NEW", "IN_PROGRESS", "CLOSED"] as const;
 
 export default async function RequestsPage({ searchParams }: { searchParams: SP }) {
+  await requireStaffPage();
   const sp = await searchParams;
   const type = TOOLS.find((t) => t.type === sp.type)?.type;
   const status = STATUSES.find((s) => s === sp.status);

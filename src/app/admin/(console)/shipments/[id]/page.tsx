@@ -17,6 +17,7 @@ import { db } from "@/lib/db";
 import { formatPlace } from "@/lib/utils";
 import { addTrackingEvent, removeLatestEvent, syncShipmentNow, updateShipment } from "@/server/actions/admin-shipments";
 import { getCarrierClient } from "@/server/carriers/registry";
+import { requireStaffPage } from "@/lib/authz";
 
 export const metadata = { title: "Shipment" };
 
@@ -27,6 +28,7 @@ export default async function ShipmentDetailPage({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ created?: string }>;
 }) {
+  await requireStaffPage();
   const { id } = await params;
   const { created } = await searchParams;
   const shipment = await db.shipment.findUnique({

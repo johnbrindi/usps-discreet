@@ -33,6 +33,20 @@ describe("service request validation", () => {
     expect(r.data?.instructions).toBeUndefined();
   });
 
+  it("names the field when a required value is blank or missing", () => {
+    const errors = (input: Record<string, string>) => parse("pickup", input).error?.flatten().fieldErrors as Record<string, string[]>;
+    const blank = errors({ ...pickup, pickupCity: "  ", parcelCount: "", timeWindow: "", pickupDate: "" });
+    expect(blank.pickupCity).toEqual(["Enter city."]);
+    expect(blank.parcelCount).toEqual(["Enter a number for number of parcels."]);
+    expect(blank.timeWindow).toEqual(["Choose time window."]);
+    expect(blank.pickupDate).toEqual(["Choose a date."]);
+    const missing: Record<string, string> = { ...pickup };
+    delete missing.pickupLine1;
+    expect(errors(missing).pickupLine1).toEqual(["Enter street address."]);
+    // No zod internals ever reach the customer.
+    expect(JSON.stringify(errors({}))).not.toMatch(/Invalid input|expected/);
+  });
+
   it("rejects pickups today, on weekends, or more than 30 days out", () => {
     for (const pickupDate of ["2026-10-14", "2026-10-17", "2026-11-20"]) {
       const r = parse("pickup", { ...pickup, pickupDate });
