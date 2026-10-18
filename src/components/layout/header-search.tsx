@@ -1,13 +1,13 @@
 "use client";
 
-import { Search } from "lucide-react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useId, useTransition, useState } from "react";
-import { siteConfig } from "@/config/site";
 
 /**
- * Full-width search bar that acts as a tracking-number entry.
- * On submit it navigates to /track/[number] (with JS) or /track?trackingNumber= (no-JS).
+ * Full-width USPS-style search bar.
+ * Matches the reference: white input + image/barcode icon button on the right.
+ * Navigates to /track/[number] with JS, or /track?trackingNumber= without JS.
  */
 export function HeaderSearch() {
   const inputId = useId();
@@ -27,17 +27,12 @@ export function HeaderSearch() {
       action="/track"
       method="get"
       role="search"
-      aria-label={`Search ${siteConfig.name} or track a parcel`}
+      aria-label="Search or enter a tracking number"
       onSubmit={handleSubmit}
-      className="flex items-stretch w-full"
+      className="flex w-full items-stretch"
     >
-      {/*
-        Deliberately not "Tracking number": the page hero/‌/track also render
-        TrackingForm, whose input's label IS exactly "Tracking number". A fuzzy
-        getByLabel("Tracking number") query must resolve to that one field only.
-      */}
       <label htmlFor={inputId} className="sr-only">
-        Quick parcel search
+        Search USPS.com or Enter Tracking Number(s)
       </label>
       <input
         id={inputId}
@@ -45,33 +40,28 @@ export function HeaderSearch() {
         type="text"
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        placeholder="Enter Tracking Number(s)"
+        placeholder="Search USPS.com or Enter Tracking Number(s)"
         autoComplete="off"
         autoCapitalize="characters"
         spellCheck={false}
         disabled={pending}
-        className="
-          flex-1 min-w-0 h-10 px-3 text-sm text-ink
-          border border-line-strong rounded-l
-          focus:border-usps-blue focus:ring-2 focus:ring-usps-blue/20 focus:outline-none
-          placeholder:text-muted/70
-          disabled:opacity-60
-          bg-white
-        "
+        className="h-10 min-w-0 flex-1 rounded-l border border-line-strong bg-white px-3 text-sm text-ink placeholder:text-muted/70 focus:border-usps-blue focus:outline-none focus:ring-2 focus:ring-usps-blue/20 disabled:opacity-60"
       />
       <button
         type="submit"
         disabled={pending}
         aria-label="Search"
-        className="
-          inline-flex items-center justify-center gap-2 h-10 px-3
-          border border-l-0 border-line-strong rounded-r
-          bg-white hover:bg-surface transition-colors
-          disabled:opacity-60
-          focus-visible:outline-2 focus-visible:outline-usps-blue focus-visible:outline-offset-1
-        "
+        className="inline-flex h-10 items-center gap-1.5 rounded-r border border-l-0 border-line-strong bg-white px-3 transition-colors hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-usps-blue disabled:opacity-60"
       >
-        <Search className="size-[1.125rem] text-navy-700" aria-hidden />
+        {/* Use the USPS search icon from public/images */}
+        <Image
+          src="/images/search.svg"
+          alt=""
+          width={18}
+          height={18}
+          aria-hidden
+          className="size-[1.125rem]"
+        />
         <span className="sr-only">Search</span>
       </button>
     </form>
