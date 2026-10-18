@@ -60,6 +60,10 @@ export async function lookupTracking(raw: string): Promise<TrackingLookup> {
 
   try {
     const detected = detectCarrier(number);
+    const provider = providers[serverEnv().TRACKING_PROVIDER] ?? databaseProvider;
+    // Fetch the public view at the same time as the match below. For numbers staff entered (the usual
+    // case) it is the right record, which saves a full database round trip.
+    const speculative = provider.lookup(number).catch(() => undefined);
     const shipment = await db.shipment.findFirst({
       where: { OR: [{ trackingNumber: number }, { carrierTrackingNumber: { in: [number, detected.trackingNumber] } }] },
       orderBy: { createdAt: "asc" },
@@ -68,6 +72,8 @@ export async function lookupTracking(raw: string): Promise<TrackingLookup> {
 
     if (!shipment) return await lookupUnknownCarrierNumber(number);
 
+    let freshAfterSync = false;
+
     if (shipment.trackingMode === "CARRIER" && shipment.nextSyncAt && shipment.nextSyncAt <= new Date()) {
       if (shipment.lastSyncedAt) {
         // Stale-while-revalidate: serve stored scans now, refresh after the response is sent.
@@ -75,11 +81,12 @@ export async function lookupTracking(raw: string): Promise<TrackingLookup> {
       } else {
         const first = syncShipment(shipment.id, "read").catch((err) => logger.error("tracking.first_sync_failed", err));
         await withBudget(first, FIRST_SYNC_BUDGET_MS);
+        freshAfterSync = true;
       }
     }
 
-    const provider = providers[serverEnv().TRACKING_PROVIDER] ?? databaseProvider;
-    const result = await provider.lookup(shipment.trackingNumber);
+    const reuse = shipment.trackingNumber === number && !freshAfterSync;
+    const result = (reuse && (await speculative)) || (await provider.lookup(shipment.trackingNumber));
     if (!result) return { kind: "not_found", trackingNumber: number };
     if (result.carrier && !result.carrier.checkedAt && result.events.length === 0) {
       return { kind: "pending", trackingNumber: result.trackingNumber, carrierName: shipment.carrier };

@@ -6,11 +6,11 @@ import { Alert } from "@/components/ui/alert";
 import { Card } from "@/components/ui/card";
 import { logger } from "@/lib/logger";
 import { cn } from "@/lib/utils";
-import { buildRouteMap } from "@/server/geo/route-map";
+import { resolveRoute } from "@/server/geo/route-map";
 import type { PublicTrackingResult } from "@/server/tracking/providers/types";
 import { CopyButton } from "./copy-button";
 import { ProgressSteps } from "./progress-steps";
-import { RouteMap } from "./route-map";
+import { LiveRouteMap } from "./live-route-map";
 import { StatusBadge, statusIcons } from "./status-badge";
 import { TrackingTimeline } from "./tracking-timeline";
 
@@ -149,7 +149,7 @@ export function ShipmentSummary({ result }: { result: PublicTrackingResult }) {
           <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-navy-900">
             <MapIcon className="size-5 text-navy-700" aria-hidden /> {map.stops.length > 0 ? "Route so far" : "Route"}
           </h2>
-          <RouteMap model={map} />
+          <LiveRouteMap route={map} />
         </Card>
       )}
 
@@ -189,7 +189,7 @@ export function ShipmentSummary({ result }: { result: PublicTrackingResult }) {
 /** The map is an extra: if it can't be built, the rest of the page still renders. */
 function safeRouteMap(result: PublicTrackingResult) {
   try {
-    return buildRouteMap(result);
+    return resolveRoute(result);
   } catch (err) {
     logger.error("tracking.route_map_failed", err);
     return null;

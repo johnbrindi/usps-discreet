@@ -20,7 +20,9 @@ export const auth = betterAuth({
   database: prismaAdapter(db, { provider: "postgresql" }),
   emailAndPassword: { enabled: true, disableSignUp: true, minPasswordLength: 12 },
   user: { additionalFields: { role: { type: "string", defaultValue: "staff", input: false } } },
-  session: { expiresIn: 60 * 60 * 8, updateAge: 60 * 60 },
+  // The signed cookie cache answers session checks without a database query for 5 minutes at a time.
+  // Trade-off: a revoked session or changed role takes up to 5 minutes to apply.
+  session: { expiresIn: 60 * 60 * 8, updateAge: 60 * 60, cookieCache: { enabled: true, maxAge: 5 * 60 } },
   rateLimit: { enabled: true, window: 60, max: 30 },
   advanced: { useSecureCookies: process.env.NODE_ENV === "production" },
   plugins: [nextCookies()],

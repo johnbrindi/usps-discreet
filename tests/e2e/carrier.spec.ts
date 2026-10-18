@@ -17,7 +17,7 @@ test.describe("carrier tracking", () => {
     await expect(page.getByText("Arrived at USPS Regional Facility")).toBeVisible();
     await expect(page.getByRole("paragraph").filter({ hasText: "Austin TX Distribution Center" })).toBeVisible();
     // Carrier facility names are placed on the route map too.
-    await expect(page.getByRole("figure").getByText("Austin TX Distribution Center")).toBeVisible();
+    await expect(page.getByRole("region", { name: "Interactive route map" }).getByText("Austin TX Distribution Center")).toBeVisible();
     await expect(page.getByText("Source: USPS (carrier estimate)")).toBeVisible();
     await expect(page.getByRole("heading", { level: 1 })).toContainText(/9400/);
   });

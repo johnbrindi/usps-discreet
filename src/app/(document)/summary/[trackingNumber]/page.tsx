@@ -2,13 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { LogoMark } from "@/components/layout/logo";
 import { PrintButton } from "@/components/tracking/print-button";
-import { RouteMap } from "@/components/tracking/route-map";
+import { LiveRouteMap } from "@/components/tracking/live-route-map";
 import { siteConfig } from "@/config/site";
 import { STATUS_META } from "@/domain/shipment-status";
 import { formatDateOnly, formatEventTime } from "@/domain/time";
 import { formatTrackingNumber, normalizeTrackingNumber } from "@/domain/tracking-number";
 import { logger } from "@/lib/logger";
-import { buildRouteMap } from "@/server/geo/route-map";
+import { resolveRoute } from "@/server/geo/route-map";
 import { lookupTracking } from "@/server/tracking/service";
 
 type Props = { params: Promise<{ trackingNumber: string }>; searchParams: Promise<{ print?: string }> };
@@ -48,7 +48,7 @@ export default async function TrackingSummaryPage({ params, searchParams }: Prop
   const meta = STATUS_META[r.status];
   let map = null;
   try {
-    map = buildRouteMap(r);
+    map = resolveRoute(r);
   } catch (err) {
     logger.error("tracking.route_map_failed", err);
   }
@@ -63,7 +63,7 @@ export default async function TrackingSummaryPage({ params, searchParams }: Prop
           <Link href={`/track/${encodeURIComponent(r.trackingNumber)}`} className="text-sm font-semibold text-navy-700 hover:underline">
             Back to tracking
           </Link>
-          <PrintButton auto={print === "1"} />
+          <PrintButton auto={print === "1"} waitForMap={map !== null} />
         </div>
       </div>
 
@@ -112,8 +112,8 @@ export default async function TrackingSummaryPage({ params, searchParams }: Prop
 
         {map && (
           <section className="mt-8 break-inside-avoid">
-            <h2 className="mb-3 text-sm font-bold tracking-wide text-navy-900 uppercase">Route so far</h2>
-            <RouteMap model={map} variant="print" />
+            <h2 className="mb-3 text-sm font-bold tracking-wide text-navy-900 uppercase">{map.stops.length > 0 ? "Route so far" : "Route"}</h2>
+            <LiveRouteMap route={map} variant="print" />
           </section>
         )}
 

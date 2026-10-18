@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { mapTiles, tileOrigin } from "./src/config/map";
 
 const isDev = process.env.NODE_ENV !== "production";
 
@@ -8,7 +9,8 @@ const csp = [
   "default-src 'self'",
   `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob:",
+  // Route-map tiles (src/config/map.ts).
+  `img-src 'self' data: blob: ${[mapTiles.street.url, mapTiles.satellite.url].map(tileOrigin).filter(Boolean).join(" ")}`,
   "font-src 'self'",
   "connect-src 'self'",
   "frame-ancestors 'none'",
@@ -27,18 +29,14 @@ const securityHeaders = [
   { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" },
 ];
 
-const MAP_DATA = [
-  "./src/server/geo/cities.json",
-  "./node_modules/world-atlas/countries-50m.json",
-  "./node_modules/us-atlas/states-10m.json",
-];
+const MAP_DATA = ["./src/server/geo/cities.json"];
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   // The dev-only "N" badge sits bottom-left, on top of the admin sidebar's Sign out button.
   devIndicators: false,
   reactStrictMode: true,
-  // Route-map data is read from disk at runtime (src/server/geo/places.ts), so ship it with these routes.
+  // The route-map place list is read from disk at runtime (src/server/geo/places.ts), so ship it with these routes.
   outputFileTracingIncludes: {
     "/track/[trackingNumber]": MAP_DATA,
     "/summary/[trackingNumber]": MAP_DATA,

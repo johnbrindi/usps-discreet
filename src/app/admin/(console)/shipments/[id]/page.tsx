@@ -82,7 +82,7 @@ export default async function ShipmentDetailPage({
           </div>
         }
       />
-      {created && <Alert tone="success" className="mb-6" live>Shipment created. Record its first event below.</Alert>}
+      {created && <Alert tone="success" className="mb-6" live>Shipment created. Record its first scan below — the Quick add buttons fill in the form for you.</Alert>}
       {shipment.isDemo && (
         <Alert tone="warning" className="mb-6" title="Demo record">
           Shown to the public only while demo mode is enabled, always with a &ldquo;sample record&rdquo; banner.
