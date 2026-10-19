@@ -4,6 +4,16 @@
  */
 const env = (key: string, fallback: string) => process.env[key]?.trim() || fallback;
 
+const isLocalUrl = (u: string) => /^https?:\/\/(localhost|127\.0\.0\.1|0\.0\.0\.0)(:\d+)?(\/|$)/i.test(u);
+
+function resolveSiteUrl() {
+  const explicit = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/+$/, "");
+  const onVercelProd = process.env.VERCEL_ENV === "production" || process.env.NODE_ENV === "production";
+  if (explicit && !(onVercelProd && process.env.VERCEL && isLocalUrl(explicit))) return explicit;
+  const host = process.env.VERCEL_PROJECT_PRODUCTION_URL || process.env.VERCEL_URL;
+  return host ? `https://${host}` : explicit || "http://localhost:3000";
+}
+
 export const siteConfig = {
   name:        env("NEXT_PUBLIC_BRAND_NAME",        "usps-discreet"),
   shortName:   env("NEXT_PUBLIC_BRAND_SHORT_NAME",  "usps-discreet"),
@@ -12,12 +22,7 @@ export const siteConfig = {
     "NEXT_PUBLIC_BRAND_DESCRIPTION",
     "Track your packages, ship from home, buy stamps, and access all services online.",
   ),
-  url: env(
-    "NEXT_PUBLIC_SITE_URL",
-    process.env.VERCEL_PROJECT_PRODUCTION_URL
-      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-      : "http://localhost:3000",
-  ),
+  url: resolveSiteUrl(),
   supportEmail:    env("NEXT_PUBLIC_SUPPORT_EMAIL",    "support@usps-discreet.com"),
   /** E.164 digits only — used to build the wa.me link. */
   whatsappNumber:  env("NEXT_PUBLIC_WHATSAPP_NUMBER",  "18603983750"),

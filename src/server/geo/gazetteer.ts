@@ -36,6 +36,9 @@ export function normalizePlace(s: string) {
   return out;
 }
 
+/** Codes people commonly type that are not ISO 3166-1 alpha-2 (GeoNames uses the ISO ones). */
+const COUNTRY_ALIASES: Record<string, string> = { UK: "GB", EN: "GB", ENG: "GB", SCT: "GB", WLS: "GB" };
+
 /** Words carriers append to facility names ("AUSTIN TX DISTRIBUTION CENTER", "CINCINNATI HUB - USA"). */
 const FACILITY_WORDS = new Set([
   "distribution", "center", "centre", "network", "processing", "regional", "facility", "hub", "gateway",
@@ -79,7 +82,8 @@ export function createGazetteer(data: GazetteerData) {
     attribution: data.attribution,
     lookup(q: PlaceQuery): Place | null {
       if (!q.city?.trim()) return null;
-      const country = q.country?.trim().toUpperCase() || null;
+      const rawCountry = q.country?.trim().toUpperCase() || null;
+      const country = rawCountry ? (COUNTRY_ALIASES[rawCountry] ?? rawCountry) : null;
       let region = q.region?.trim() || null;
       const words = normalizePlace(q.city).split(" ").filter(Boolean);
       // Drop trailing facility words, then ZIP codes and US state codes the carrier folded into the city.
