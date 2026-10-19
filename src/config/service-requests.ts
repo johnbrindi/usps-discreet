@@ -300,8 +300,6 @@ export const TOOLS: readonly ToolDef[] = [
       },
     ],
   },
-];
-
   // ── New tools ──────────────────────────────────────────────────────────
   {
     type: "STAMPS",

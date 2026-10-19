@@ -25,6 +25,15 @@ export const siteConfig = {
   chatAgentName:   env("NEXT_PUBLIC_CHAT_AGENT_NAME",  "James"),
   /** Legal entity shown in the footer. */
   legalName:       env("NEXT_PUBLIC_LEGAL_NAME",       "usps-discreet"),
+  /** Social profile URLs — empty string means the icon is hidden in the footer. */
+  social: {
+    facebook:  env("NEXT_PUBLIC_SOCIAL_FACEBOOK",  ""),
+    x:         env("NEXT_PUBLIC_SOCIAL_X",          ""),
+    instagram: env("NEXT_PUBLIC_SOCIAL_INSTAGRAM",  ""),
+    youtube:   env("NEXT_PUBLIC_SOCIAL_YOUTUBE",    ""),
+    pinterest: env("NEXT_PUBLIC_SOCIAL_PINTEREST",  ""),
+    threads:   env("NEXT_PUBLIC_SOCIAL_THREADS",    ""),
+  },
 } as const;
 
 /** Staffed support hours. Default 24/7. */

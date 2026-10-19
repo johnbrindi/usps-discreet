@@ -3,11 +3,14 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useId, useTransition, useState } from "react";
+import { isValidTrackingNumber, normalizeTrackingNumber, splitTrackingNumbers } from "@/domain/tracking-number";
 
 /**
  * Full-width USPS-style search bar.
- * Matches the reference: white input + image/barcode icon button on the right.
- * Navigates to /track/[number] with JS, or /track?trackingNumber= without JS.
+ * - If input looks like a tracking number → /track/[n]
+ * - Multiple tracking numbers (comma/space separated) → /track/[first]
+ * - Otherwise → /search?q=[query]
+ * Falls back to a form GET so it works without JS.
  */
 export function HeaderSearch() {
   const inputId = useId();
@@ -17,14 +20,23 @@ export function HeaderSearch() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const tn = value.trim().replace(/[\s-]+/g, "");
-    if (!tn) return;
-    startTransition(() => router.push(`/track/${encodeURIComponent(tn)}`));
+    const raw = value.trim();
+    if (!raw) return;
+
+    const numbers = splitTrackingNumbers(raw, 10);
+    if (numbers.length === 1 && isValidTrackingNumber(numbers[0]!)) {
+      startTransition(() => router.push(`/track/${encodeURIComponent(normalizeTrackingNumber(raw))}`));
+    } else if (numbers.length > 1 && numbers.every((n) => isValidTrackingNumber(n))) {
+      // Multiple numbers: go to first; the track page can handle one at a time
+      startTransition(() => router.push(`/track/${encodeURIComponent(numbers[0]!)}`));
+    } else {
+      startTransition(() => router.push(`/search?q=${encodeURIComponent(raw)}`));
+    }
   }
 
   return (
     <form
-      action="/track"
+      action="/search"
       method="get"
       role="search"
       aria-label="Search or enter a tracking number"
@@ -36,7 +48,7 @@ export function HeaderSearch() {
       </label>
       <input
         id={inputId}
-        name="trackingNumber"
+        name="q"
         type="text"
         value={value}
         onChange={(e) => setValue(e.target.value)}

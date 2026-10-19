@@ -39,15 +39,15 @@ const footerColumns = [
   },
 ];
 
-// Social icons from public/images. Hrefs are placeholders until real profiles exist.
+// Social icons driven by NEXT_PUBLIC_SOCIAL_* env vars. Icon hidden when env var is absent.
 const social = [
-  { src: "/images/facebook_logo.png", label: "Facebook" },
-  { src: "/images/x_logo.png", label: "X" },
-  { src: "/images/instagram_logo.png", label: "Instagram" },
-  { src: "/images/youtube_logo.png", label: "YouTube" },
-  { src: "/images/pinterest_logo.png", label: "Pinterest" },
-  { src: "/images/threads_logo.png", label: "Threads" },
-];
+  { src: "/images/facebook_logo.png", label: "Facebook", href: process.env.NEXT_PUBLIC_SOCIAL_FACEBOOK },
+  { src: "/images/x_logo.png", label: "X", href: process.env.NEXT_PUBLIC_SOCIAL_X },
+  { src: "/images/instagram_logo.png", label: "Instagram", href: process.env.NEXT_PUBLIC_SOCIAL_INSTAGRAM },
+  { src: "/images/youtube_logo.png", label: "YouTube", href: process.env.NEXT_PUBLIC_SOCIAL_YOUTUBE },
+  { src: "/images/pinterest_logo.png", label: "Pinterest", href: process.env.NEXT_PUBLIC_SOCIAL_PINTEREST },
+  { src: "/images/threads_logo.png", label: "Threads", href: process.env.NEXT_PUBLIC_SOCIAL_THREADS },
+].filter((s) => Boolean(s.href));
 
 export function SiteFooter() {
   const year = new Date().getFullYear();
@@ -69,15 +69,23 @@ export function SiteFooter() {
             </li>
             <li className="text-xs text-white/70">Support: {describeSupportHours()}</li>
           </ul>
+          {social.length > 0 && (
           <ul className="flex flex-wrap gap-3 pt-2">
             {social.map((s) => (
               <li key={s.label}>
-                <span className="flex size-9 items-center justify-center rounded-full bg-white">
-                  <Image src={s.src} alt={s.label} width={24} height={24} className="size-6 object-contain" />
-                </span>
+                <a
+                  href={s.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={s.label}
+                  className="flex size-9 items-center justify-center rounded-full bg-white transition-opacity hover:opacity-80"
+                >
+                  <Image src={s.src} alt="" width={24} height={24} className="size-6 object-contain" />
+                </a>
               </li>
             ))}
           </ul>
+          )}
         </div>
         <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
           {footerColumns.map((col) => (
