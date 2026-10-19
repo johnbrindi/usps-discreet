@@ -153,6 +153,37 @@ model CarrierSyncLog {
   @@map("carrier_sync_logs")
 }
 
+// ─── Service catalogue (CMS for /services/[slug]) ───────────────────────────
+
+enum ServiceKind {
+  CATEGORY
+  SERVICE
+}
+
+/// One page of the public /services/[slug] site section. Mirrors `ServiceDef` in src/config/services.ts.
+model Service {
+  id        String      @id @default(cuid())
+  slug      String      @unique @db.VarChar(80)
+  title     String      @db.VarChar(160)
+  summary   String      @db.VarChar(400)
+  icon      String?     @db.VarChar(200)
+  kind      ServiceKind @default(SERVICE)
+  /// Ordered slugs listed on a category page.
+  children  String[]
+  /// [{ heading, body }]
+  sections  Json        @default("[]")
+  ctaLabel  String?     @map("cta_label") @db.VarChar(80)
+  ctaHref   String?     @map("cta_href") @db.VarChar(300)
+  related   String[]
+  published Boolean     @default(true)
+  sortOrder Int         @default(0) @map("sort_order")
+  createdAt DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime    @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([published, sortOrder])
+  @@map("services")
+}
+
 // ─── Support ────────────────────────────────────────────────────────────────
 
 enum InquiryStatus {
@@ -182,6 +213,12 @@ enum ServiceRequestType {
   SHIPPING
   ADDRESS_CHANGE
   CLAIM
+  STAMPS
+  PO_BOX
+  HOLD_MAIL
+  SUPPLIES
+  REDELIVERY
+  CUSTOMS
 }
 
 /// Customer requests submitted from the /tools pages, handled by staff in /admin/requests.

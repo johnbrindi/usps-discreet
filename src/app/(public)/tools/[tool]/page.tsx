@@ -4,28 +4,62 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ServiceRequestForm } from "@/components/forms/service-request-form";
 import { ToolIconBadge } from "@/components/tools/tool-icon";
+import { ZipLookupForm } from "@/components/tools/zip-lookup-form";
 import { Card, Container } from "@/components/ui/card";
 import { TOOLS, toolBySlug } from "@/config/service-requests";
 import { siteConfig } from "@/config/site";
 import { describeSupportHours } from "@/lib/support-hours";
 
+const ZIP_LOOKUP_SLUG = "zip-lookup";
+
 type Props = { params: Promise<{ tool: string }>; searchParams: Promise<{ tn?: string }> };
 
-// Only the defined tools exist; anything else is a 404.
+// Only the defined tools exist, plus the special zip-lookup page; anything else is a 404.
 export const dynamicParams = false;
 export function generateStaticParams() {
-  return TOOLS.map((t) => ({ tool: t.slug }));
+  return [...TOOLS.map((t) => ({ tool: t.slug })), { tool: ZIP_LOOKUP_SLUG }];
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const tool = toolBySlug((await params).tool);
+  const slug = (await params).tool;
+  if (slug === ZIP_LOOKUP_SLUG) return { title: "ZIP Code™ Lookup", description: "Find the ZIP code for any address, or the city for any ZIP." };
+  const tool = toolBySlug(slug);
   return tool ? { title: tool.title, description: tool.summary } : {};
 }
 
 export default async function ToolPage({ params, searchParams }: Props) {
-  const tool = toolBySlug((await params).tool);
-  if (!tool) notFound();
+  const slug = (await params).tool;
   const { tn } = await searchParams;
+
+  // ─── Special: ZIP Code Lookup (no stored request, real geocode API) ───────
+  if (slug === ZIP_LOOKUP_SLUG) {
+    return (
+      <>
+        <div className="border-b border-line bg-surface">
+          <Container className="py-8 sm:py-10">
+            <nav aria-label="Breadcrumb" className="mb-4 text-sm text-muted">
+              <ol className="flex flex-wrap items-center gap-1.5">
+                <li><Link href="/" className="hover:text-navy-900 hover:underline">Home</Link></li>
+                <li aria-hidden>/</li>
+                <li><Link href="/tools" className="hover:text-navy-900 hover:underline">Quick tools</Link></li>
+                <li aria-hidden>/</li>
+                <li aria-current="page" className="text-ink">ZIP Code™ Lookup</li>
+              </ol>
+            </nav>
+            <h1 className="text-3xl font-bold tracking-tight text-navy-900 sm:text-4xl">ZIP Code™ Lookup</h1>
+            <p className="mt-2 max-w-2xl text-lg leading-8 text-muted">Find the ZIP+4 code for any US address, or look up the city for a ZIP code.</p>
+          </Container>
+        </div>
+        <Container className="py-10 sm:py-12">
+          <ZipLookupForm />
+        </Container>
+      </>
+    );
+  }
+
+  // ─── Normal: stored service request ──────────────────────────────────────
+  const tool = toolBySlug(slug);
+  if (!tool) notFound();
 
   return (
     <>

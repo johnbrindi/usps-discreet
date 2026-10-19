@@ -87,7 +87,7 @@ const SERVICES: readonly ServiceDef[] = [
       { heading: "Stamp pricing", body: "Forever stamps are always good for first-class mail, no matter when prices change." },
       { heading: "Collections", body: "Browse seasonal collections, collector sets and personalised stamped envelopes." },
     ],
-    cta: { label: "Contact us to order", href: "/contact" },
+    cta: { label: "Order stamps", href: "/tools/stamps" },
     related: ["gifts", "cards-envelopes", "shipping-supplies"],
   },
   {
@@ -111,7 +111,7 @@ const SERVICES: readonly ServiceDef[] = [
       { heading: "Why a PO Box", body: "Receive mail on your schedule at a locked box you control." },
       { heading: "Sizes", body: "Choose from several box sizes depending on how much mail you receive." },
     ],
-    cta: { label: "Ask about a PO Box", href: "/contact" },
+    cta: { label: "Inquire about a PO Box", href: "/tools/po-box" },
     related: ["hold-mail", "change-address"],
   },
   {
@@ -129,7 +129,7 @@ const SERVICES: readonly ServiceDef[] = [
     summary: "Pause delivery while you are away.",
     icon: "/images/holdmail.svg",
     sections: [{ heading: "Going away?", body: "Choose start and end dates and we keep your mail safe until you are back." }],
-    cta: { label: "Contact us", href: "/contact" },
+    cta: { label: "Request a hold", href: "/tools/hold-mail" },
     related: ["informed-delivery", "change-address"],
   },
   {
@@ -138,7 +138,7 @@ const SERVICES: readonly ServiceDef[] = [
     summary: "Find the ZIP Code for any address.",
     icon: "/images/find_zip.svg",
     sections: [{ heading: "Find a ZIP Code", body: "Look up a full ZIP+4 code by street address, or find the city for a ZIP Code." }],
-    cta: { label: "Ask support", href: "/contact" },
+    cta: { label: "Look up a ZIP code", href: "/tools/zip-lookup" },
     related: ["change-address", "calculate-price"],
   },
   {
@@ -165,7 +165,7 @@ const SERVICES: readonly ServiceDef[] = [
     summary: "Missed a delivery? Pick a new date.",
     icon: "/images/schedule-redelivery.svg",
     sections: [{ heading: "Track first", body: "Enter your tracking number to see the latest delivery status." }],
-    cta: { label: "Track a package", href: "/track" },
+    cta: { label: "Schedule a redelivery", href: "/tools/redelivery" },
     related: ["informed-delivery"],
   },
   {
@@ -186,7 +186,7 @@ const SERVICES: readonly ServiceDef[] = [
     summary: "Boxes, envelopes and labels — many are free.",
     icon: "/images/shipping-supplies.svg",
     sections: [{ heading: "Free boxes", body: "Priority Mail® boxes and envelopes are available at no extra charge." }],
-    cta: { label: "Contact us", href: "/contact" },
+    cta: { label: "Order supplies", href: "/tools/supplies" },
     related: ["click-n-ship", "free-boxes"],
   },
   {
@@ -195,7 +195,7 @@ const SERVICES: readonly ServiceDef[] = [
     summary: "Order free shipping boxes delivered to you.",
     icon: "/images/free_boxes.svg",
     sections: [{ heading: "Free shipping boxes", body: "Choose the sizes you need for your next shipment." }],
-    cta: { label: "Contact us", href: "/contact" },
+    cta: { label: "Order free boxes", href: "/tools/supplies" },
     related: ["shipping-supplies"],
   },
   {
@@ -204,7 +204,7 @@ const SERVICES: readonly ServiceDef[] = [
     summary: "Gift ideas and collectibles.",
     icon: "/images/gifts.svg",
     sections: [{ heading: "Collectibles", body: "Stamp collections, framed art and keepsakes." }],
-    cta: { label: "Contact us", href: "/contact" },
+    cta: { label: "Order gifts", href: "/tools/stamps" },
     related: ["buy-stamps", "cards-envelopes"],
   },
   {
@@ -213,7 +213,7 @@ const SERVICES: readonly ServiceDef[] = [
     summary: "Greeting cards and personalised stamped envelopes.",
     icon: "/images/cards-and-envelopes.svg",
     sections: [{ heading: "Personalise", body: "Add your own return address to stamped envelopes." }],
-    cta: { label: "Contact us", href: "/contact" },
+    cta: { label: "Order cards & envelopes", href: "/tools/stamps" },
     related: ["buy-stamps", "gifts"],
   },
   {
@@ -231,7 +231,7 @@ const SERVICES: readonly ServiceDef[] = [
     summary: "Find the tariff code for your item.",
     icon: "/images/hs-code-search.svg",
     sections: [{ heading: "Harmonized System codes", body: "Many countries require an HS code on the customs declaration." }],
-    cta: { label: "Ask support", href: "/contact" },
+    cta: { label: "Get HS code help", href: "/tools/customs" },
     related: ["customs-forms"],
   },
   {

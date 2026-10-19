@@ -1,4 +1,18 @@
-import { Calculator, CalendarClock, FileWarning, MapPinned, PackagePlus, PackageSearch, type LucideIcon } from "lucide-react";
+import {
+  Archive,
+  Calculator,
+  CalendarClock,
+  FileSearch,
+  FileWarning,
+  Mailbox,
+  MapPinned,
+  Package,
+  PackagePlus,
+  PackageSearch,
+  RotateCcw,
+  Stamp,
+  type LucideIcon,
+} from "lucide-react";
 import type { ToolIcon } from "@/config/service-requests";
 import { cn } from "@/lib/utils";
 
@@ -10,6 +24,12 @@ const ICONS: Record<ToolIcon, LucideIcon> = {
   ship: PackagePlus,
   address: MapPinned,
   claim: FileWarning,
+  stamps: Stamp,
+  pobox: Mailbox,
+  holdmail: Archive,
+  supplies: Package,
+  redelivery: RotateCcw,
+  customs: FileSearch,
 };
 
 export function ToolIconBadge({ icon, className }: { icon: ToolIcon; className?: string }) {

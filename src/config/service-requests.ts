@@ -10,7 +10,18 @@
  * Client-safe: no server imports.
  */
 
-export type ServiceRequestType = "QUOTE" | "PICKUP" | "SHIPPING" | "ADDRESS_CHANGE" | "CLAIM";
+export type ServiceRequestType =
+  | "QUOTE"
+  | "PICKUP"
+  | "SHIPPING"
+  | "ADDRESS_CHANGE"
+  | "CLAIM"
+  | "STAMPS"
+  | "PO_BOX"
+  | "HOLD_MAIL"
+  | "SUPPLIES"
+  | "REDELIVERY"
+  | "CUSTOMS";
 
 export type FieldDef = {
   name: string;
@@ -29,7 +40,19 @@ export type FieldDef = {
   step?: number;
 };
 
-export type ToolIcon = "track" | "quote" | "pickup" | "ship" | "address" | "claim";
+export type ToolIcon =
+  | "track"
+  | "quote"
+  | "pickup"
+  | "ship"
+  | "address"
+  | "claim"
+  | "stamps"
+  | "pobox"
+  | "holdmail"
+  | "supplies"
+  | "redelivery"
+  | "customs";
 
 export type SectionDef = { title: string; description?: string; fields: FieldDef[] };
 
@@ -279,12 +302,193 @@ export const TOOLS: readonly ToolDef[] = [
   },
 ];
 
+  // ── New tools ──────────────────────────────────────────────────────────
+  {
+    type: "STAMPS",
+    slug: "stamps",
+    label: "Buy Stamps",
+    title: "Order stamps",
+    summary: "Order Forever® stamps, postcard stamps, collector sets and stamped envelopes — delivered to you.",
+    nextSteps: "Our team reviews your order and contacts you about payment and delivery, usually within one business day.",
+    icon: "stamps",
+    referencePrefix: "ST",
+    sections: [
+      {
+        title: "Your order",
+        fields: [
+          {
+            name: "item",
+            label: "Item / collection",
+            kind: "select",
+            span: 3,
+            options: [
+              { value: "forever_stamps", label: "Forever® stamps (book of 20)" },
+              { value: "postcard_stamps", label: "Postcard stamps (book of 20)" },
+              { value: "collector_set", label: "Collector set" },
+              { value: "stamped_envelopes", label: "Stamped envelopes" },
+              { value: "gifts", label: "Gift / collectible" },
+              { value: "cards_envelopes", label: "Cards & envelopes" },
+            ],
+          },
+          { name: "quantity", label: "Quantity", kind: "number", span: 3, min: 1, max: 100, step: 1 },
+        ],
+      },
+      { title: "Delivery address", fields: address("delivery", { withName: true }) },
+    ],
+  },
+  {
+    type: "PO_BOX",
+    slug: "po-box",
+    label: "PO Box Inquiry",
+    title: "PO Box inquiry",
+    summary: "Ask about available PO Box sizes and locations nearest to you.",
+    nextSteps: "We check availability and email you options, pricing and the next steps to reserve your box.",
+    icon: "pobox",
+    referencePrefix: "PB",
+    sections: [
+      {
+        title: "Box details",
+        fields: [
+          {
+            name: "size",
+            label: "Preferred box size",
+            kind: "select",
+            span: 3,
+            options: [
+              { value: "xs", label: "Extra small (envelopes only)" },
+              { value: "sm", label: "Small (magazines / flats)" },
+              { value: "md", label: "Medium (standard packages)" },
+              { value: "lg", label: "Large (large packages)" },
+            ],
+          },
+          { name: "locationZip", label: "Nearest ZIP code", kind: "text", span: 3, maxLength: 10 },
+          { name: "startDate", label: "Desired start date", kind: "date", span: 3 },
+        ],
+      },
+    ],
+  },
+  {
+    type: "HOLD_MAIL",
+    slug: "hold-mail",
+    label: "Hold Mail",
+    title: "Hold mail request",
+    summary: "Pause delivery while you are away — we keep your mail safe and deliver it when you are back.",
+    nextSteps: "We confirm the hold dates by email and pause delivery from your start date.",
+    icon: "holdmail",
+    referencePrefix: "HM",
+    sections: [
+      { title: "Delivery address", fields: address("hold") },
+      {
+        title: "Hold dates",
+        fields: [
+          { name: "startDate", label: "Start date", kind: "date", span: 3, hint: "First day we hold your mail." },
+          { name: "endDate", label: "End date", kind: "date", span: 3, hint: "Last day of the hold (max 30 days after start)." },
+        ],
+      },
+    ],
+  },
+  {
+    type: "SUPPLIES",
+    slug: "supplies",
+    label: "Order Supplies",
+    title: "Order shipping supplies",
+    summary: "Order boxes, envelopes and labels — many are free.",
+    nextSteps: "We process your request and ship the supplies to your address, usually within 2–3 business days.",
+    icon: "supplies",
+    referencePrefix: "SP",
+    sections: [
+      {
+        title: "Items",
+        fields: [
+          {
+            name: "item",
+            label: "Supply type",
+            kind: "select",
+            span: 3,
+            options: [
+              { value: "priority_box_sm", label: "Priority Mail® box (small)" },
+              { value: "priority_box_md", label: "Priority Mail® box (medium)" },
+              { value: "priority_box_lg", label: "Priority Mail® box (large)" },
+              { value: "priority_envelope", label: "Priority Mail® flat-rate envelope" },
+              { value: "shipping_label", label: "Shipping labels" },
+              { value: "bubble_mailer", label: "Bubble mailers" },
+            ],
+          },
+          { name: "quantity", label: "Quantity", kind: "number", span: 3, min: 1, max: 50, step: 1 },
+          { name: "notes", label: "Special requests", kind: "textarea", optional: true, maxLength: 400 },
+        ],
+      },
+      { title: "Delivery address", fields: address("delivery", { withName: true }) },
+    ],
+  },
+  {
+    type: "REDELIVERY",
+    slug: "redelivery",
+    label: "Schedule Redelivery",
+    title: "Schedule a redelivery",
+    summary: "Missed a delivery? Pick a new date and we will bring it back.",
+    nextSteps: "We schedule the redelivery and email a confirmation. Check the tracking page for the updated delivery date.",
+    icon: "redelivery",
+    referencePrefix: "RD",
+    sections: [
+      {
+        title: "Parcel",
+        fields: [
+          {
+            name: "trackingNumber",
+            label: "Tracking number",
+            kind: "tracking",
+            span: 3,
+            hint: "From your missed-delivery notice.",
+          },
+          { name: "preferredDate", label: "Preferred redelivery date", kind: "date", span: 3, hint: "Monday–Friday, at least one day ahead." },
+        ],
+      },
+    ],
+  },
+  {
+    type: "CUSTOMS",
+    slug: "customs",
+    label: "Customs / HS Code Help",
+    title: "Customs & HS code help",
+    summary: "Need help completing customs forms or finding the right Harmonized System code for your shipment?",
+    nextSteps: "Our team responds with the correct form and code guidance, usually within one business day.",
+    icon: "customs",
+    referencePrefix: "CU",
+    sections: [
+      {
+        title: "Shipment details",
+        fields: [
+          { name: "destinationCountry", label: "Destination country", kind: "text", span: 3, maxLength: 60 },
+          { name: "itemDescription", label: "Item description", kind: "text", span: 3, maxLength: 200 },
+          {
+            name: "helpType",
+            label: "I need help with",
+            kind: "select",
+            span: 3,
+            options: [
+              { value: "hs_code", label: "Finding an HS / tariff code" },
+              { value: "customs_form", label: "Completing a customs declaration" },
+              { value: "eu_vat", label: "EU VAT & import duties" },
+              { value: "other", label: "Something else" },
+            ],
+          },
+          { name: "details", label: "Additional details", kind: "textarea", optional: true, maxLength: 1000 },
+        ],
+      },
+    ],
+  },
+];
+
 export function toolBySlug(slug: string) {
   return TOOLS.find((t) => t.slug === slug);
 }
 
 export function toolByType(type: ServiceRequestType) {
-  return TOOLS.find((t) => t.type === type)!;
+  const t = TOOLS.find((t) => t.type === type);
+  // Graceful fallback so unknown types don't crash admin pages
+  if (!t) throw new Error(`Unknown ServiceRequestType: ${type}`);
+  return t;
 }
 
 export const REQUEST_STATUS_LABEL = { NEW: "New", IN_PROGRESS: "In progress", CLOSED: "Closed" } as const;

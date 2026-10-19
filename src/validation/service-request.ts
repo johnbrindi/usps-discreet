@@ -64,6 +64,7 @@ export function serviceRequestSchema(tool: ToolDef, now = new Date()) {
   shape.website = z.string().max(0).optional();
 
   return z.object(shape).superRefine((v, ctx) => {
+    // ─── PICKUP: weekday, tomorrow–30 days ───────────────────────────────
     if (tool.type === "PICKUP" && typeof v.pickupDate === "string") {
       const day = new Date(`${v.pickupDate}T12:00:00Z`);
       const tomorrow = new Date(now.getTime() + 86_400_000);
@@ -72,6 +73,37 @@ export function serviceRequestSchema(tool: ToolDef, now = new Date()) {
         ctx.addIssue({ code: "custom", path: ["pickupDate"], message: "Choose a date from tomorrow up to 30 days ahead." });
       } else if (day.getUTCDay() === 0 || day.getUTCDay() === 6) {
         ctx.addIssue({ code: "custom", path: ["pickupDate"], message: "Pickups run Monday to Friday." });
+      }
+    }
+
+    // ─── HOLD_MAIL: end ≥ start, max 30 days ─────────────────────────────
+    if (tool.type === "HOLD_MAIL" && typeof v.startDate === "string" && typeof v.endDate === "string") {
+      const start = new Date(`${v.startDate}T12:00:00Z`);
+      const end = new Date(`${v.endDate}T12:00:00Z`);
+      const today = new Date(isoDay(now) + "T12:00:00Z");
+      if (start < today) {
+        ctx.addIssue({ code: "custom", path: ["startDate"], message: "Start date cannot be in the past." });
+      }
+      if (!Number.isNaN(start.getTime()) && !Number.isNaN(end.getTime())) {
+        if (end < start) {
+          ctx.addIssue({ code: "custom", path: ["endDate"], message: "End date must be on or after the start date." });
+        } else {
+          const days = Math.round((end.getTime() - start.getTime()) / 86_400_000);
+          if (days > 30) {
+            ctx.addIssue({ code: "custom", path: ["endDate"], message: "Hold period cannot exceed 30 days." });
+          }
+        }
+      }
+    }
+
+    // ─── REDELIVERY: at least tomorrow ───────────────────────────────────
+    if (tool.type === "REDELIVERY" && typeof v.preferredDate === "string") {
+      const day = new Date(`${v.preferredDate}T12:00:00Z`);
+      const tomorrow = new Date(now.getTime() + 86_400_000);
+      if (Number.isNaN(day.getTime()) || v.preferredDate < isoDay(tomorrow)) {
+        ctx.addIssue({ code: "custom", path: ["preferredDate"], message: "Choose a date from tomorrow onwards." });
+      } else if (day.getUTCDay() === 0 || day.getUTCDay() === 6) {
+        ctx.addIssue({ code: "custom", path: ["preferredDate"], message: "Redeliveries run Monday to Friday." });
       }
     }
   });
