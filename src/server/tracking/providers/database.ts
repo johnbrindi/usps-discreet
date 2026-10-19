@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { demoDataEnabled } from "@/lib/env";
 import { formatPlace } from "@/lib/utils";
 import type { PublicTrackingResult, TrackingProvider } from "./types";
+import { places } from "@/server/geo/places";
 
 /** Reads shipments recorded by authorized staff (or synced from a carrier) in our own database. */
 export const databaseProvider: TrackingProvider = {
@@ -91,7 +92,9 @@ export const databaseProvider: TrackingProvider = {
         description: e.description,
         location: formatPlace(e) || null,
         place: { city: e.city, region: e.region, country: e.country },
-        timeZone: e.timeZone,
+        // Staff-entered scans are shown in the scanned city's own time zone, never the viewer's or the
+        // operator's. Carrier events keep the offset the carrier reported.
+        timeZone: (e.source === "CARRIER_API" ? null : places().lookup(e)?.timeZone) ?? e.timeZone,
         occurredAt: e.occurredAt.toISOString(),
         source: e.source,
       })),
