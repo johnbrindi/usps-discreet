@@ -20,6 +20,7 @@ const PRESETS: Record<ShipmentStatus, { description: string; place: "origin" | "
   IN_TRANSIT: { description: "Departed facility, in transit to next facility", place: "last" },
   ARRIVED_AT_FACILITY: { description: "Arrived at sorting facility", place: "new" },
   OUT_FOR_DELIVERY: { description: "Out for delivery", place: "destination" },
+  ON_HOLD: { description: "On hold", place: "last" },
   DELIVERED: { description: "Delivered", place: "destination" },
   EXCEPTION: { description: "Delivery attempted, recipient not available", place: "last" },
   RETURNED_TO_SENDER: { description: "Returning to sender", place: "last" },

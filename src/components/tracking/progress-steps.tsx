@@ -6,7 +6,7 @@ const milestoneIcons = [FileText, Warehouse, Truck, CheckCircle2];
 
 export function ProgressSteps({ status, history }: { status: ShipmentStatus; history: ShipmentStatus[] }) {
   const reached = milestoneIndex(status, history);
-  const halted = status === "EXCEPTION" || status === "RETURNED_TO_SENDER";
+  const halted = status === "EXCEPTION" || status === "ON_HOLD" || status === "RETURNED_TO_SENDER";
   const delivered = status === "DELIVERED";
   // Fill runs from the first step's centre to the reached step's centre.
   const fill = `${(reached / (MILESTONES.length - 1)) * 100}%`;

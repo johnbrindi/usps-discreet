@@ -1,4 +1,4 @@
-import { AlertTriangle, CheckCircle2, FileText, PackageCheck, Truck, Undo2, Warehouse } from "lucide-react";
+import { AlertTriangle, PauseCircle, CheckCircle2, FileText, PackageCheck, Truck, Undo2, Warehouse } from "lucide-react";
 import { STATUS_META, type ShipmentStatus, type StatusTone } from "@/domain/shipment-status";
 import { cn } from "@/lib/utils";
 
@@ -17,6 +17,7 @@ export const statusIcons: Record<ShipmentStatus, typeof Truck> = {
   IN_TRANSIT: Truck,
   ARRIVED_AT_FACILITY: Warehouse,
   OUT_FOR_DELIVERY: Truck,
+  ON_HOLD: PauseCircle,
   DELIVERED: CheckCircle2,
   EXCEPTION: AlertTriangle,
   RETURNED_TO_SENDER: Undo2,

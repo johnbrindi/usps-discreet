@@ -8,6 +8,7 @@ export const SHIPMENT_STATUSES = [
   "IN_TRANSIT",
   "ARRIVED_AT_FACILITY",
   "OUT_FOR_DELIVERY",
+  "ON_HOLD",
   "DELIVERED",
   "EXCEPTION",
   "RETURNED_TO_SENDER",
@@ -35,6 +36,11 @@ export const STATUS_META: Record<ShipmentStatus, { label: string; summary: strin
     summary: "The parcel is with a driver for delivery.",
     tone: "info",
   },
+  ON_HOLD: {
+    label: "On hold",
+    summary: "The parcel is being held. See the latest event for details.",
+    tone: "warning",
+  },
   DELIVERED: { label: "Delivered", summary: "The parcel was delivered.", tone: "success" },
   EXCEPTION: {
     label: "Delivery exception",
@@ -51,17 +57,19 @@ export const STATUS_META: Record<ShipmentStatus, { label: string; summary: strin
 /** Allowed next statuses. Repeating a scan of the same status (e.g. another facility) is allowed where listed. */
 export const STATUS_TRANSITIONS: Record<ShipmentStatus, readonly ShipmentStatus[]> = {
   INFO_RECEIVED: ["ACCEPTED", "EXCEPTION"],
-  ACCEPTED: ["IN_TRANSIT", "ARRIVED_AT_FACILITY", "EXCEPTION"],
-  IN_TRANSIT: ["IN_TRANSIT", "ARRIVED_AT_FACILITY", "OUT_FOR_DELIVERY", "EXCEPTION", "RETURNED_TO_SENDER"],
+  ACCEPTED: ["IN_TRANSIT", "ARRIVED_AT_FACILITY", "ON_HOLD", "EXCEPTION"],
+  IN_TRANSIT: ["IN_TRANSIT", "ARRIVED_AT_FACILITY", "OUT_FOR_DELIVERY", "ON_HOLD", "EXCEPTION", "RETURNED_TO_SENDER"],
   ARRIVED_AT_FACILITY: [
     "ARRIVED_AT_FACILITY",
     "IN_TRANSIT",
     "OUT_FOR_DELIVERY",
+    "ON_HOLD",
     "EXCEPTION",
     "RETURNED_TO_SENDER",
   ],
-  OUT_FOR_DELIVERY: ["DELIVERED", "EXCEPTION", "ARRIVED_AT_FACILITY"],
-  EXCEPTION: ["EXCEPTION", "IN_TRANSIT", "ARRIVED_AT_FACILITY", "OUT_FOR_DELIVERY", "RETURNED_TO_SENDER"],
+  OUT_FOR_DELIVERY: ["DELIVERED", "ON_HOLD", "EXCEPTION", "ARRIVED_AT_FACILITY"],
+  ON_HOLD: ["ON_HOLD", "IN_TRANSIT", "ARRIVED_AT_FACILITY", "OUT_FOR_DELIVERY", "EXCEPTION", "RETURNED_TO_SENDER"],
+  EXCEPTION: ["EXCEPTION", "IN_TRANSIT", "ARRIVED_AT_FACILITY", "OUT_FOR_DELIVERY", "ON_HOLD", "RETURNED_TO_SENDER"],
   DELIVERED: [],
   RETURNED_TO_SENDER: [],
 };

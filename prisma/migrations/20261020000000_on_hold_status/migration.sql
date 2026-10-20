@@ -1,0 +1,2 @@
+-- AlterEnum
+ALTER TYPE "ShipmentStatus" ADD VALUE 'ON_HOLD' AFTER 'OUT_FOR_DELIVERY';
