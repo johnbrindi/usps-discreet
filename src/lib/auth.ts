@@ -10,10 +10,22 @@ import { db } from "@/lib/db";
  */
 const siteURL = process.env.BETTER_AUTH_URL ?? process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
+// Accept the configured site plus its www/apex twin and Vercel's own domains (production + previews).
+const withWwwTwin = (url: string) => {
+  const u = new URL(url);
+  u.hostname = u.hostname.startsWith("www.") ? u.hostname.slice(4) : `www.${u.hostname}`;
+  return [url, u.origin];
+};
+const trustedOrigins = [
+  ...[process.env.BETTER_AUTH_URL, process.env.NEXT_PUBLIC_SITE_URL].filter((h): h is string => !!h).flatMap(withWwwTwin),
+  process.env.VERCEL_PROJECT_PRODUCTION_URL && `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`,
+  process.env.VERCEL_BRANCH_URL && `https://${process.env.VERCEL_BRANCH_URL}`,
+  process.env.VERCEL_URL && `https://${process.env.VERCEL_URL}`,
+].filter((h): h is string => !!h);
+
 export const auth = betterAuth({
   baseURL: siteURL,
-  // Disable CSRF origin check — safe because all requests are same-origin (Next.js API routes + nextCookies plugin)
-  trustedOrigins: ["*"],
+  trustedOrigins,
   database: prismaAdapter(db, { provider: "postgresql" }),
   emailAndPassword: { enabled: true, disableSignUp: true, minPasswordLength: 8 },
   user: { additionalFields: { role: { type: "string", defaultValue: "staff", input: false } } },
