@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Alert } from "@/components/ui/alert";
@@ -12,6 +12,7 @@ export function LoginForm() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -38,7 +39,25 @@ export function LoginForm() {
         <Input id="email" name="email" type="email" autoComplete="username" required />
       </Field>
       <Field id="password" label="Password">
-        <Input id="password" name="password" type="password" autoComplete="current-password" required />
+        <div className="relative">
+          <Input
+            id="password"
+            name="password"
+            type={showPassword ? "text" : "password"}
+            autoComplete="current-password"
+            required
+            className="pr-11"
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword((v) => !v)}
+            aria-label={showPassword ? "Hide password" : "Show password"}
+            aria-pressed={showPassword}
+            className="absolute inset-y-0 right-0 flex w-11 items-center justify-center rounded-r text-muted transition-colors hover:text-navy-900 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-usps-blue"
+          >
+            {showPassword ? <EyeOff className="size-5" aria-hidden /> : <Eye className="size-5" aria-hidden />}
+          </button>
+        </div>
       </Field>
       <Button type="submit" className="w-full" disabled={pending}>
         {pending && <Loader2 className="size-4 animate-spin" aria-hidden />}

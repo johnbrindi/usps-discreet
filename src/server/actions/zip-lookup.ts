@@ -43,7 +43,7 @@ export async function lookupZipByAddress(
     const query = encodeURIComponent(`${street}, ${city}, ${state}, USA`);
     const url = `https://nominatim.openstreetmap.org/search?q=${query}&format=json&addressdetails=1&limit=1&countrycodes=us`;
     const res = await fetch(url, {
-      headers: { "User-Agent": "usps-discreet/1.0 (contact: support@usps-discreet.com)" },
+      headers: { "User-Agent": "usps-discreet/1.0 (contact: uspsdiscreet001@gmail.com)" },
       next: { revalidate: 3600 },
     });
     if (!res.ok) throw new Error(`Geocoder HTTP ${res.status}`);
@@ -88,7 +88,7 @@ export async function lookupCityByZip(
   try {
     const url = `https://nominatim.openstreetmap.org/search?postalcode=${zip}&country=US&format=json&addressdetails=1&limit=1`;
     const res = await fetch(url, {
-      headers: { "User-Agent": "usps-discreet/1.0 (contact: support@usps-discreet.com)" },
+      headers: { "User-Agent": "usps-discreet/1.0 (contact: uspsdiscreet001@gmail.com)" },
       next: { revalidate: 3600 },
     });
     if (!res.ok) throw new Error(`Geocoder HTTP ${res.status}`);

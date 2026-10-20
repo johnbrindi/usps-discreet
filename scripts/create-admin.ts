@@ -1,6 +1,7 @@
 /**
  * Creates (or resets the password of) a staff account. Usage:
- *   npm run admin:create -- --email you@company.com --name "Your Name" [--role admin|staff]
+ *   npm run admin:create -- --email you@company.com --name "Your Name" [--role admin|staff] [--from old@company.com]
+ * With --from, the existing account is moved to the new email (same id and history) instead of creating another.
  * The password is read from a hidden prompt or from the ADMIN_PASSWORD env var — never from argv.
  */
 import "./load-env";
@@ -50,17 +51,21 @@ async function main() {
   const password = process.env.ADMIN_PASSWORD || (await promptHidden("Password (min 8 chars): "));
   if (password.length < 8) throw new Error("Password must be at least 8 characters");
 
-  const db = new PrismaClient({ transactionOptions: { maxWait: 10_000, timeout: 15_000 } });
+  const db = new PrismaClient({ transactionOptions: { maxWait: 30_000, timeout: 90_000 } });
   try {
     const hash = await hashPassword(password);
     await db.$transaction(async (tx) => {
-      const existing = await tx.user.findUnique({ where: { email } });
+      const from = arg("from")?.trim().toLowerCase();
+      const existing =
+        (await tx.user.findUnique({ where: { email } })) ?? (from ? await tx.user.findUnique({ where: { email: from } }) : null);
       const userId = existing?.id ?? randomUUID();
       if (!existing) {
         await tx.user.create({ data: { id: userId, email, name, role, emailVerified: true } });
       } else {
-        await tx.user.update({ where: { id: userId }, data: { role } });
+        await tx.user.update({ where: { id: userId }, data: { role, email, emailVerified: true } });
       }
+      // A reset signs out any session that was open with the old credentials.
+      await tx.session.deleteMany({ where: { userId } });
       const account = await tx.account.findFirst({ where: { userId, providerId: "credential" } });
       if (account) await tx.account.update({ where: { id: account.id }, data: { password: hash } });
       else await tx.account.create({ data: { id: randomUUID(), userId, accountId: userId, providerId: "credential", password: hash } });

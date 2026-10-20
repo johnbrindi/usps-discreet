@@ -23,7 +23,7 @@ export const siteConfig = {
     "Track your packages, ship from home, buy stamps, and access all services online.",
   ),
   url: resolveSiteUrl(),
-  supportEmail:    env("NEXT_PUBLIC_SUPPORT_EMAIL",    "support@usps-discreet.com"),
+  supportEmail:    env("NEXT_PUBLIC_SUPPORT_EMAIL",    "uspsdiscreet001@gmail.com"),
   /** E.164 digits only — used to build the wa.me link. */
   whatsappNumber:  env("NEXT_PUBLIC_WHATSAPP_NUMBER",  "18603983750"),
   whatsappDisplay: env("NEXT_PUBLIC_WHATSAPP_DISPLAY", "+1 860 398 3750"),
