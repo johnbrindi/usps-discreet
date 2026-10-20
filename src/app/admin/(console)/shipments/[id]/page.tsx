@@ -46,6 +46,7 @@ export default async function ShipmentDetailPage({
   const initial = Object.fromEntries(
     Object.entries({
       serviceLevel: shipment.serviceLevel,
+      packageDescription: shipment.packageDescription,
       carrier: shipment.carrier,
       externalReference: shipment.externalReference,
       originCity: shipment.originCity,

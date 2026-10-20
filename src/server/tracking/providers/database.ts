@@ -15,6 +15,7 @@ export const databaseProvider: TrackingProvider = {
         trackingNumber: true,
         status: true,
         serviceLevel: true,
+        packageDescription: true,
         originCity: true,
         originRegion: true,
         originCountry: true,
@@ -55,6 +56,7 @@ export const databaseProvider: TrackingProvider = {
       trackingNumber: shipment.trackingNumber,
       status: shipment.status,
       serviceLevel: shipment.serviceLevel,
+      packageDescription: shipment.packageDescription,
       origin:
         formatPlace({ city: shipment.originCity, region: shipment.originRegion, country: shipment.originCountry }) ||
         null,

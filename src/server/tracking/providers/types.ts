@@ -19,6 +19,7 @@ export type PublicTrackingResult = {
   trackingNumber: string;
   status: ShipmentStatus;
   serviceLevel: string | null;
+  packageDescription: string | null;
   origin: string | null;
   destination: string | null;
   originPlace: PublicPlace;

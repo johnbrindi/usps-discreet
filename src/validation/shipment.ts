@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { CARRIER_PROVIDERS } from "@/domain/carriers";
-import { SHIPMENT_STATUSES } from "@/domain/shipment-status";
+import { PACKAGE_DESCRIPTIONS, SHIPMENT_STATUSES } from "@/domain/shipment-status";
 import { trackingNumberSchema } from "./tracking";
 
 const optionalText = (max: number) =>
@@ -34,6 +34,7 @@ export const shipmentSchema = z
   .object({
     trackingNumber: trackingNumberSchema.optional().or(z.literal("").transform(() => undefined)),
     serviceLevel: optionalText(80),
+    packageDescription: z.enum(PACKAGE_DESCRIPTIONS).optional(),
     carrier: optionalText(80),
     externalReference: optionalText(120),
     originCity: optionalText(120),

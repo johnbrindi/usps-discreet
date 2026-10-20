@@ -14,6 +14,9 @@ export const SHIPMENT_STATUSES = [
   "RETURNED_TO_SENDER",
 ] as const;
 
+/** Choices staff can pick to describe a package and its contents. */
+export const PACKAGE_DESCRIPTIONS = ["Discreet"] as const;
+
 export type ShipmentStatus = (typeof SHIPMENT_STATUSES)[number];
 
 export type StatusTone = "neutral" | "info" | "progress" | "success" | "warning" | "danger";

@@ -50,6 +50,8 @@ model Shipment {
   trackingNumber String         @unique @map("tracking_number") @db.VarChar(40)
   status         ShipmentStatus @default(INFO_RECEIVED)
   serviceLevel   String?        @map("service_level") @db.VarChar(80)
+  /// Public description of the package and its contents. See PACKAGE_DESCRIPTIONS.
+  packageDescription String?    @map("package_description") @db.VarChar(80)
 
   // Public-safe location summary (city/region/country only).
   originCity         String? @map("origin_city") @db.VarChar(120)
