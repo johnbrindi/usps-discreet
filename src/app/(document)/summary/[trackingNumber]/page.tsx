@@ -97,6 +97,7 @@ export default async function TrackingSummaryPage({ params, searchParams }: Prop
           <Fact label="From" value={r.origin ?? "Not provided"} />
           <Fact label="To" value={r.destination ?? "Not provided"} />
           <Fact label="Service" value={r.serviceLevel ?? "Not provided"} />
+          <Fact label="Package description" value={r.packageDescription ?? "Not provided"} />
           <Fact
             label="Expected delivery"
             value={

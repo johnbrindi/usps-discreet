@@ -156,7 +156,13 @@ export function ShipmentSummary({ result }: { result: PublicTrackingResult }) {
       <Card className="p-5 sm:p-6">
         <div className="mb-5 flex flex-wrap items-baseline justify-between gap-2">
           <h2 className="text-lg font-semibold text-navy-900">Tracking history</h2>
-          {result.serviceLevel && <p className="text-sm text-muted">Service: {result.serviceLevel}</p>}
+          {(result.serviceLevel || result.packageDescription) && (
+            <p className="text-sm text-muted">
+              {[result.serviceLevel && `Service: ${result.serviceLevel}`, result.packageDescription && `Package: ${result.packageDescription}`]
+                .filter(Boolean)
+                .join(" · ")}
+            </p>
+          )}
         </div>
         <TrackingTimeline events={result.events} />
         {result.carrier && (
