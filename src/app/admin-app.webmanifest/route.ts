@@ -13,7 +13,8 @@ export function GET() {
       name: `${siteConfig.name} Admin`,
       short_name: `${siteConfig.shortName} Admin`,
       description: `Record scans and manage shipments for ${siteConfig.name}.`,
-      start_url: "/admin",
+      // The marker tells the page it is running as the admin app (see InstallPrompt).
+      start_url: "/admin?source=admin-app",
       scope: "/admin",
       display: "standalone",
       background_color: "#071526",
