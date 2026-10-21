@@ -16,6 +16,10 @@ export const databaseProvider: TrackingProvider = {
         status: true,
         serviceLevel: true,
         packageDescription: true,
+        shipperName: true,
+        shipperEmail: true,
+        recipientName: true,
+        recipientEmail: true,
         originCity: true,
         originRegion: true,
         originCountry: true,
@@ -57,6 +61,8 @@ export const databaseProvider: TrackingProvider = {
       status: shipment.status,
       serviceLevel: shipment.serviceLevel,
       packageDescription: shipment.packageDescription,
+      shipper: { name: shipment.shipperName, email: shipment.shipperEmail },
+      recipient: { name: shipment.recipientName, email: shipment.recipientEmail },
       origin:
         formatPlace({ city: shipment.originCity, region: shipment.originRegion, country: shipment.originCountry }) ||
         null,

@@ -18,7 +18,7 @@ export default async function MessagesPage({ searchParams }: { searchParams: Pro
     select: {
       id: true,
       lastMessageAt: true,
-      messages: { orderBy: { createdAt: "desc" }, take: 1, select: { body: true, sender: true } },
+      messages: { orderBy: { createdAt: "desc" }, take: 1, select: { body: true, imageType: true, sender: true } },
       _count: { select: { messages: true } },
     },
   });
@@ -53,7 +53,7 @@ export default async function MessagesPage({ searchParams }: { searchParams: Pro
                 <li key={c.id}>
                   <Link href={`/admin/messages/${c.id}`} className="flex items-center justify-between gap-4 px-5 py-3 hover:bg-surface">
                     <div className="min-w-0">
-                      <p className="truncate text-sm text-ink">{last?.body ?? "(empty)"}</p>
+                      <p className="truncate text-sm text-ink">{last?.body || (last?.imageType ? "📷 Photo" : "(empty)")}</p>
                       <p className="text-xs text-muted">
                         {c._count.messages} message{c._count.messages === 1 ? "" : "s"} · {c.lastMessageAt.toISOString().slice(0, 16).replace("T", " ")} UTC
                       </p>

@@ -5,7 +5,8 @@ import { requireStaff } from "@/lib/authz";
 import { db } from "@/lib/db";
 import { logger } from "@/lib/logger";
 import { audit } from "@/server/audit";
-import { chatMessageSchema } from "@/validation/chat";
+import { decodeChatImage } from "@/server/chat";
+import { MAX_CHAT_IMAGE_BYTES, chatMessageSchema } from "@/validation/chat";
 import type { ActionState } from "./types";
 
 export async function replyToConversation(
@@ -15,12 +16,20 @@ export async function replyToConversation(
 ): Promise<ActionState> {
   const user = await requireStaff();
   if (typeof conversationId !== "string") return { status: "error", message: "Invalid conversation." };
-  const parsed = chatMessageSchema.safeParse({ body: formData.get("body") });
+  const parsed = chatMessageSchema.safeParse({ body: formData.get("body") ?? "", image: formData.get("image") || undefined });
   if (!parsed.success) return { status: "error", fieldErrors: parsed.error.flatten().fieldErrors };
+  const image = parsed.data.image ? decodeChatImage(parsed.data.image, MAX_CHAT_IMAGE_BYTES) : null;
+  if (parsed.data.image && !image) return { status: "error", message: "That photo couldn't be sent. Try a JPEG or PNG." };
   try {
     await db.$transaction([
       db.chatMessage.create({
-        data: { conversationId, sender: "AGENT", body: parsed.data.body, agentUserId: user.id },
+        data: {
+          conversationId,
+          sender: "AGENT",
+          body: parsed.data.body,
+          agentUserId: user.id,
+          ...(image && { imageData: image.data, imageType: image.type }),
+        },
       }),
       db.chatConversation.update({ where: { id: conversationId }, data: { lastMessageAt: new Date(), status: "OPEN" } }),
     ]);

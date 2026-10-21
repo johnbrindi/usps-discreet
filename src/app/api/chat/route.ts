@@ -3,13 +3,14 @@ import { db } from "@/lib/db";
 import { logger } from "@/lib/logger";
 import { chatLimiter } from "@/lib/rate-limit";
 import { isWithinSupportHours } from "@/lib/support-hours";
-import { CHAT_COOKIE, hashVisitorToken, newVisitorToken, type ChatMessageDTO } from "@/server/chat";
+import { CHAT_COOKIE, chatImageUrl, chatPreview, decodeChatImage, hashVisitorToken, newVisitorToken, type ChatMessageDTO } from "@/server/chat";
 import { notifyStaff } from "@/server/push";
-import { chatMessageSchema } from "@/validation/chat";
+import { MAX_CHAT_IMAGE_BYTES, chatMessageSchema } from "@/validation/chat";
 
 export const dynamic = "force-dynamic";
 
-const MAX_BODY_BYTES = 8 * 1024;
+// Room for a base64-encoded photo plus the text.
+const MAX_BODY_BYTES = 2_100_000;
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 30;
 
 function ipOf(req: NextRequest) {
@@ -21,10 +22,18 @@ async function loadMessages(token: string | undefined): Promise<ChatMessageDTO[]
   const convo = await db.chatConversation.findUnique({
     where: { visitorTokenHash: hashVisitorToken(token) },
     select: {
-      messages: { orderBy: { createdAt: "asc" }, take: 200, select: { id: true, sender: true, body: true, createdAt: true } },
+      messages: {
+        orderBy: { createdAt: "asc" },
+        take: 200,
+        select: { id: true, sender: true, body: true, imageType: true, createdAt: true },
+      },
     },
   });
-  return (convo?.messages ?? []).map((m) => ({ ...m, createdAt: m.createdAt.toISOString() }));
+  return (convo?.messages ?? []).map(({ imageType, ...m }) => ({
+    ...m,
+    imageUrl: imageType ? chatImageUrl(m.id) : null,
+    createdAt: m.createdAt.toISOString(),
+  }));
 }
 
 export async function GET(req: NextRequest) {
@@ -65,6 +74,10 @@ export async function POST(req: NextRequest) {
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Invalid message" }, { status: 400 });
   }
+  const image = parsed.data.image ? decodeChatImage(parsed.data.image, MAX_CHAT_IMAGE_BYTES) : null;
+  if (parsed.data.image && !image) {
+    return NextResponse.json({ error: "That photo couldn't be sent. Try a JPEG or PNG under 1.5 MB." }, { status: 400 });
+  }
 
   let token = req.cookies.get(CHAT_COOKIE)?.value;
   const isNew = !token;
@@ -79,14 +92,21 @@ export async function POST(req: NextRequest) {
         update: { lastMessageAt: new Date(), status: "OPEN" },
         select: { id: true },
       });
-      await tx.chatMessage.create({ data: { conversationId: convo.id, sender: "VISITOR", body: parsed.data.body } });
+      await tx.chatMessage.create({
+        data: {
+          conversationId: convo.id,
+          sender: "VISITOR",
+          body: parsed.data.body,
+          ...(image && { imageData: image.data, imageType: image.type }),
+        },
+      });
       return convo.id;
     });
     // Alert staff devices after the response is sent, so the visitor never waits on it.
     after(() =>
       notifyStaff({
         title: "New chat message",
-        body: parsed.data.body,
+        body: chatPreview({ body: parsed.data.body, imageType: image?.type }),
         url: `/admin/messages/${conversationId}`,
         tag: `chat-${conversationId}`,
       }),

@@ -41,7 +41,7 @@ const nextConfig: NextConfig = {
     "/track/[trackingNumber]": MAP_DATA,
     "/summary/[trackingNumber]": MAP_DATA,
   },
-  experimental: { serverActions: { bodySizeLimit: "64kb" } },
+  experimental: { serverActions: { bodySizeLimit: "3mb" } },
   async headers() {
     return [
       { source: "/:path*", headers: securityHeaders },

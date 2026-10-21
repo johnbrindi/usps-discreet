@@ -57,22 +57,25 @@ export const STATUS_META: Record<ShipmentStatus, { label: string; summary: strin
   },
 };
 
-/** Allowed next statuses. Repeating a scan of the same status (e.g. another facility) is allowed where listed. */
+/** Once a parcel is in the network, any of these can be recorded next. */
+const IN_NETWORK: readonly ShipmentStatus[] = [
+  "IN_TRANSIT",
+  "ARRIVED_AT_FACILITY",
+  "OUT_FOR_DELIVERY",
+  "ON_HOLD",
+  "EXCEPTION",
+  "RETURNED_TO_SENDER",
+];
+
+/** Allowed next statuses. Repeating a scan of the same status (e.g. another facility) is allowed. */
 export const STATUS_TRANSITIONS: Record<ShipmentStatus, readonly ShipmentStatus[]> = {
   INFO_RECEIVED: ["ACCEPTED", "EXCEPTION"],
-  ACCEPTED: ["IN_TRANSIT", "ARRIVED_AT_FACILITY", "ON_HOLD", "EXCEPTION"],
-  IN_TRANSIT: ["IN_TRANSIT", "ARRIVED_AT_FACILITY", "OUT_FOR_DELIVERY", "ON_HOLD", "EXCEPTION", "RETURNED_TO_SENDER"],
-  ARRIVED_AT_FACILITY: [
-    "ARRIVED_AT_FACILITY",
-    "IN_TRANSIT",
-    "OUT_FOR_DELIVERY",
-    "ON_HOLD",
-    "EXCEPTION",
-    "RETURNED_TO_SENDER",
-  ],
-  OUT_FOR_DELIVERY: ["DELIVERED", "ON_HOLD", "EXCEPTION", "ARRIVED_AT_FACILITY"],
-  ON_HOLD: ["ON_HOLD", "IN_TRANSIT", "ARRIVED_AT_FACILITY", "OUT_FOR_DELIVERY", "EXCEPTION", "RETURNED_TO_SENDER"],
-  EXCEPTION: ["EXCEPTION", "IN_TRANSIT", "ARRIVED_AT_FACILITY", "OUT_FOR_DELIVERY", "ON_HOLD", "RETURNED_TO_SENDER"],
+  ACCEPTED: IN_NETWORK,
+  IN_TRANSIT: IN_NETWORK,
+  ARRIVED_AT_FACILITY: IN_NETWORK,
+  OUT_FOR_DELIVERY: ["DELIVERED", ...IN_NETWORK],
+  ON_HOLD: IN_NETWORK,
+  EXCEPTION: IN_NETWORK,
   DELIVERED: [],
   RETURNED_TO_SENDER: [],
 };

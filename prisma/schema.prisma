@@ -61,8 +61,13 @@ model Shipment {
   destinationRegion  String? @map("destination_region") @db.VarChar(120)
   destinationCountry String? @map("destination_country") @db.Char(2)
 
+  // Shipper and receiver contact details — shown on the public tracking page.
+  shipperName    String? @map("shipper_name") @db.VarChar(160)
+  shipperEmail   String? @map("shipper_email") @db.VarChar(254)
+  recipientName  String? @map("recipient_name") @db.VarChar(160)
+  recipientEmail String? @map("recipient_email") @db.VarChar(254)
+
   // Private — never returned by the public tracking API.
-  recipientName       String? @map("recipient_name") @db.VarChar(160)
   destinationPostcode String? @map("destination_postcode") @db.VarChar(20)
   internalNotes       String? @map("internal_notes") @db.Text
 
@@ -273,7 +278,11 @@ model ChatMessage {
   id             String     @id @default(cuid())
   conversationId String     @map("conversation_id")
   sender         ChatSender
+  /// Empty when the message is only a photo.
   body           String     @db.VarChar(2000)
+  /// Attached photo, re-encoded in the browser before upload. Served by /api/chat/image/[id].
+  imageData      Bytes?     @map("image_data")
+  imageType      String?    @map("image_type") @db.VarChar(40)
   agentUserId    String?    @map("agent_user_id")
   createdAt      DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
 

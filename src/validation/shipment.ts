@@ -12,6 +12,15 @@ const optionalText = (max: number) =>
     .nullable()
     .optional();
 
+const optionalEmail = z
+  .string()
+  .trim()
+  .max(254)
+  .refine((v) => v === "" || z.email().safeParse(v).success, "Enter a valid email address.")
+  .transform((v) => (v === "" ? null : v))
+  .nullable()
+  .optional();
+
 const country = z
   .string()
   .trim()
@@ -44,7 +53,10 @@ export const shipmentSchema = z
     destinationRegion: optionalText(120),
     destinationCountry: country,
     destinationPostcode: optionalText(20),
+    shipperName: optionalText(160),
+    shipperEmail: optionalEmail,
     recipientName: optionalText(160),
+    recipientEmail: optionalEmail,
     internalNotes: optionalText(4000),
     estimatedDeliveryDate: z
       .string()

@@ -1,8 +1,10 @@
 import type { ShipmentStatus } from "@/domain/shipment-status";
 
-/** Public-safe tracking view. Contains no recipient names, street addresses or internal notes. */
+/** Public-safe tracking view. Contains no street addresses, postcodes or internal notes. */
 /** City-level place, as recorded. Never includes street addresses. */
 export type PublicPlace = { city: string | null; region: string | null; country: string | null };
+
+export type PublicContact = { name: string | null; email: string | null };
 
 export type PublicTrackingEvent = {
   id: string;
@@ -20,6 +22,8 @@ export type PublicTrackingResult = {
   status: ShipmentStatus;
   serviceLevel: string | null;
   packageDescription: string | null;
+  shipper: PublicContact;
+  recipient: PublicContact;
   origin: string | null;
   destination: string | null;
   originPlace: PublicPlace;

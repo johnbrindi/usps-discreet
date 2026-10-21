@@ -14,7 +14,7 @@ export type ShipmentFormValues = Partial<Record<
   | "trackingNumber" | "serviceLevel" | "packageDescription" | "carrier" | "externalReference"
   | "originCity" | "originRegion" | "originCountry"
   | "destinationCity" | "destinationRegion" | "destinationCountry" | "destinationPostcode"
-  | "recipientName" | "internalNotes" | "estimatedDeliveryDate" | "estimateSource"
+  | "shipperName" | "shipperEmail" | "recipientName" | "recipientEmail" | "internalNotes" | "estimatedDeliveryDate" | "estimateSource"
   | "trackingMode" | "carrierProvider" | "carrierTrackingNumber",
   string
 >>;
@@ -163,12 +163,14 @@ export function ShipmentForm({
         {text("destinationRegion", "State / region (public)", { max: 120, placeholder: "e.g. TX or Texas" })}
         {text("destinationCountry", "Country (public)", { max: 2, hint: "2-letter code, e.g. US", placeholder: "US" })}
         {text("destinationPostcode", "Postcode (private)", { max: 20, placeholder: "e.g. 78701", hint: "Staff only — never shown publicly." })}
-        {text("recipientName", "Recipient name (private)", {
-          max: 160,
-          className: "sm:col-span-2",
-          placeholder: "e.g. Jane Smith",
-          hint: "Staff only — never shown publicly.",
-        })}
+      </fieldset>
+
+      <fieldset className="grid min-w-0 grid-cols-1 gap-5 sm:grid-cols-2">
+        <legend className="mb-3 text-sm font-bold tracking-wide text-navy-900 uppercase">Shipper &amp; receiver (shown publicly)</legend>
+        {text("shipperName", "Shipper name", { max: 160, placeholder: "e.g. Acme Store" })}
+        {text("shipperEmail", "Shipper email", { max: 254, type: "email", placeholder: "e.g. orders@acme.com" })}
+        {text("recipientName", "Receiver name", { max: 160, placeholder: "e.g. Jane Smith" })}
+        {text("recipientEmail", "Receiver email", { max: 254, type: "email", placeholder: "e.g. jane@example.com" })}
       </fieldset>
 
       {carrierMode || carrierTracked ? (

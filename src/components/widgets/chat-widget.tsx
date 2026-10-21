@@ -1,10 +1,11 @@
 "use client";
 
-import { AlertCircle, Loader2, Lock, MessageCircle, RefreshCw, Send, X } from "lucide-react";
+import { AlertCircle, ImagePlus, Loader2, Lock, MessageCircle, RefreshCw, Send, X } from "lucide-react";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { compressImage } from "@/lib/compress-image";
 import { cn } from "@/lib/utils";
 
-type Message = { id: string; sender: "VISITOR" | "AGENT"; body: string; createdAt: string };
+type Message = { id: string; sender: "VISITOR" | "AGENT"; body: string; imageUrl: string | null; createdAt: string };
 type LoadState = "idle" | "loading" | "ready" | "error";
 
 const POLL_MS = 5_000;
@@ -17,6 +18,9 @@ export function ChatWidget({ agentName, hoursLabel, alwaysOpen = false }: { agen
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
+  /** Photo waiting to be sent, as a resized JPEG data URL. */
+  const [photo, setPhoto] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const launcherRef = useRef<HTMLButtonElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -79,16 +83,28 @@ export function ChatWidget({ agentName, hoursLabel, alwaysOpen = false }: { agen
     return () => window.removeEventListener("keydown", onKey);
   }, [open, close]);
 
+  async function pickPhoto(file: File | undefined) {
+    if (fileRef.current) fileRef.current.value = "";
+    if (!file) return;
+    setSendError(null);
+    try {
+      setPhoto(await compressImage(file));
+    } catch (err) {
+      setSendError(err instanceof Error ? err.message : "That photo couldn't be added.");
+    }
+    inputRef.current?.focus();
+  }
+
   async function send() {
     const body = draft.trim();
-    if (!body || sending) return;
+    if ((!body && !photo) || sending) return;
     setSending(true);
     setSendError(null);
     try {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ body }),
+        body: JSON.stringify({ body, ...(photo && { image: photo }) }),
       });
       const data = (await res.json().catch(() => ({}))) as {
         messages?: Message[];
@@ -99,6 +115,7 @@ export function ChatWidget({ agentName, hoursLabel, alwaysOpen = false }: { agen
       setMessages(data.messages);
       if (typeof data.withinSupportHours === "boolean") setWithinHours(data.withinSupportHours);
       setDraft("");
+      setPhoto(null);
       setLoad("ready");
     } catch (err) {
       setSendError(err instanceof Error ? err.message : "Your message couldn't be sent.");
@@ -228,14 +245,23 @@ export function ChatWidget({ agentName, hoursLabel, alwaysOpen = false }: { agen
             return (
               <div key={m.id} className={cn("flex flex-col", mine ? "items-end" : "items-start")}>
                 <p className="mb-0.5 px-1 text-[0.6875rem] font-semibold text-muted">{mine ? "You" : agentName}</p>
-                <div
-                  className={cn(
-                    "max-w-[85%] rounded-2xl px-3.5 py-2 text-sm leading-6 break-words whitespace-pre-wrap",
-                    mine ? "rounded-br-sm bg-navy-700 text-white" : "rounded-bl-sm border border-line bg-white text-ink",
-                  )}
-                >
-                  {m.body}
-                </div>
+                {m.imageUrl && (
+                  <a href={m.imageUrl} target="_blank" rel="noopener" className="mb-1 block max-w-[85%]">
+                    {/* eslint-disable-next-line @next/next/no-img-element -- private, cookie-authenticated image */}
+                    <img src={m.imageUrl} alt="Photo" loading="lazy" className="max-h-64 rounded-2xl border border-line object-cover" />
+                    <span className="sr-only">(opens full size in a new tab)</span>
+                  </a>
+                )}
+                {m.body && (
+                  <div
+                    className={cn(
+                      "max-w-[85%] rounded-2xl px-3.5 py-2 text-sm leading-6 break-words whitespace-pre-wrap",
+                      mine ? "rounded-br-sm bg-navy-700 text-white" : "rounded-bl-sm border border-line bg-white text-ink",
+                    )}
+                  >
+                    {m.body}
+                  </div>
+                )}
                 <time dateTime={m.createdAt} className="mt-0.5 px-1 text-[0.6875rem] text-muted">
                   {new Date(m.createdAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
                 </time>
@@ -256,7 +282,38 @@ export function ChatWidget({ agentName, hoursLabel, alwaysOpen = false }: { agen
               {sendError}
             </p>
           )}
+          {photo && (
+            <div className="relative mb-2 inline-block">
+              {/* eslint-disable-next-line @next/next/no-img-element -- local preview */}
+              <img src={photo} alt="Photo to send" className="h-20 rounded-md border border-line object-cover" />
+              <button
+                type="button"
+                onClick={() => setPhoto(null)}
+                className="absolute -top-2 -right-2 inline-flex size-6 items-center justify-center rounded-full bg-navy-950 text-white"
+              >
+                <X className="size-3.5" aria-hidden />
+                <span className="sr-only">Remove photo</span>
+              </button>
+            </div>
+          )}
           <div className="flex items-end gap-2">
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              tabIndex={-1}
+              onChange={(e) => void pickPhoto(e.target.files?.[0])}
+            />
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              disabled={sending}
+              className="inline-flex size-11 shrink-0 items-center justify-center rounded-md border border-line-strong text-navy-700 hover:bg-navy-50 disabled:opacity-50"
+            >
+              <ImagePlus className="size-5" aria-hidden />
+              <span className="sr-only">Attach a photo</span>
+            </button>
             <label htmlFor={inputId} className="sr-only">
               Message
             </label>
@@ -273,12 +330,12 @@ export function ChatWidget({ agentName, hoursLabel, alwaysOpen = false }: { agen
                   void send();
                 }
               }}
-              placeholder="Write a message…"
+              placeholder={photo ? "Add a caption (optional)…" : "Write a message…"}
               className="max-h-32 min-h-11 flex-1 resize-none rounded-md border border-line-strong px-3 py-2.5 text-sm focus:border-navy-600 focus:ring-3 focus:ring-navy-600/20 focus:outline-none"
             />
             <button
               type="submit"
-              disabled={sending || !draft.trim()}
+              disabled={sending || (!draft.trim() && !photo)}
               className="inline-flex size-11 shrink-0 items-center justify-center rounded-md bg-navy-700 text-white hover:bg-navy-800 disabled:opacity-50"
             >
               {sending ? <Loader2 className="size-5 animate-spin" aria-hidden /> : <Send className="size-5" aria-hidden />}

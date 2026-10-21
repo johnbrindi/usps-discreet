@@ -1,4 +1,4 @@
-import { CalendarClock, Copy, FileDown, FlaskConical, Map as MapIcon, MapPin, Navigation, Package, RadioTower } from "lucide-react";
+import { CalendarClock, Copy, FileDown, FlaskConical, Map as MapIcon, MapPin, Navigation, Package, RadioTower, Store, UserRound } from "lucide-react";
 import { STATUS_META, type StatusTone } from "@/domain/shipment-status";
 import { formatDateOnly, formatEventTime } from "@/domain/time";
 import { formatTrackingNumber } from "@/domain/tracking-number";
@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/card";
 import { logger } from "@/lib/logger";
 import { cn } from "@/lib/utils";
 import { resolveRoute } from "@/server/geo/route-map";
-import type { PublicTrackingResult } from "@/server/tracking/providers/types";
+import type { PublicContact, PublicTrackingResult } from "@/server/tracking/providers/types";
 import { CopyButton } from "./copy-button";
 import { ProgressSteps } from "./progress-steps";
 import { LiveRouteMap } from "./live-route-map";
@@ -129,6 +129,17 @@ export function ShipmentSummary({ result }: { result: PublicTrackingResult }) {
           </SummaryItem>
         </dl>
 
+        {(hasContact(result.shipper) || hasContact(result.recipient)) && (
+          <dl className="grid grid-cols-1 divide-line border-t border-line max-sm:divide-y sm:grid-cols-2 sm:divide-x">
+            <SummaryItem icon={<Store className="size-4" aria-hidden />} label="Shipper">
+              <ContactDetails contact={result.shipper} />
+            </SummaryItem>
+            <SummaryItem icon={<UserRound className="size-4" aria-hidden />} label="Receiver">
+              <ContactDetails contact={result.recipient} />
+            </SummaryItem>
+          </dl>
+        )}
+
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line bg-surface/60 px-5 py-3 sm:px-6">
           <p className="text-sm text-muted">
             {result.events.length} scan{result.events.length === 1 ? "" : "s"} recorded
@@ -200,6 +211,18 @@ function safeRouteMap(result: PublicTrackingResult) {
     logger.error("tracking.route_map_failed", err);
     return null;
   }
+}
+
+const hasContact = (c: PublicContact) => !!(c.name || c.email);
+
+function ContactDetails({ contact }: { contact: PublicContact }) {
+  if (!hasContact(contact)) return <span className="font-normal text-muted">Not provided</span>;
+  return (
+    <>
+      {contact.name}
+      {contact.email && <span className="mt-0.5 block text-sm font-normal break-all text-muted">{contact.email}</span>}
+    </>
+  );
 }
 
 function SummaryItem({ icon, label, children }: { icon: React.ReactNode; label: string; children: React.ReactNode }) {
