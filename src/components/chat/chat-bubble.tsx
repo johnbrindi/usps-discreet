@@ -1,6 +1,6 @@
 "use client";
 
-import { X } from "lucide-react";
+import { Check, CheckCheck, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
@@ -14,6 +14,7 @@ export function ChatBubble({
   dateTime,
   author,
   tail = true,
+  status,
 }: {
   mine: boolean;
   body: string;
@@ -24,12 +25,16 @@ export function ChatBubble({
   author?: string;
   /** False for the follow-up bubbles in a run, which then sit closer together. */
   tail?: boolean;
+  /** Own messages only: one tick once sent, two green ticks once the other side has seen it. */
+  status?: "sent" | "seen";
 }) {
   const [viewing, setViewing] = useState(false);
+  const ticks = status && <Ticks status={status} />;
   const stamp = (
-    <time dateTime={dateTime} className={cn("text-[0.6875rem] whitespace-nowrap", mine ? "text-white/70" : "text-muted")}>
-      {time}
-    </time>
+    <span className={cn("inline-flex items-center gap-1 text-[0.6875rem] whitespace-nowrap", mine ? "text-white/70" : "text-muted")}>
+      <time dateTime={dateTime}>{time}</time>
+      {ticks}
+    </span>
   );
 
   return (
@@ -49,8 +54,9 @@ export function ChatBubble({
             <img src={imageUrl} alt="Photo" loading="lazy" className="block max-h-72 w-full min-w-40 object-cover" />
             <span className="sr-only">View photo full size</span>
             {!body && (
-              <span className="absolute right-1.5 bottom-1.5 rounded-full bg-black/45 px-2 py-0.5 text-[0.6875rem] text-white">
+              <span className="absolute right-1.5 bottom-1.5 inline-flex items-center gap-1 rounded-full bg-black/45 px-2 py-0.5 text-[0.6875rem] text-white">
                 {time}
+                {ticks}
               </span>
             )}
           </button>
@@ -65,6 +71,14 @@ export function ChatBubble({
       </div>
       {viewing && imageUrl && <PhotoViewer src={imageUrl} onClose={() => setViewing(false)} />}
     </div>
+  );
+}
+
+function Ticks({ status }: { status: "sent" | "seen" }) {
+  return status === "seen" ? (
+    <CheckCheck className="size-4 text-emerald-400" strokeWidth={2.5} aria-label="Seen" role="img" />
+  ) : (
+    <Check className="size-3.5 opacity-80" strokeWidth={2.5} aria-label="Sent" role="img" />
   );
 }
 

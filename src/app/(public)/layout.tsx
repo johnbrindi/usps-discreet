@@ -3,6 +3,7 @@ import { SiteHeader } from "@/components/layout/site-header";
 import { InstallPrompt } from "@/components/pwa/install-prompt";
 import { siteConfig } from "@/config/site";
 import { FloatingWidgets } from "@/components/widgets/floating-widgets";
+import { VisitBeacon } from "@/components/widgets/visit-beacon";
 
 // Static public pages show support hours; refresh hourly so time-zone labels stay correct.
 export const revalidate = 3600;
@@ -23,6 +24,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
       </main>
       <SiteFooter />
       <FloatingWidgets />
+      <VisitBeacon />
       <InstallPrompt appName={siteConfig.shortName} />
     </>
   );

@@ -266,6 +266,10 @@ model ChatConversation {
   visitorTokenHash String     @unique @map("visitor_token_hash") @db.Char(64)
   status           ChatStatus @default(OPEN)
   lastMessageAt    DateTime   @default(now()) @map("last_message_at") @db.Timestamptz(6)
+  /// When the visitor last had the chat open; agent messages up to here show as seen.
+  visitorReadAt    DateTime?  @map("visitor_read_at") @db.Timestamptz(6)
+  /// When staff last viewed the conversation; visitor messages up to here show as seen.
+  agentReadAt      DateTime?  @map("agent_read_at") @db.Timestamptz(6)
   createdAt        DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
 
   messages ChatMessage[]
@@ -291,6 +295,26 @@ model ChatMessage {
 
   @@index([conversationId, createdAt])
   @@map("chat_messages")
+}
+
+/// One browser tab's visit to the public site, used to alert staff when visitors arrive and leave.
+model SiteVisit {
+  /// Random id the browser keeps for the tab's session.
+  id           String    @id @db.VarChar(64)
+  path         String    @db.VarChar(300)
+  referrer     String?   @db.VarChar(300)
+  userAgent    String?   @map("user_agent") @db.VarChar(300)
+  city         String?   @db.VarChar(120)
+  region       String?   @db.VarChar(120)
+  country      String?   @db.Char(2)
+  startedAt    DateTime  @default(now()) @map("started_at") @db.Timestamptz(6)
+  lastSeenAt   DateTime  @default(now()) @map("last_seen_at") @db.Timestamptz(6)
+  /// Set when the tab is closed or navigates away; cleared if the visitor comes straight back (e.g. a reload).
+  leftAt       DateTime? @map("left_at") @db.Timestamptz(6)
+  leftNotified Boolean   @default(false) @map("left_notified")
+
+  @@index([lastSeenAt(sort: Desc)])
+  @@map("site_visits")
 }
 
 // ─── Administration ─────────────────────────────────────────────────────────

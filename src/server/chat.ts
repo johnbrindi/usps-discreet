@@ -11,7 +11,24 @@ export function hashVisitorToken(token: string) {
   return createHash("sha256").update(token).digest("hex");
 }
 
-export type ChatMessageDTO = { id: string; sender: "VISITOR" | "AGENT"; body: string; imageUrl: string | null; createdAt: string };
+export type ChatMessageDTO = {
+  id: string;
+  sender: "VISITOR" | "AGENT";
+  body: string;
+  imageUrl: string | null;
+  /** The other side has viewed the conversation since this was sent (WhatsApp's two ticks). */
+  seen: boolean;
+  createdAt: string;
+};
+
+/** Whether the other side has viewed the conversation since `m` was sent. */
+export function isSeen(
+  m: { sender: "VISITOR" | "AGENT"; createdAt: Date },
+  convo: { visitorReadAt: Date | null; agentReadAt: Date | null },
+) {
+  const readAt = m.sender === "VISITOR" ? convo.agentReadAt : convo.visitorReadAt;
+  return !!readAt && readAt >= m.createdAt;
+}
 
 export type ChatImage = { data: Buffer<ArrayBuffer>; type: string };
 

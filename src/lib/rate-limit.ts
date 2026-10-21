@@ -31,4 +31,6 @@ export const trackingLimiter = createRateLimiter({ limit: 30, windowMs: 60_000 }
 export const contactLimiter = createRateLimiter({ limit: 5, windowMs: 10 * 60_000 });
 export const serviceRequestLimiter = createRateLimiter({ limit: 5, windowMs: 10 * 60_000 });
 export const chatLimiter = createRateLimiter({ limit: 20, windowMs: 60_000 });
+/** Visit pings: one per page load or tab close, so this only stops floods. */
+export const presenceLimiter = createRateLimiter({ limit: 60, windowMs: 60_000 });
 export const loginLimiter = createRateLimiter({ limit: 10, windowMs: 15 * 60_000 });

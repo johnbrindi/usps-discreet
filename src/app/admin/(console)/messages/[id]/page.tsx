@@ -10,13 +10,16 @@ import { ChatBubble, DaySeparator } from "@/components/chat/chat-bubble";
 import { chatDateTime, chatTime, dayLabel, startsRun } from "@/lib/chat-format";
 import { replyToConversation, setConversationStatus } from "@/server/actions/admin-support";
 import { requireStaffPage } from "@/lib/authz";
-import { chatImageUrl } from "@/server/chat";
+import { chatImageUrl, isSeen } from "@/server/chat";
 
 export const metadata = { title: "Conversation" };
 
 export default async function ConversationPage({ params }: { params: Promise<{ id: string }> }) {
   await requireStaffPage();
   const { id } = await params;
+  // Staff are looking at the conversation, so the visitor's messages count as seen. This page only
+  // re-renders while it is open and visible (LiveRefresh skips hidden tabs).
+  await db.chatConversation.updateMany({ where: { id }, data: { agentReadAt: new Date() } });
   const convo = await db.chatConversation.findUnique({
     where: { id },
     include: {
@@ -61,6 +64,7 @@ export default async function ConversationPage({ params }: { params: Promise<{ i
                   dateTime={at}
                   author={newRun ? (agent ? `${siteConfig.chatAgentName}${m.agent ? ` (${m.agent.name})` : ""}` : "Visitor") : undefined}
                   tail={newRun}
+                  status={agent ? (isSeen(m, convo) ? "seen" : "sent") : undefined}
                 />
               </li>
             );

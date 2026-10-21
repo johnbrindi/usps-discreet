@@ -3,7 +3,16 @@ import { db } from "@/lib/db";
 import { logger } from "@/lib/logger";
 import { chatLimiter } from "@/lib/rate-limit";
 import { isWithinSupportHours } from "@/lib/support-hours";
-import { CHAT_COOKIE, chatImageUrl, chatPreview, decodeChatImage, hashVisitorToken, newVisitorToken, type ChatMessageDTO } from "@/server/chat";
+import {
+  CHAT_COOKIE,
+  chatImageUrl,
+  chatPreview,
+  decodeChatImage,
+  hashVisitorToken,
+  isSeen,
+  newVisitorToken,
+  type ChatMessageDTO,
+} from "@/server/chat";
 import { notifyStaff } from "@/server/push";
 import { MAX_CHAT_IMAGE_BYTES, chatMessageSchema } from "@/validation/chat";
 
@@ -17,11 +26,16 @@ function ipOf(req: NextRequest) {
   return req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || req.headers.get("x-real-ip") || "unknown";
 }
 
-async function loadMessages(token: string | undefined): Promise<ChatMessageDTO[]> {
+/** Loads the visitor's conversation. With `markRead`, the visitor is looking at it, so staff replies count as seen. */
+async function loadMessages(token: string | undefined, markRead = false): Promise<ChatMessageDTO[]> {
   if (!token) return [];
+  const where = { visitorTokenHash: hashVisitorToken(token) };
+  if (markRead) await db.chatConversation.updateMany({ where, data: { visitorReadAt: new Date() } });
   const convo = await db.chatConversation.findUnique({
-    where: { visitorTokenHash: hashVisitorToken(token) },
+    where,
     select: {
+      visitorReadAt: true,
+      agentReadAt: true,
       messages: {
         orderBy: { createdAt: "asc" },
         take: 200,
@@ -29,16 +43,20 @@ async function loadMessages(token: string | undefined): Promise<ChatMessageDTO[]
       },
     },
   });
-  return (convo?.messages ?? []).map(({ imageType, ...m }) => ({
+  if (!convo) return [];
+  return convo.messages.map(({ imageType, ...m }) => ({
     ...m,
     imageUrl: imageType ? chatImageUrl(m.id) : null,
+    seen: isSeen(m, convo),
     createdAt: m.createdAt.toISOString(),
   }));
 }
 
 export async function GET(req: NextRequest) {
   try {
-    const messages = await loadMessages(req.cookies.get(CHAT_COOKIE)?.value);
+    // The widget asks with ?read=1 only while the chat panel is open and the tab is visible.
+    const read = req.nextUrl.searchParams.get("read") === "1";
+    const messages = await loadMessages(req.cookies.get(CHAT_COOKIE)?.value, read);
     return NextResponse.json({ messages, withinSupportHours: isWithinSupportHours() });
   } catch (err) {
     logger.error("chat.load_failed", err);
@@ -112,7 +130,7 @@ export async function POST(req: NextRequest) {
       }),
     );
     const res = NextResponse.json(
-      { messages: await loadMessages(token), withinSupportHours: isWithinSupportHours() },
+      { messages: await loadMessages(token, true), withinSupportHours: isWithinSupportHours() },
       { status: 201 },
     );
     if (isNew) {

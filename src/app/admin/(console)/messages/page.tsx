@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { Check, CheckCheck } from "lucide-react";
+import { isSeen } from "@/server/chat";
 import { chatDateTime } from "@/lib/chat-format";
 import { AdminPageTitle } from "@/components/admin/page-title";
 import { Card } from "@/components/ui/card";
@@ -19,7 +21,9 @@ export default async function MessagesPage({ searchParams }: { searchParams: Pro
     select: {
       id: true,
       lastMessageAt: true,
-      messages: { orderBy: { createdAt: "desc" }, take: 1, select: { body: true, imageType: true, sender: true } },
+      visitorReadAt: true,
+      agentReadAt: true,
+      messages: { orderBy: { createdAt: "desc" }, take: 1, select: { body: true, imageType: true, sender: true, createdAt: true } },
       _count: { select: { messages: true } },
     },
   });
@@ -50,11 +54,20 @@ export default async function MessagesPage({ searchParams }: { searchParams: Pro
             {conversations.map((c) => {
               const last = c.messages[0];
               const awaiting = last?.sender === "VISITOR";
+              const unread = awaiting && !isSeen(last, c);
               return (
                 <li key={c.id}>
                   <Link href={`/admin/messages/${c.id}`} className="flex items-center justify-between gap-4 px-5 py-3 hover:bg-surface">
                     <div className="min-w-0">
-                      <p className="truncate text-sm text-ink">{last?.body || (last?.imageType ? "📷 Photo" : "(empty)")}</p>
+                      <p className={cn("flex items-center gap-1 truncate text-sm text-ink", unread && "font-bold")}>
+                        {last?.sender === "AGENT" &&
+                          (isSeen(last, c) ? (
+                            <CheckCheck className="size-4 shrink-0 text-emerald-600" strokeWidth={2.5} aria-label="Seen" role="img" />
+                          ) : (
+                            <Check className="size-4 shrink-0 text-muted" strokeWidth={2.5} aria-label="Sent" role="img" />
+                          ))}
+                        <span className="truncate">{last?.body || (last?.imageType ? "📷 Photo" : "(empty)")}</span>
+                      </p>
                       <p className="text-xs text-muted">
                         {c._count.messages} message{c._count.messages === 1 ? "" : "s"} · {chatDateTime(c.lastMessageAt.toISOString())}
                       </p>

@@ -8,7 +8,7 @@ import { PhotoEditor } from "@/components/chat/photo-editor";
 import { chatTime, dayLabel, startsRun } from "@/lib/chat-format";
 import { cn } from "@/lib/utils";
 
-type Message = { id: string; sender: "VISITOR" | "AGENT"; body: string; imageUrl: string | null; createdAt: string };
+type Message = { id: string; sender: "VISITOR" | "AGENT"; body: string; imageUrl: string | null; seen: boolean; createdAt: string };
 type LoadState = "idle" | "loading" | "ready" | "error";
 
 const POLL_MS = 5_000;
@@ -33,7 +33,8 @@ export function ChatWidget({ agentName, hoursLabel, alwaysOpen = false }: { agen
 
   const fetchMessages = useCallback(async (initial: boolean) => {
     try {
-      const res = await fetch("/api/chat", { cache: "no-store" });
+      // Only called while the panel is open, so the visitor has seen any replies.
+      const res = await fetch("/api/chat?read=1", { cache: "no-store" });
       if (!res.ok) throw new Error(String(res.status));
       const data = (await res.json()) as { messages: Message[]; withinSupportHours: boolean };
       setMessages(data.messages);
@@ -241,6 +242,7 @@ export function ChatWidget({ agentName, hoursLabel, alwaysOpen = false }: { agen
                   time={chatTime(m.createdAt)}
                   dateTime={m.createdAt}
                   author={newRun && !mine ? agentName : undefined}
+                  status={mine ? (m.seen ? "seen" : "sent") : undefined}
                   tail={newRun}
                 />
               </div>

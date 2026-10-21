@@ -1,6 +1,6 @@
 "use client";
 
-import { ClipboardList, Inbox, LayoutDashboard, LogOut, MessagesSquare, Package } from "lucide-react";
+import { ClipboardList, Inbox, LayoutDashboard, LogOut, MessagesSquare, Package, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
@@ -12,6 +12,7 @@ const items = [
   { href: "/admin/requests", label: "Requests", icon: ClipboardList },
   { href: "/admin/messages", label: "Chat", icon: MessagesSquare },
   { href: "/admin/inquiries", label: "Inquiries", icon: Inbox },
+  { href: "/admin/visitors", label: "Visitors", icon: Users },
 ];
 
 export function AdminNav({ variant = "sidebar" }: { variant?: "sidebar" | "tabs" }) {
@@ -20,7 +21,7 @@ export function AdminNav({ variant = "sidebar" }: { variant?: "sidebar" | "tabs"
 
   if (variant === "tabs") {
     return (
-      <ul className="grid grid-cols-5">
+      <ul className="grid grid-cols-6">
         {items.map((item) => {
           const active = isActive(item);
           return (
