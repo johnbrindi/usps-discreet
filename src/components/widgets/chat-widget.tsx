@@ -1,8 +1,11 @@
 "use client";
 
-import { AlertCircle, ImagePlus, Loader2, Lock, MessageCircle, RefreshCw, Send, X } from "lucide-react";
+import { AlertCircle, Loader2, Lock, MessageCircle, RefreshCw, SendHorizontal, X } from "lucide-react";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
-import { compressImage } from "@/lib/compress-image";
+import { AttachMenu } from "@/components/chat/attach-menu";
+import { ChatBubble, DaySeparator } from "@/components/chat/chat-bubble";
+import { PhotoEditor } from "@/components/chat/photo-editor";
+import { dayLabel, startsRun } from "@/lib/chat-format";
 import { cn } from "@/lib/utils";
 
 type Message = { id: string; sender: "VISITOR" | "AGENT"; body: string; imageUrl: string | null; createdAt: string };
@@ -18,9 +21,8 @@ export function ChatWidget({ agentName, hoursLabel, alwaysOpen = false }: { agen
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
-  /** Photo waiting to be sent, as a resized JPEG data URL. */
-  const [photo, setPhoto] = useState<string | null>(null);
-  const fileRef = useRef<HTMLInputElement>(null);
+  /** Photo picked from the attach menu, open in the editor until sent or discarded. */
+  const [picked, setPicked] = useState<File | null>(null);
 
   const launcherRef = useRef<HTMLButtonElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -83,28 +85,15 @@ export function ChatWidget({ agentName, hoursLabel, alwaysOpen = false }: { agen
     return () => window.removeEventListener("keydown", onKey);
   }, [open, close]);
 
-  async function pickPhoto(file: File | undefined) {
-    if (fileRef.current) fileRef.current.value = "";
-    if (!file) return;
-    setSendError(null);
-    try {
-      setPhoto(await compressImage(file));
-    } catch (err) {
-      setSendError(err instanceof Error ? err.message : "That photo couldn't be added.");
-    }
-    inputRef.current?.focus();
-  }
-
-  async function send() {
-    const body = draft.trim();
-    if ((!body && !photo) || sending) return;
+  async function send(body = draft.trim(), image?: string) {
+    if ((!body && !image) || sending) return;
     setSending(true);
     setSendError(null);
     try {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ body, ...(photo && { image: photo }) }),
+        body: JSON.stringify({ body, ...(image && { image }) }),
       });
       const data = (await res.json().catch(() => ({}))) as {
         messages?: Message[];
@@ -115,7 +104,7 @@ export function ChatWidget({ agentName, hoursLabel, alwaysOpen = false }: { agen
       setMessages(data.messages);
       if (typeof data.withinSupportHours === "boolean") setWithinHours(data.withinSupportHours);
       setDraft("");
-      setPhoto(null);
+      setPicked(null);
       setLoad("ready");
     } catch (err) {
       setSendError(err instanceof Error ? err.message : "Your message couldn't be sent.");
@@ -200,17 +189,15 @@ export function ChatWidget({ agentName, hoursLabel, alwaysOpen = false }: { agen
 
         <div
           ref={listRef}
-          className="flex-1 space-y-3 overflow-y-auto overscroll-contain bg-surface px-4 py-4"
+          className="flex-1 overflow-y-auto overscroll-contain bg-surface px-3 py-3"
           aria-live="polite"
           aria-busy={load === "loading"}
         >
-          <p className="flex items-center justify-center gap-1.5 text-center text-[0.6875rem] text-muted">
-            <Lock className="size-3" aria-hidden /> Secure chat
-          </p>
-          <p className="rounded-md border border-line bg-white p-3 text-xs leading-5 text-muted">
+          <p className="mx-auto mb-2 max-w-[17rem] rounded-lg bg-amber-50 px-3 py-2 text-center text-[0.6875rem] leading-4 text-amber-900">
+            <Lock className="mr-1 inline size-3 align-[-1px]" aria-hidden />
             {alwaysOpen
-              ? `Messages are saved and answered by our support team (${agentName}) around the clock — replies may take a few minutes.`
-              : `Messages are saved and answered by our support team (${agentName}) during support hours — replies are not instant.`}{" "}
+              ? `Secure chat. Our support team (${agentName}) answers around the clock — replies may take a few minutes.`
+              : `Secure chat. Our support team (${agentName}) answers during support hours — replies are not instant.`}
           </p>
 
           {load === "loading" && (
@@ -240,80 +227,47 @@ export function ChatWidget({ agentName, hoursLabel, alwaysOpen = false }: { agen
             </p>
           )}
 
-          {messages.map((m) => {
+          {messages.map((m, i) => {
+            const prev = messages[i - 1];
             const mine = m.sender === "VISITOR";
+            const newRun = startsRun(m, prev);
             return (
-              <div key={m.id} className={cn("flex flex-col", mine ? "items-end" : "items-start")}>
-                <p className="mb-0.5 px-1 text-[0.6875rem] font-semibold text-muted">{mine ? "You" : agentName}</p>
-                {m.imageUrl && (
-                  <a href={m.imageUrl} target="_blank" rel="noopener" className="mb-1 block max-w-[85%]">
-                    {/* eslint-disable-next-line @next/next/no-img-element -- private, cookie-authenticated image */}
-                    <img src={m.imageUrl} alt="Photo" loading="lazy" className="max-h-64 rounded-2xl border border-line object-cover" />
-                    <span className="sr-only">(opens full size in a new tab)</span>
-                  </a>
-                )}
-                {m.body && (
-                  <div
-                    className={cn(
-                      "max-w-[85%] rounded-2xl px-3.5 py-2 text-sm leading-6 break-words whitespace-pre-wrap",
-                      mine ? "rounded-br-sm bg-navy-700 text-white" : "rounded-bl-sm border border-line bg-white text-ink",
-                    )}
-                  >
-                    {m.body}
-                  </div>
-                )}
-                <time dateTime={m.createdAt} className="mt-0.5 px-1 text-[0.6875rem] text-muted">
-                  {new Date(m.createdAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
-                </time>
+              <div key={m.id}>
+                {(!prev || dayLabel(prev.createdAt) !== dayLabel(m.createdAt)) && <DaySeparator label={dayLabel(m.createdAt)} />}
+                <ChatBubble
+                  mine={mine}
+                  body={m.body}
+                  imageUrl={m.imageUrl}
+                  time={new Date(m.createdAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
+                  dateTime={m.createdAt}
+                  author={newRun && !mine ? agentName : undefined}
+                  tail={newRun}
+                />
               </div>
             );
           })}
         </div>
 
         <form
-          className="border-t border-line bg-white p-3"
+          className="border-t border-line bg-white px-2 py-2"
           onSubmit={(e) => {
             e.preventDefault();
             void send();
           }}
         >
-          {sendError && (
-            <p role="alert" className="mb-2 text-sm font-medium text-danger-700">
+          {sendError && !picked && (
+            <p role="alert" className="mb-2 px-2 text-sm font-medium text-danger-700">
               {sendError}
             </p>
           )}
-          {photo && (
-            <div className="relative mb-2 inline-block">
-              {/* eslint-disable-next-line @next/next/no-img-element -- local preview */}
-              <img src={photo} alt="Photo to send" className="h-20 rounded-md border border-line object-cover" />
-              <button
-                type="button"
-                onClick={() => setPhoto(null)}
-                className="absolute -top-2 -right-2 inline-flex size-6 items-center justify-center rounded-full bg-navy-950 text-white"
-              >
-                <X className="size-3.5" aria-hidden />
-                <span className="sr-only">Remove photo</span>
-              </button>
-            </div>
-          )}
-          <div className="flex items-end gap-2">
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              tabIndex={-1}
-              onChange={(e) => void pickPhoto(e.target.files?.[0])}
-            />
-            <button
-              type="button"
-              onClick={() => fileRef.current?.click()}
+          <div className="flex items-end gap-1">
+            <AttachMenu
               disabled={sending}
-              className="inline-flex size-11 shrink-0 items-center justify-center rounded-md border border-line-strong text-navy-700 hover:bg-navy-50 disabled:opacity-50"
-            >
-              <ImagePlus className="size-5" aria-hidden />
-              <span className="sr-only">Attach a photo</span>
-            </button>
+              onPick={(file) => {
+                setSendError(null);
+                setPicked(file);
+              }}
+            />
             <label htmlFor={inputId} className="sr-only">
               Message
             </label>
@@ -330,19 +284,32 @@ export function ChatWidget({ agentName, hoursLabel, alwaysOpen = false }: { agen
                   void send();
                 }
               }}
-              placeholder={photo ? "Add a caption (optional)…" : "Write a message…"}
-              className="max-h-32 min-h-11 flex-1 resize-none rounded-md border border-line-strong px-3 py-2.5 text-sm focus:border-navy-600 focus:ring-3 focus:ring-navy-600/20 focus:outline-none"
+              placeholder="Type a message"
+              className="max-h-32 min-h-10 flex-1 resize-none rounded-3xl border border-transparent bg-surface px-4 py-2 text-sm leading-6 field-sizing-content focus:border-navy-600/40 focus:bg-white focus:ring-3 focus:ring-navy-600/15 focus:outline-none"
             />
             <button
               type="submit"
-              disabled={sending || (!draft.trim() && !photo)}
-              className="inline-flex size-11 shrink-0 items-center justify-center rounded-md bg-navy-700 text-white hover:bg-navy-800 disabled:opacity-50"
+              disabled={sending || !draft.trim()}
+              className="inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-navy-700 text-white transition hover:bg-navy-800 disabled:bg-navy-700/40"
             >
-              {sending ? <Loader2 className="size-5 animate-spin" aria-hidden /> : <Send className="size-5" aria-hidden />}
+              {sending ? <Loader2 className="size-5 animate-spin" aria-hidden /> : <SendHorizontal className="size-5" aria-hidden />}
               <span className="sr-only">Send message</span>
             </button>
           </div>
         </form>
+        {picked && (
+          <PhotoEditor
+            file={picked}
+            initialCaption={draft}
+            sending={sending}
+            error={sendError}
+            onCancel={() => {
+              setPicked(null);
+              setSendError(null);
+            }}
+            onSend={(image, caption) => void send(caption, image)}
+          />
+        )}
       </section>
     </>
   );
