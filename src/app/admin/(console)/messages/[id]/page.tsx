@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/card";
 import { siteConfig } from "@/config/site";
 import { db } from "@/lib/db";
 import { ChatBubble, DaySeparator } from "@/components/chat/chat-bubble";
-import { dayLabel, startsRun } from "@/lib/chat-format";
+import { chatDateTime, chatTime, dayLabel, startsRun } from "@/lib/chat-format";
 import { replyToConversation, setConversationStatus } from "@/server/actions/admin-support";
 import { requireStaffPage } from "@/lib/authz";
 import { chatImageUrl } from "@/server/chat";
@@ -35,7 +35,7 @@ export default async function ConversationPage({ params }: { params: Promise<{ i
       <Link href="/admin/messages" className="text-sm text-muted hover:text-navy-900 hover:underline">← Chat</Link>
       <AdminPageTitle
         title="Conversation"
-        description={`Started ${convo.createdAt.toISOString().slice(0, 16).replace("T", " ")} UTC · ${convo.status.toLowerCase()}`}
+        description={`Started ${chatDateTime(convo.createdAt.toISOString())} · ${convo.status.toLowerCase()}`}
         actions={
           <form action={setConversationStatus.bind(null, convo.id, next)}>
             <Button type="submit" variant="secondary" size="sm">{next === "CLOSED" ? "Close conversation" : "Reopen"}</Button>
@@ -57,7 +57,7 @@ export default async function ConversationPage({ params }: { params: Promise<{ i
                   mine={agent}
                   body={m.body}
                   imageUrl={m.imageType ? chatImageUrl(m.id) : null}
-                  time={`${at.slice(11, 16)} UTC`}
+                  time={chatTime(at)}
                   dateTime={at}
                   author={newRun ? (agent ? `${siteConfig.chatAgentName}${m.agent ? ` (${m.agent.name})` : ""}` : "Visitor") : undefined}
                   tail={newRun}

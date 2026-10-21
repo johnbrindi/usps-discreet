@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { chatDateTime } from "@/lib/chat-format";
 import { AdminPageTitle } from "@/components/admin/page-title";
 import { Card } from "@/components/ui/card";
 import { db } from "@/lib/db";
@@ -55,7 +56,7 @@ export default async function MessagesPage({ searchParams }: { searchParams: Pro
                     <div className="min-w-0">
                       <p className="truncate text-sm text-ink">{last?.body || (last?.imageType ? "📷 Photo" : "(empty)")}</p>
                       <p className="text-xs text-muted">
-                        {c._count.messages} message{c._count.messages === 1 ? "" : "s"} · {c.lastMessageAt.toISOString().slice(0, 16).replace("T", " ")} UTC
+                        {c._count.messages} message{c._count.messages === 1 ? "" : "s"} · {chatDateTime(c.lastMessageAt.toISOString())}
                       </p>
                     </div>
                     {awaiting && (

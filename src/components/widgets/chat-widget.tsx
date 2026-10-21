@@ -5,7 +5,7 @@ import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { AttachMenu } from "@/components/chat/attach-menu";
 import { ChatBubble, DaySeparator } from "@/components/chat/chat-bubble";
 import { PhotoEditor } from "@/components/chat/photo-editor";
-import { dayLabel, startsRun } from "@/lib/chat-format";
+import { chatTime, dayLabel, startsRun } from "@/lib/chat-format";
 import { cn } from "@/lib/utils";
 
 type Message = { id: string; sender: "VISITOR" | "AGENT"; body: string; imageUrl: string | null; createdAt: string };
@@ -238,7 +238,7 @@ export function ChatWidget({ agentName, hoursLabel, alwaysOpen = false }: { agen
                   mine={mine}
                   body={m.body}
                   imageUrl={m.imageUrl}
-                  time={new Date(m.createdAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
+                  time={chatTime(m.createdAt)}
                   dateTime={m.createdAt}
                   author={newRun && !mine ? agentName : undefined}
                   tail={newRun}
