@@ -67,6 +67,20 @@ model Shipment {
   recipientName  String? @map("recipient_name") @db.VarChar(160)
   recipientEmail String? @map("recipient_email") @db.VarChar(254)
 
+  // Shipment details — shown on the public tracking page when filled in.
+  paymentMode   String?   @map("payment_mode") @db.VarChar(80)
+  pickupDate    DateTime? @map("pickup_date") @db.Date
+  /// "HH:MM", 24-hour, local to the origin.
+  pickupTime    String?   @map("pickup_time") @db.VarChar(5)
+  departureTime String?   @map("departure_time") @db.VarChar(5)
+  shipmentType  String?   @map("shipment_type") @db.VarChar(80)
+  shipmentMode  String?   @map("shipment_mode") @db.VarChar(80)
+  product       String?   @db.VarChar(120)
+  quantity      String?   @db.VarChar(40)
+  weight        String?   @db.VarChar(40)
+  totalFreight  String?   @map("total_freight") @db.VarChar(40)
+  comments      String?   @db.VarChar(1000)
+
   // Private — never returned by the public tracking API.
   destinationPostcode String? @map("destination_postcode") @db.VarChar(20)
   internalNotes       String? @map("internal_notes") @db.Text

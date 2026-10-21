@@ -43,7 +43,7 @@ export async function createShipment(_prev: ActionState, formData: FormData): Pr
   if (!parsed.success) return invalid(formData, parsed.error);
   if (!setup.success) return invalid(formData, setup.error);
 
-  const { trackingNumber, estimatedDeliveryDate, ...rest } = parsed.data;
+  const { trackingNumber, estimatedDeliveryDate, pickupDate, ...rest } = parsed.data;
   let carrier: { provider: CarrierProviderId; number: string } | null = null;
   if (setup.data.trackingMode === "CARRIER") {
     const detected = detectCarrier(setup.data.carrierTrackingNumber!);
@@ -76,6 +76,7 @@ export async function createShipment(_prev: ActionState, formData: FormData): Pr
           // A carrier-tracked parcel keeps the carrier's number unless staff chose their own.
           trackingNumber: trackingNumber ?? carrier?.number ?? generateTrackingNumber(),
           estimatedDeliveryDate: estimatedDeliveryDate ? new Date(`${estimatedDeliveryDate}T00:00:00Z`) : null,
+          pickupDate: pickupDate ? new Date(`${pickupDate}T00:00:00Z`) : null,
           ...(carrier && {
             trackingMode: "CARRIER" as const,
             carrierProvider: carrier.provider,
@@ -117,7 +118,7 @@ export async function updateShipment(id: string, _prev: ActionState, formData: F
   if (!parsed.success) return invalid(formData, parsed.error);
 
   // Tracking numbers are immutable once issued.
-  const { trackingNumber: _ignored, estimatedDeliveryDate, estimateSource, ...rest } = parsed.data;
+  const { trackingNumber: _ignored, estimatedDeliveryDate, estimateSource, pickupDate, ...rest } = parsed.data;
   // Carrier-tracked forms don't show the estimate fields: the carrier owns them, so leave them untouched.
   const estimate = formData.has("estimatedDeliveryDate")
     ? { estimatedDeliveryDate: estimatedDeliveryDate ? new Date(`${estimatedDeliveryDate}T00:00:00Z`) : null, estimateSource }
@@ -126,7 +127,7 @@ export async function updateShipment(id: string, _prev: ActionState, formData: F
     await db.$transaction(async (tx) => {
       await tx.shipment.update({
         where: { id },
-        data: { ...rest, ...estimate },
+        data: { ...rest, ...estimate, pickupDate: pickupDate ? new Date(`${pickupDate}T00:00:00Z`) : null },
       });
       await audit(tx, {
         actorId: user.id,

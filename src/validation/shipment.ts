@@ -21,6 +21,22 @@ const optionalEmail = z
   .nullable()
   .optional();
 
+const optionalDate = z
+  .string()
+  .trim()
+  .refine((v) => v === "" || /^\d{4}-\d{2}-\d{2}$/.test(v), "Use a valid date.")
+  .transform((v) => (v === "" ? null : v))
+  .nullable()
+  .optional();
+
+const optionalTime = z
+  .string()
+  .trim()
+  .refine((v) => v === "" || /^([01]\d|2[0-3]):[0-5]\d$/.test(v), "Use a valid time.")
+  .transform((v) => (v === "" ? null : v))
+  .nullable()
+  .optional();
+
 const country = z
   .string()
   .trim()
@@ -57,6 +73,17 @@ export const shipmentSchema = z
     shipperEmail: optionalEmail,
     recipientName: optionalText(160),
     recipientEmail: optionalEmail,
+    paymentMode: optionalText(80),
+    pickupDate: optionalDate,
+    pickupTime: optionalTime,
+    departureTime: optionalTime,
+    shipmentType: optionalText(80),
+    shipmentMode: optionalText(80),
+    product: optionalText(120),
+    quantity: optionalText(40),
+    weight: optionalText(40),
+    totalFreight: optionalText(40),
+    comments: optionalText(1000),
     internalNotes: optionalText(4000),
     estimatedDeliveryDate: z
       .string()

@@ -6,6 +6,21 @@ export type PublicPlace = { city: string | null; region: string | null; country:
 
 export type PublicContact = { name: string | null; email: string | null };
 
+/** Optional shipment facts staff fill in (payment, pick-up, mode…). Dates are YYYY-MM-DD, times HH:MM. */
+export type ShipmentDetails = {
+  paymentMode: string | null;
+  pickupDate: string | null;
+  pickupTime: string | null;
+  departureTime: string | null;
+  shipmentType: string | null;
+  shipmentMode: string | null;
+  product: string | null;
+  quantity: string | null;
+  weight: string | null;
+  totalFreight: string | null;
+  comments: string | null;
+};
+
 export type PublicTrackingEvent = {
   id: string;
   status: ShipmentStatus;
@@ -24,6 +39,7 @@ export type PublicTrackingResult = {
   packageDescription: string | null;
   shipper: PublicContact;
   recipient: PublicContact;
+  details: ShipmentDetails;
   origin: string | null;
   destination: string | null;
   originPlace: PublicPlace;

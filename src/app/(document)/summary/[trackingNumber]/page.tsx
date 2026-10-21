@@ -100,6 +100,18 @@ export default async function TrackingSummaryPage({ params, searchParams }: Prop
           <Fact label="Package description" value={r.packageDescription ?? "Not provided"} />
           <Fact label="Shipper" value={[r.shipper.name, r.shipper.email].filter(Boolean).join(" · ") || "Not provided"} />
           <Fact label="Receiver" value={[r.recipient.name, r.recipient.email].filter(Boolean).join(" · ") || "Not provided"} />
+          {r.details.paymentMode && <Fact label="Payment mode" value={r.details.paymentMode} />}
+          {r.details.pickupDate && (
+            <Fact label="Pick-up" value={[formatDateOnly(r.details.pickupDate), r.details.pickupTime].filter(Boolean).join(" at ")} />
+          )}
+          {r.details.departureTime && <Fact label="Departure time" value={r.details.departureTime} />}
+          {r.details.shipmentType && <Fact label="Type of shipment" value={r.details.shipmentType} />}
+          {r.details.shipmentMode && <Fact label="Shipment mode" value={r.details.shipmentMode} />}
+          {r.details.product && <Fact label="Product" value={r.details.product} />}
+          {r.details.quantity && <Fact label="Qty" value={r.details.quantity} />}
+          {r.details.weight && <Fact label="Weight" value={r.details.weight} />}
+          {r.details.totalFreight && <Fact label="Total freight" value={r.details.totalFreight} />}
+          {r.details.comments && <Fact label="Comments" value={r.details.comments} />}
           <Fact
             label="Expected delivery"
             value={

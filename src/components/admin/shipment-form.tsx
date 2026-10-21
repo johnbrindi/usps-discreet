@@ -10,11 +10,17 @@ import { PACKAGE_DESCRIPTIONS } from "@/domain/shipment-status";
 import type { ActionState } from "@/server/actions/types";
 import { idleState } from "@/server/actions/types";
 
+const PAYMENT_MODES = ["Apple Pay", "Cash App", "Zelle", "PayPal", "Venmo", "Chime", "Credit / debit card", "Bank transfer", "Bitcoin", "Cash"];
+const SHIPMENT_TYPES = ["Van Move", "Parcel", "Courier", "Freight", "Express"];
+const SHIPMENT_MODES = ["Land Shipping", "Air Freight", "Sea Freight", "Road Freight"];
+
 export type ShipmentFormValues = Partial<Record<
   | "trackingNumber" | "serviceLevel" | "packageDescription" | "carrier" | "externalReference"
   | "originCity" | "originRegion" | "originCountry"
   | "destinationCity" | "destinationRegion" | "destinationCountry" | "destinationPostcode"
-  | "shipperName" | "shipperEmail" | "recipientName" | "recipientEmail" | "internalNotes" | "estimatedDeliveryDate" | "estimateSource"
+  | "shipperName" | "shipperEmail" | "recipientName" | "recipientEmail" | "internalNotes"
+  | "paymentMode" | "pickupDate" | "pickupTime" | "departureTime" | "shipmentType" | "shipmentMode"
+  | "product" | "quantity" | "weight" | "totalFreight" | "comments" | "estimatedDeliveryDate" | "estimateSource"
   | "trackingMode" | "carrierProvider" | "carrierTrackingNumber",
   string
 >>;
@@ -43,7 +49,16 @@ export function ShipmentForm({
   const text = (
     name: keyof ShipmentFormValues,
     label: string,
-    opts: { optional?: boolean; hint?: string; className?: string; max?: number; type?: string; placeholder?: string } = {},
+    opts: {
+      optional?: boolean;
+      hint?: string;
+      className?: string;
+      max?: number;
+      type?: string;
+      placeholder?: string;
+      /** Suggestions offered while typing; any other value is still allowed. */
+      suggestions?: readonly string[];
+    } = {},
   ) => (
     <Field id={name} label={label} optional={opts.optional ?? true} hint={opts.hint} error={err(name)} className={opts.className}>
       <Input
@@ -53,7 +68,15 @@ export function ShipmentForm({
         maxLength={opts.max}
         type={opts.type ?? "text"}
         placeholder={opts.placeholder}
+        list={opts.suggestions ? `${name}-suggestions` : undefined}
       />
+      {opts.suggestions && (
+        <datalist id={`${name}-suggestions`}>
+          {opts.suggestions.map((s) => (
+            <option key={s} value={s} />
+          ))}
+        </datalist>
+      )}
     </Field>
   );
 
@@ -171,6 +194,30 @@ export function ShipmentForm({
         {text("shipperEmail", "Shipper email", { max: 254, type: "email", placeholder: "e.g. orders@acme.com" })}
         {text("recipientName", "Receiver name", { max: 160, placeholder: "e.g. Jane Smith" })}
         {text("recipientEmail", "Receiver email", { max: 254, type: "email", placeholder: "e.g. jane@example.com" })}
+      </fieldset>
+
+      <fieldset className="grid min-w-0 grid-cols-1 gap-5 sm:grid-cols-3">
+        <legend className="mb-3 text-sm font-bold tracking-wide text-navy-900 uppercase">Shipment information (shown publicly)</legend>
+        {text("paymentMode", "Payment mode", { max: 80, placeholder: "e.g. Apple Pay", suggestions: PAYMENT_MODES })}
+        {text("pickupDate", "Pick-up date", { type: "date" })}
+        {text("pickupTime", "Pick-up time", { type: "time" })}
+        {text("departureTime", "Departure time", { type: "time" })}
+        {text("shipmentType", "Type of shipment", { max: 80, placeholder: "e.g. Van Move", suggestions: SHIPMENT_TYPES })}
+        {text("shipmentMode", "Shipment mode", { max: 80, placeholder: "e.g. Land Shipping", suggestions: SHIPMENT_MODES })}
+        {text("product", "Product", { max: 120, placeholder: "e.g. Discreet" })}
+        {text("quantity", "Qty", { max: 40, placeholder: "e.g. 1 or Discreet" })}
+        {text("weight", "Weight", { max: 40, placeholder: "e.g. 2 kg or Discreet" })}
+        {text("totalFreight", "Total freight", { max: 40, placeholder: "e.g. 1" })}
+        <Field id="comments" label="Comments" optional error={err("comments")} className="sm:col-span-3">
+          <Textarea
+            {...fieldAria("comments", err("comments"))}
+            name="comments"
+            defaultValue={val("comments")}
+            maxLength={1000}
+            rows={2}
+            placeholder="e.g. This package has been registered for shipment as a discreet package"
+          />
+        </Field>
       </fieldset>
 
       {carrierMode || carrierTracked ? (
