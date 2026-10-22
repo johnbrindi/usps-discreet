@@ -30,7 +30,7 @@ export default async function VisitorsPage() {
     <>
       <AdminPageTitle
         title="Visitors"
-        description="People on the public site. Turn on notifications to get an alert when someone arrives or leaves."
+        description="People on the public site. A visit counts once someone scrolls, taps or stays 10 seconds, so uptime monitors and link scanners that open the page for a second aren't shown. Turn on notifications to get an alert when someone arrives or leaves."
       />
       <h2 className="mb-2 flex items-center gap-2 text-sm font-bold tracking-wide text-navy-900 uppercase">
         <span aria-hidden className="relative flex size-2.5">
