@@ -353,25 +353,7 @@ export default function HomePage() {
           <h2 id="updates-title" className="mb-8 text-center text-2xl font-bold text-ink">
             Updates
           </h2>
-          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-            {/* Scam alerts */}
-            <div>
-              <h3 className="mb-2 text-base font-bold text-ink">Alert: Text &amp; Email Scams</h3>
-              <p className="text-sm leading-6 text-muted">
-                If you get a text or email claiming to be from us about a package awaiting action or a
-                delivery failure, don&apos;t click it: Delete it immediately. This is an attempt to steal your
-                personal information. Find out how to protect yourself.
-              </p>
-              <div className="mt-3 space-y-1.5">
-                <Link href="/help#scams" className="block text-sm font-medium text-usps-blue underline underline-offset-2">
-                  Text Scams
-                </Link>
-                <Link href="/help#scams" className="block text-sm font-medium text-usps-blue underline underline-offset-2">
-                  Email Scams
-                </Link>
-              </div>
-            </div>
-
+          <div className="grid gap-8 sm:grid-cols-2">
             {/* EU import rule */}
             <div>
               <h3 className="mb-2 text-base font-bold text-ink">New EU Requirement for Packages Up to €150</h3>

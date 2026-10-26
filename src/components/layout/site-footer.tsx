@@ -26,7 +26,6 @@ const footerColumns = [
     heading: "Help",
     links: [
       { href: "/help#faq", label: "FAQs" },
-      { href: "/help#scams", label: "Report a scam message" },
       { href: "/contact", label: "Contact us" },
     ],
   },

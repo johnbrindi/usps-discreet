@@ -2,10 +2,8 @@ import { ChevronDown } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { StatusBadge } from "@/components/tracking/status-badge";
-import { Alert } from "@/components/ui/alert";
 import { Container, PageHeader } from "@/components/ui/card";
 import { SHIPMENT_STATUSES, STATUS_META } from "@/domain/shipment-status";
-import { siteConfig } from "@/config/site";
 import { describeSupportHours } from "@/lib/support-hours";
 
 export const metadata: Metadata = {
@@ -47,7 +45,6 @@ export default function HelpPage() {
               ["#tracking-numbers", "Tracking numbers"],
               ["#statuses", "Tracking statuses"],
               ["#faq", "Common questions"],
-              ["#scams", "Delivery scams"],
               ["#contact", "Contact us"],
             ].map(([href, label]) => (
               <li key={href}>
@@ -96,20 +93,6 @@ export default function HelpPage() {
                 </details>
               ))}
             </div>
-          </section>
-
-          <section id="scams" aria-labelledby="scams-title" className="scroll-mt-24">
-            <h2 id="scams-title" className="text-2xl font-bold text-navy-900">Protect yourself from delivery scams</h2>
-            <Alert tone="warning" className="mt-4" title={`${siteConfig.name} will never ask you to pay to release a parcel by text, chat or WhatsApp.`}>
-              We don&apos;t charge &ldquo;redelivery&rdquo;, &ldquo;customs&rdquo; or &ldquo;address correction&rdquo; fees through
-              messages, gift cards, cryptocurrency or wire transfers, and we never ask for card details, passwords or
-              one-time codes in chat.
-            </Alert>
-            <ul className="mt-4 list-disc space-y-1 pl-6 leading-7">
-              <li>Don&apos;t click links in unexpected delivery texts — type our address into your browser instead.</li>
-              <li>Check tracking only on this website, using the number from your retailer or receipt.</li>
-              <li>If you&apos;re unsure whether a message is from us, <Link href="/contact" className="font-medium text-navy-700 underline underline-offset-2">contact us</Link> before acting on it.</li>
-            </ul>
           </section>
 
           <section id="contact" aria-labelledby="contact-title" className="scroll-mt-24">
