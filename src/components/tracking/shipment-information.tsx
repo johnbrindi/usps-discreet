@@ -21,7 +21,7 @@ function formatClock(hhmm: string) {
   return `${((h! + 11) % 12) + 1}:${String(m).padStart(2, "0")} ${h! < 12 ? "AM" : "PM"}`;
 }
 
-const hasContact = (c: PublicContact) => !!(c.name || c.email);
+const hasContact = (c: PublicContact) => !!(c.name || c.email || c.phone);
 
 /**
  * Waybill-style card: barcode, shipper and receiver, then every shipment fact staff filled in.
@@ -101,6 +101,7 @@ function Party({ icon, title, contact }: { icon: React.ReactNode; title: string;
         <div className="mt-2 text-sm text-ink">
           {contact.name && <p className="font-medium">{contact.name}</p>}
           {contact.email && <p className="break-all text-muted">{contact.email}</p>}
+          {contact.phone && <p className="text-muted">{contact.phone}</p>}
         </div>
       ) : (
         <p className="mt-2 text-sm text-muted">Not provided</p>

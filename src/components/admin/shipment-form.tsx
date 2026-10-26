@@ -18,7 +18,7 @@ export type ShipmentFormValues = Partial<Record<
   | "trackingNumber" | "serviceLevel" | "packageDescription" | "carrier" | "externalReference"
   | "originCity" | "originRegion" | "originCountry"
   | "destinationCity" | "destinationRegion" | "destinationCountry" | "destinationPostcode"
-  | "shipperName" | "shipperEmail" | "recipientName" | "recipientEmail" | "internalNotes"
+  | "shipperName" | "shipperEmail" | "shipperPhone" | "recipientName" | "recipientEmail" | "recipientPhone" | "internalNotes"
   | "paymentMode" | "pickupDate" | "pickupTime" | "departureTime" | "shipmentType" | "shipmentMode"
   | "product" | "quantity" | "weight" | "totalFreight" | "comments" | "estimatedDeliveryDate" | "estimateSource"
   | "trackingMode" | "carrierProvider" | "carrierTrackingNumber",
@@ -187,12 +187,14 @@ export function ShipmentForm({
         {text("destinationPostcode", "Postcode (private)", { max: 20, placeholder: "e.g. 78701", hint: "Staff only — never shown publicly." })}
       </fieldset>
 
-      <fieldset className="grid min-w-0 grid-cols-1 gap-5 sm:grid-cols-2">
+      <fieldset className="grid min-w-0 grid-cols-1 gap-5 sm:grid-cols-3">
         <legend className="mb-3 text-sm font-bold tracking-wide text-navy-900 uppercase">Shipper &amp; receiver (shown publicly)</legend>
         {text("shipperName", "Shipper name", { max: 160, placeholder: "e.g. Acme Store" })}
         {text("shipperEmail", "Shipper email", { max: 254, type: "email", placeholder: "e.g. orders@acme.com" })}
+        {text("shipperPhone", "Shipper phone", { max: 40, type: "tel", placeholder: "e.g. +1 512 555 0142" })}
         {text("recipientName", "Receiver name", { max: 160, placeholder: "e.g. Jane Smith" })}
         {text("recipientEmail", "Receiver email", { max: 254, type: "email", placeholder: "e.g. jane@example.com" })}
+        {text("recipientPhone", "Receiver phone", { max: 40, type: "tel", placeholder: "e.g. +1 318 555 0199" })}
       </fieldset>
 
       <fieldset className="grid min-w-0 grid-cols-1 gap-5 sm:grid-cols-3">

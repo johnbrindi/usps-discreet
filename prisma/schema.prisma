@@ -64,8 +64,10 @@ model Shipment {
   // Shipper and receiver contact details — shown on the public tracking page.
   shipperName    String? @map("shipper_name") @db.VarChar(160)
   shipperEmail   String? @map("shipper_email") @db.VarChar(254)
+  shipperPhone   String? @map("shipper_phone") @db.VarChar(40)
   recipientName  String? @map("recipient_name") @db.VarChar(160)
   recipientEmail String? @map("recipient_email") @db.VarChar(254)
+  recipientPhone String? @map("recipient_phone") @db.VarChar(40)
 
   // Shipment details — shown on the public tracking page when filled in.
   paymentMode   String?   @map("payment_mode") @db.VarChar(80)

@@ -4,7 +4,7 @@ import type { ShipmentStatus } from "@/domain/shipment-status";
 /** City-level place, as recorded. Never includes street addresses. */
 export type PublicPlace = { city: string | null; region: string | null; country: string | null };
 
-export type PublicContact = { name: string | null; email: string | null };
+export type PublicContact = { name: string | null; email: string | null; phone: string | null };
 
 /** Optional shipment facts staff fill in (payment, pick-up, mode…). Dates are YYYY-MM-DD, times HH:MM. */
 export type ShipmentDetails = {

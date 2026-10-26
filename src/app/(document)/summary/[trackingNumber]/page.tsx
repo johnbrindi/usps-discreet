@@ -98,8 +98,8 @@ export default async function TrackingSummaryPage({ params, searchParams }: Prop
           <Fact label="To" value={r.destination ?? "Not provided"} />
           <Fact label="Service" value={r.serviceLevel ?? "Not provided"} />
           <Fact label="Package description" value={r.packageDescription ?? "Not provided"} />
-          <Fact label="Shipper" value={[r.shipper.name, r.shipper.email].filter(Boolean).join(" · ") || "Not provided"} />
-          <Fact label="Receiver" value={[r.recipient.name, r.recipient.email].filter(Boolean).join(" · ") || "Not provided"} />
+          <Fact label="Shipper" value={[r.shipper.name, r.shipper.email, r.shipper.phone].filter(Boolean).join(" · ") || "Not provided"} />
+          <Fact label="Receiver" value={[r.recipient.name, r.recipient.email, r.recipient.phone].filter(Boolean).join(" · ") || "Not provided"} />
           {r.details.paymentMode && <Fact label="Payment mode" value={r.details.paymentMode} />}
           {r.details.pickupDate && (
             <Fact label="Pick-up" value={[formatDateOnly(r.details.pickupDate), r.details.pickupTime].filter(Boolean).join(" at ")} />
