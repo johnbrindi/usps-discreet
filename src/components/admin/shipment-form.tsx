@@ -158,13 +158,12 @@ export function ShipmentForm({
           })
         ) : null}
         {text("serviceLevel", "Service level", { max: 80, placeholder: "e.g. Standard, Express or Overnight" })}
-        <Field id="packageDescription" label="Package description" error={err("packageDescription")} hint="Describes the package and its contents. Shown publicly.">
-          <Select {...fieldAria("packageDescription", err("packageDescription"), true)} name="packageDescription" defaultValue={val("packageDescription") || PACKAGE_DESCRIPTIONS[0]}>
-            {PACKAGE_DESCRIPTIONS.map((d) => (
-              <option key={d} value={d}>{d}</option>
-            ))}
-          </Select>
-        </Field>
+        {text("packageDescription", "Package description", {
+          max: 80,
+          placeholder: "e.g. Discreet",
+          hint: "Describes the package and its contents. Pick Discreet or type anything. Shown publicly.",
+          suggestions: PACKAGE_DESCRIPTIONS,
+        })}
         {text("carrier", "Carrier", { max: 80, hint: "Only if handed to a partner carrier.", placeholder: "e.g. DHL — leave blank if you deliver it" })}
         {text("externalReference", "External reference", {
           max: 120,
