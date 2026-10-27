@@ -36,15 +36,16 @@ async function loadMessages(token: string | undefined, markRead = false): Promis
     select: {
       visitorReadAt: true,
       agentReadAt: true,
+      // The newest messages, so a long conversation never stops showing new ones.
       messages: {
-        orderBy: { createdAt: "asc" },
+        orderBy: { createdAt: "desc" },
         take: 200,
         select: { id: true, sender: true, body: true, imageType: true, createdAt: true },
       },
     },
   });
   if (!convo) return [];
-  return convo.messages.map(({ imageType, ...m }) => ({
+  return convo.messages.reverse().map(({ imageType, ...m }) => ({
     ...m,
     imageUrl: imageType ? chatImageUrl(m.id) : null,
     seen: isSeen(m, convo),
