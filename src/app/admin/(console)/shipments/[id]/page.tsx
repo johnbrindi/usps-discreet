@@ -11,6 +11,7 @@ import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { PROVIDER_LABELS, type CarrierProviderId } from "@/domain/carriers";
+import { countryName } from "@/domain/countries";
 import { STATUS_META, nextStatusOptions } from "@/domain/shipment-status";
 import { formatEventTime } from "@/domain/time";
 import { db } from "@/lib/db";
@@ -51,10 +52,10 @@ export default async function ShipmentDetailPage({
       externalReference: shipment.externalReference,
       originCity: shipment.originCity,
       originRegion: shipment.originRegion,
-      originCountry: shipment.originCountry,
+      originCountry: countryName(shipment.originCountry),
       destinationCity: shipment.destinationCity,
       destinationRegion: shipment.destinationRegion,
-      destinationCountry: shipment.destinationCountry,
+      destinationCountry: countryName(shipment.destinationCountry),
       destinationPostcode: shipment.destinationPostcode,
       shipperName: shipment.shipperName,
       shipperEmail: shipment.shipperEmail,

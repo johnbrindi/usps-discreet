@@ -168,7 +168,7 @@ export function EventForm({
           <Input {...fieldAria("ev-region", err("region"))} name="region" defaultValue={val("region")} maxLength={120} placeholder="e.g. TN" onBlur={syncTimeZone} />
         </Field>
         <Field id="ev-country" label="Country" optional error={err("country")}>
-          <Input {...fieldAria("ev-country", err("country"))} name="country" defaultValue={val("country")} maxLength={2} placeholder="US" onBlur={syncTimeZone} />
+          <Input {...fieldAria("ev-country", err("country"))} name="country" defaultValue={val("country")} maxLength={80} placeholder="e.g. US or United States" onBlur={syncTimeZone} />
         </Field>
         <Field id="ev-timeZone" label="Time zone" optional error={err("timeZone")}>
           <Input {...fieldAria("ev-timeZone", err("timeZone"))} name="timeZone" defaultValue={val("timeZone", defaultTimeZone ?? "")} placeholder="Filled in from the city" maxLength={64} onInput={(e) => (tzTyped.current = e.currentTarget.value.trim() !== "")} />

@@ -14,6 +14,7 @@ import { audit } from "@/server/audit";
 import { configuredProviders } from "@/server/carriers/registry";
 import { places } from "@/server/geo/places";
 import { syncShipment } from "@/server/tracking/sync";
+import { resolveCountry } from "@/domain/countries";
 import { isValidTimeZone, shipmentSchema, trackingEventSchema, trackingSetupSchema } from "@/validation/shipment";
 import { echoValues, type ActionState } from "./types";
 
@@ -225,7 +226,7 @@ export async function addTrackingEvent(
 export async function suggestTimeZone(place: { city?: string; region?: string; country?: string }): Promise<string | null> {
   await requireStaff();
   const clip = (v?: string) => (typeof v === "string" ? v.slice(0, 120) : undefined);
-  return places().lookup({ city: clip(place.city), region: clip(place.region), country: clip(place.country) })?.timeZone ?? null;
+  return places().lookup({ city: clip(place.city), region: clip(place.region), country: place.country ? resolveCountry(place.country.slice(0, 80)) : undefined })?.timeZone ?? null;
 }
 
 /** Removes the most recent event (to correct a mistake) and restores the previous status. */

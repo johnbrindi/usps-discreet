@@ -6,12 +6,14 @@ import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Field, Input, Select, Textarea, fieldAria } from "@/components/ui/form";
 import { CARRIER_PROVIDERS, PROVIDER_LABELS, type CarrierProviderId } from "@/domain/carriers";
+import { countryNames } from "@/domain/countries";
 import { PACKAGE_DESCRIPTIONS } from "@/domain/shipment-status";
 import type { ActionState } from "@/server/actions/types";
 import { idleState } from "@/server/actions/types";
 
 const PAYMENT_MODES = ["Apple Pay", "Cash App", "Zelle", "PayPal", "Venmo", "Chime", "Credit / debit card", "Bank transfer", "Bitcoin", "Cash"];
 const SHIPMENT_TYPES = ["Van Move", "Parcel", "Courier", "Freight", "Express"];
+const COUNTRY_NAMES = countryNames();
 const SHIPMENT_MODES = ["Land Shipping", "Air Freight", "Sea Freight", "Road Freight"];
 
 export type ShipmentFormValues = Partial<Record<
@@ -176,14 +178,14 @@ export function ShipmentForm({
         <legend className="mb-3 text-sm font-bold tracking-wide text-navy-900 uppercase">Origin (shown publicly)</legend>
         {text("originCity", "City", { max: 120, placeholder: "e.g. Brooklyn", hint: "Where the parcel starts. Spell the city in full so it shows on the map." })}
         {text("originRegion", "State / region", { max: 120, placeholder: "e.g. NY or New York" })}
-        {text("originCountry", "Country", { max: 2, hint: "2-letter code, e.g. US", placeholder: "US" })}
+        {text("originCountry", "Country", { max: 80, hint: "Full name or code, e.g. United States or US", placeholder: "e.g. United States", suggestions: COUNTRY_NAMES })}
       </fieldset>
 
       <fieldset className="grid min-w-0 grid-cols-1 gap-5 sm:grid-cols-3">
         <legend className="mb-3 text-sm font-bold tracking-wide text-navy-900 uppercase">Destination</legend>
         {text("destinationCity", "City (public)", { max: 120, placeholder: "e.g. Austin", hint: "Where it's going. Shown on the map as the destination." })}
         {text("destinationRegion", "State / region (public)", { max: 120, placeholder: "e.g. TX or Texas" })}
-        {text("destinationCountry", "Country (public)", { max: 2, hint: "2-letter code, e.g. US", placeholder: "US" })}
+        {text("destinationCountry", "Country (public)", { max: 80, hint: "Full name or code, e.g. United Arab Emirates or AE", placeholder: "e.g. United Arab Emirates", suggestions: COUNTRY_NAMES })}
         {text("destinationPostcode", "Postcode (private)", { max: 20, placeholder: "e.g. 78701", hint: "Staff only — never shown publicly." })}
       </fieldset>
 

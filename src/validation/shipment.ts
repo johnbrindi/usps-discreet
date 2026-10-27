@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { CARRIER_PROVIDERS } from "@/domain/carriers";
+import { resolveCountry } from "@/domain/countries";
 import { SHIPMENT_STATUSES } from "@/domain/shipment-status";
 import { trackingNumberSchema } from "./tracking";
 
@@ -37,12 +38,13 @@ const optionalTime = z
   .nullable()
   .optional();
 
+/** Accepts a full country name or a 2- or 3-letter code; stored as the 2-letter code. */
 const country = z
   .string()
   .trim()
-  .toUpperCase()
-  .refine((v) => v === "" || /^[A-Z]{2}$/.test(v), "Use a two-letter country code.")
-  .transform((v) => (v === "" ? null : v))
+  .max(80)
+  .refine((v) => v === "" || resolveCountry(v) !== null, "We don't recognise that country. Type its full name, e.g. United Arab Emirates.")
+  .transform((v) => (v === "" ? null : resolveCountry(v)))
   .nullable()
   .optional();
 
