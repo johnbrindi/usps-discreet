@@ -29,29 +29,12 @@ describe("shipment status model", () => {
     expect(isTerminal("IN_TRANSIT")).toBe(false);
   });
 
-  it("never allows jumping straight to delivered from a pre-delivery state", () => {
-    for (const s of ["INFO_RECEIVED", "ACCEPTED", "IN_TRANSIT", "ARRIVED_AT_FACILITY", "EXCEPTION"] as const) {
-      expect(canTransition(s, "DELIVERED")).toBe(false);
+  it("lets staff pick any status from any status", () => {
+    for (const from of SHIPMENT_STATUSES) {
+      for (const to of SHIPMENT_STATUSES) expect(canTransition(from, to)).toBe(true);
+      expect(nextStatusOptions(from, true)).toEqual([...SHIPMENT_STATUSES]);
     }
-    expect(canTransition("OUT_FOR_DELIVERY", "DELIVERED")).toBe(true);
-  });
-
-  it("allows no transitions out of delivered", () => {
-    for (const s of SHIPMENT_STATUSES) expect(canTransition("DELIVERED", s)).toBe(false);
-  });
-
-  it("does not let a shipment move backwards to label created", () => {
-    for (const s of SHIPMENT_STATUSES) expect(canTransition(s, "INFO_RECEIVED")).toBe(false);
-  });
-
-  it("allows repeated facility scans and exception recovery", () => {
-    expect(canTransition("ARRIVED_AT_FACILITY", "ARRIVED_AT_FACILITY")).toBe(true);
-    expect(canTransition("EXCEPTION", "OUT_FOR_DELIVERY")).toBe(true);
-  });
-
-  it("offers label-created as the first event on a new shipment", () => {
-    expect(nextStatusOptions("INFO_RECEIVED", false)).toEqual(["INFO_RECEIVED", "ACCEPTED", "EXCEPTION"]);
-    expect(nextStatusOptions("DELIVERED", true)).toEqual([]);
+    expect(nextStatusOptions("INFO_RECEIVED", false)).toEqual([...SHIPMENT_STATUSES]);
   });
 
   it("computes milestone progress, including for exceptions", () => {

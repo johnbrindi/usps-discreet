@@ -57,31 +57,27 @@ export const STATUS_META: Record<ShipmentStatus, { label: string; summary: strin
   },
 };
 
-/** Once a parcel is in the network, any of these can be recorded next. */
-const IN_NETWORK: readonly ShipmentStatus[] = [
-  "IN_TRANSIT",
-  "ARRIVED_AT_FACILITY",
-  "OUT_FOR_DELIVERY",
-  "ON_HOLD",
-  "EXCEPTION",
-  "RETURNED_TO_SENDER",
-];
-
-/** Allowed next statuses. Repeating a scan of the same status (e.g. another facility) is allowed. */
+/**
+ * Staff can record any status at any time, in any order, so every option is always in the
+ * dropdown. Statuses the server still treats as final for carrier syncing are listed separately.
+ */
 export const STATUS_TRANSITIONS: Record<ShipmentStatus, readonly ShipmentStatus[]> = {
-  INFO_RECEIVED: ["ACCEPTED", "EXCEPTION"],
-  ACCEPTED: IN_NETWORK,
-  IN_TRANSIT: IN_NETWORK,
-  ARRIVED_AT_FACILITY: IN_NETWORK,
-  OUT_FOR_DELIVERY: ["DELIVERED", ...IN_NETWORK],
-  ON_HOLD: IN_NETWORK,
-  EXCEPTION: IN_NETWORK,
-  DELIVERED: [],
-  RETURNED_TO_SENDER: [],
+  INFO_RECEIVED: SHIPMENT_STATUSES,
+  ACCEPTED: SHIPMENT_STATUSES,
+  IN_TRANSIT: SHIPMENT_STATUSES,
+  ARRIVED_AT_FACILITY: SHIPMENT_STATUSES,
+  OUT_FOR_DELIVERY: SHIPMENT_STATUSES,
+  ON_HOLD: SHIPMENT_STATUSES,
+  DELIVERED: SHIPMENT_STATUSES,
+  EXCEPTION: SHIPMENT_STATUSES,
+  RETURNED_TO_SENDER: SHIPMENT_STATUSES,
 };
 
+const TERMINAL: readonly ShipmentStatus[] = ["DELIVERED", "RETURNED_TO_SENDER"];
+
+/** Final statuses: carrier syncing stops once a shipment reaches one. */
 export function isTerminal(status: ShipmentStatus) {
-  return STATUS_TRANSITIONS[status].length === 0;
+  return TERMINAL.includes(status);
 }
 
 export function canTransition(from: ShipmentStatus, to: ShipmentStatus) {
@@ -117,7 +113,7 @@ export function milestoneIndex(current: ShipmentStatus, history: readonly Shipme
   return Math.min(best, 2);
 }
 
-/** Statuses an operator may record next. A shipment with no events starts at "label created". */
-export function nextStatusOptions(current: ShipmentStatus, hasEvents: boolean): ShipmentStatus[] {
-  return hasEvents ? [...STATUS_TRANSITIONS[current]] : ["INFO_RECEIVED", ...STATUS_TRANSITIONS.INFO_RECEIVED];
+/** Statuses an operator may record next: always every status. */
+export function nextStatusOptions(current: ShipmentStatus, _hasEvents?: boolean): ShipmentStatus[] {
+  return [...STATUS_TRANSITIONS[current]];
 }

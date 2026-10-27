@@ -42,11 +42,14 @@ function nowLocal(timeZone: string) {
 export function EventForm({
   action,
   options,
+  defaultStatus,
   defaultTimeZone,
   places = {},
 }: {
   action: (prev: ActionState, fd: FormData) => Promise<ActionState>;
   options: ShipmentStatus[];
+  /** Status selected when the form opens. */
+  defaultStatus?: ShipmentStatus;
   defaultTimeZone?: string | null;
   places?: { origin?: EventPlace; last?: EventPlace; destination?: EventPlace };
 }) {
@@ -135,7 +138,7 @@ export function EventForm({
           <Select
             {...fieldAria("ev-status", err("status"))}
             name="status"
-            defaultValue={val("status", options[0])}
+            defaultValue={val("status", defaultStatus ?? options[0])}
             onChange={(e) => {
               // Keep the wording in step with the status unless staff wrote their own.
               const desc = field("description")?.value.trim() ?? "";

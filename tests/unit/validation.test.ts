@@ -27,10 +27,11 @@ describe("shipment validation", () => {
     expect(shipmentSchema.safeParse({ estimatedDeliveryDate: "2026-10-20" }).success).toBe(false);
     expect(shipmentSchema.safeParse({ estimatedDeliveryDate: "2026-10-20", estimateSource: "Carrier API" }).success).toBe(true);
   });
-  it("uppercases and checks country codes", () => {
-    const r = shipmentSchema.parse({ originCountry: "us" });
-    expect(r.originCountry).toBe("US");
-    expect(shipmentSchema.safeParse({ originCountry: "USA" }).success).toBe(false);
+  it("accepts country names and 2- or 3-letter codes, stored as the 2-letter code", () => {
+    expect(shipmentSchema.parse({ originCountry: "us" }).originCountry).toBe("US");
+    expect(shipmentSchema.parse({ originCountry: "USA" }).originCountry).toBe("US");
+    expect(shipmentSchema.parse({ originCountry: "United Arab Emirates" }).originCountry).toBe("AE");
+    expect(shipmentSchema.safeParse({ originCountry: "Ajman" }).success).toBe(false);
   });
   it("converts blank optional fields to null", () => {
     expect(shipmentSchema.parse({ originCity: "" }).originCity).toBeNull();

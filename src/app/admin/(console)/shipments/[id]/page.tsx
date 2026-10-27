@@ -115,11 +115,12 @@ export default async function ShipmentDetailPage({
             <Card className="p-5 sm:p-6">
               <h2 className="mb-1 font-semibold text-navy-900">Record a tracking event</h2>
               <p className="mb-4 text-sm text-muted">
-                Only record scans that actually happened. Allowed next statuses follow the shipment lifecycle.
+                Only record scans that actually happened. Any status can be picked at any time.
               </p>
               <EventForm
                 action={addTrackingEvent.bind(null, shipment.id)}
                 options={options}
+                defaultStatus={shipment.events.length > 0 ? shipment.status : "INFO_RECEIVED"}
                 defaultTimeZone={latestTz}
                 places={{
                   origin: { city: shipment.originCity, region: shipment.originRegion, country: shipment.originCountry },
