@@ -13,6 +13,7 @@ import {
   newVisitorToken,
   type ChatMessageDTO,
 } from "@/server/chat";
+import { isBlocked } from "@/server/blocklist";
 import { notifyStaff } from "@/server/push";
 import { MAX_CHAT_IMAGE_BYTES, chatMessageSchema } from "@/validation/chat";
 
@@ -26,11 +27,28 @@ function ipOf(req: NextRequest) {
   return req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || req.headers.get("x-real-ip") || "unknown";
 }
 
+const BLOCKED = { error: "You have been blocked.", blocked: true } as const;
+
+/**
+ * The chat cookie covers the whole site (not just /api/chat) so a blocked visitor can be refused
+ * every page. Older cookies were scoped to /api/chat; those are replaced with a site-wide one.
+ */
+function setChatCookie(res: NextResponse, token: string) {
+  const secure = process.env.NODE_ENV === "production" ? "; Secure" : "";
+  res.headers.append("set-cookie", `${CHAT_COOKIE}=; Path=/api/chat; Max-Age=0; HttpOnly; SameSite=Lax${secure}`);
+  res.headers.append(
+    "set-cookie",
+    `${CHAT_COOKIE}=${token}; Path=/; Max-Age=${COOKIE_MAX_AGE}; HttpOnly; SameSite=Lax${secure}`,
+  );
+}
+
 /** Loads the visitor's conversation. With `markRead`, the visitor is looking at it, so staff replies count as seen. */
-async function loadMessages(token: string | undefined, markRead = false): Promise<ChatMessageDTO[]> {
+async function loadMessages(token: string | undefined, markRead = false, ip?: string): Promise<ChatMessageDTO[]> {
   if (!token) return [];
   const where = { visitorTokenHash: hashVisitorToken(token) };
-  if (markRead) await db.chatConversation.updateMany({ where, data: { visitorReadAt: new Date() } });
+  if (markRead) {
+    await db.chatConversation.updateMany({ where, data: { visitorReadAt: new Date(), ...(ip && { visitorIp: ip }) } });
+  }
   const convo = await db.chatConversation.findUnique({
     where,
     select: {
@@ -57,8 +75,15 @@ export async function GET(req: NextRequest) {
   try {
     // The widget asks with ?read=1 only while the chat panel is open and the tab is visible.
     const read = req.nextUrl.searchParams.get("read") === "1";
-    const messages = await loadMessages(req.cookies.get(CHAT_COOKIE)?.value, read);
-    return NextResponse.json({ messages, withinSupportHours: isWithinSupportHours() });
+    const token = req.cookies.get(CHAT_COOKIE)?.value;
+    const ip = ipOf(req);
+    if (await isBlocked({ tokenHash: token ? hashVisitorToken(token) : undefined, ip })) {
+      return NextResponse.json(BLOCKED, { status: 403 });
+    }
+    const messages = await loadMessages(token, read, ip);
+    const res = NextResponse.json({ messages, withinSupportHours: isWithinSupportHours() });
+    if (token) setChatCookie(res, token);
+    return res;
   } catch (err) {
     logger.error("chat.load_failed", err);
     return NextResponse.json({ error: "Chat is temporarily unavailable." }, { status: 503 });
@@ -98,17 +123,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "That photo couldn't be sent. Try a JPEG or PNG under 1.5 MB." }, { status: 400 });
   }
 
-  let token = req.cookies.get(CHAT_COOKIE)?.value;
-  const isNew = !token;
-  token ??= newVisitorToken();
+  const token = req.cookies.get(CHAT_COOKIE)?.value ?? newVisitorToken();
+  const ip = ipOf(req);
 
   try {
     const tokenHash = hashVisitorToken(token);
+    if (await isBlocked({ tokenHash, ip })) return NextResponse.json(BLOCKED, { status: 403 });
     const conversationId = await db.$transaction(async (tx) => {
+      // Read the block flag straight from the database too, so a block applies instantly here.
+      const existing = await tx.chatConversation.findUnique({ where: { visitorTokenHash: tokenHash }, select: { blockedAt: true } });
+      if (existing?.blockedAt) return null;
       const convo = await tx.chatConversation.upsert({
         where: { visitorTokenHash: tokenHash },
-        create: { visitorTokenHash: tokenHash },
-        update: { lastMessageAt: new Date(), status: "OPEN" },
+        create: { visitorTokenHash: tokenHash, visitorIp: ip },
+        update: { lastMessageAt: new Date(), status: "OPEN", visitorIp: ip },
         select: { id: true },
       });
       await tx.chatMessage.create({
@@ -121,6 +149,7 @@ export async function POST(req: NextRequest) {
       });
       return convo.id;
     });
+    if (!conversationId) return NextResponse.json(BLOCKED, { status: 403 });
     // Alert staff devices after the response is sent, so the visitor never waits on it.
     after(() =>
       notifyStaff({
@@ -131,18 +160,10 @@ export async function POST(req: NextRequest) {
       }),
     );
     const res = NextResponse.json(
-      { messages: await loadMessages(token, true), withinSupportHours: isWithinSupportHours() },
+      { messages: await loadMessages(token, true, ip), withinSupportHours: isWithinSupportHours() },
       { status: 201 },
     );
-    if (isNew) {
-      res.cookies.set(CHAT_COOKIE, token, {
-        httpOnly: true,
-        sameSite: "lax",
-        secure: process.env.NODE_ENV === "production",
-        path: "/api/chat",
-        maxAge: COOKIE_MAX_AGE,
-      });
-    }
+    setChatCookie(res, token);
     return res;
   } catch (err) {
     logger.error("chat.send_failed", err);

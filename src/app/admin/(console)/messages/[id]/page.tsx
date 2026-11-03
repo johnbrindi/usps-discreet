@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AdminPageTitle } from "@/components/admin/page-title";
+import { BlockButton } from "@/components/admin/block-button";
 import { ReplyForm } from "@/components/admin/reply-form";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -8,7 +9,7 @@ import { siteConfig } from "@/config/site";
 import { db } from "@/lib/db";
 import { ChatBubble, DaySeparator } from "@/components/chat/chat-bubble";
 import { chatDateTime, chatTime, dayLabel, startsRun } from "@/lib/chat-format";
-import { replyToConversation, setConversationStatus } from "@/server/actions/admin-support";
+import { replyToConversation, setConversationBlocked, setConversationStatus } from "@/server/actions/admin-support";
 import { requireStaffPage } from "@/lib/authz";
 import { chatImageUrl, isSeen } from "@/server/chat";
 
@@ -32,17 +33,23 @@ export default async function ConversationPage({ params }: { params: Promise<{ i
   });
   if (!convo) notFound();
   const next = convo.status === "OPEN" ? "CLOSED" : "OPEN";
+  const blocked = !!convo.blockedAt;
 
   return (
     <>
       <Link href="/admin/messages" className="text-sm text-muted hover:text-navy-900 hover:underline">← Chat</Link>
       <AdminPageTitle
         title="Conversation"
-        description={`Started ${chatDateTime(convo.createdAt.toISOString())} · ${convo.status.toLowerCase()}`}
+        description={`Started ${chatDateTime(convo.createdAt.toISOString())} · ${blocked ? "blocked" : convo.status.toLowerCase()}`}
         actions={
-          <form action={setConversationStatus.bind(null, convo.id, next)}>
-            <Button type="submit" variant="secondary" size="sm">{next === "CLOSED" ? "Close conversation" : "Reopen"}</Button>
-          </form>
+          <div className="flex flex-wrap gap-2">
+            {!blocked && (
+              <form action={setConversationStatus.bind(null, convo.id, next)}>
+                <Button type="submit" variant="secondary" size="sm">{next === "CLOSED" ? "Close conversation" : "Reopen"}</Button>
+              </form>
+            )}
+            <BlockButton blocked={blocked} onToggle={setConversationBlocked.bind(null, convo.id, !blocked)} />
+          </div>
         }
       />
       <Card className="max-w-3xl">
@@ -70,7 +77,14 @@ export default async function ConversationPage({ params }: { params: Promise<{ i
             );
           })}
         </ol>
-        <ReplyForm action={replyToConversation.bind(null, convo.id)} agentName={siteConfig.chatAgentName} />
+        {blocked ? (
+          <p className="border-t border-line bg-danger-50 px-4 py-3 text-center text-sm text-danger-700">
+            You blocked this visitor on {chatDateTime(convo.blockedAt!.toISOString())}
+            {convo.blockedIp ? ` (IP ${convo.blockedIp})` : ""}. They can&apos;t chat or open the website. Unblock them to reply.
+          </p>
+        ) : (
+          <ReplyForm action={replyToConversation.bind(null, convo.id)} agentName={siteConfig.chatAgentName} />
+        )}
       </Card>
     </>
   );

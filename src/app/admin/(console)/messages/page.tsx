@@ -23,6 +23,7 @@ export default async function MessagesPage({ searchParams }: { searchParams: Pro
       lastMessageAt: true,
       visitorReadAt: true,
       agentReadAt: true,
+      blockedAt: true,
       messages: { orderBy: { createdAt: "desc" }, take: 1, select: { body: true, imageType: true, sender: true, createdAt: true } },
       _count: { select: { messages: true } },
     },
@@ -72,7 +73,9 @@ export default async function MessagesPage({ searchParams }: { searchParams: Pro
                         {c._count.messages} message{c._count.messages === 1 ? "" : "s"} · {chatDateTime(c.lastMessageAt.toISOString())}
                       </p>
                     </div>
-                    {awaiting && (
+                    {c.blockedAt ? (
+                      <span className="shrink-0 rounded-full bg-danger-50 px-2 py-0.5 text-xs font-bold text-danger-700">Blocked</span>
+                    ) : awaiting && (
                       <span className="shrink-0 rounded-full bg-amber-500 px-2 py-0.5 text-xs font-bold text-navy-950">Awaiting reply</span>
                     )}
                   </Link>

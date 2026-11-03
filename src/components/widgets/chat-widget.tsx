@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertCircle, Loader2, Lock, MessageCircle, RefreshCw, SendHorizontal, X } from "lucide-react";
+import { AlertCircle, Loader2, Lock, Maximize2, MessageCircle, Minimize2, RefreshCw, SendHorizontal, X } from "lucide-react";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { AttachMenu } from "@/components/chat/attach-menu";
 import { ChatBubble, DaySeparator } from "@/components/chat/chat-bubble";
@@ -15,6 +15,8 @@ const POLL_MS = 5_000;
 
 export function ChatWidget({ agentName, hoursLabel, alwaysOpen = false }: { agentName: string; hoursLabel: string; alwaysOpen?: boolean }) {
   const [open, setOpen] = useState(false);
+  /** Expanded to fill the whole screen instead of the docked panel. */
+  const [maximized, setMaximized] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [load, setLoad] = useState<LoadState>("idle");
   const [withinHours, setWithinHours] = useState<boolean | null>(null);
@@ -35,6 +37,8 @@ export function ChatWidget({ agentName, hoursLabel, alwaysOpen = false }: { agen
     try {
       // Only called while the panel is open, so the visitor has seen any replies.
       const res = await fetch("/api/chat?read=1", { cache: "no-store" });
+      // Blocked by staff: reload so the site-wide "Access denied" page takes over.
+      if (res.status === 403) return window.location.reload();
       if (!res.ok) throw new Error(String(res.status));
       const data = (await res.json()) as { messages: Message[]; withinSupportHours: boolean };
       setMessages(data.messages);
@@ -101,6 +105,7 @@ export function ChatWidget({ agentName, hoursLabel, alwaysOpen = false }: { agen
         withinSupportHours?: boolean;
         error?: string;
       };
+      if (res.status === 403) return window.location.reload();
       if (!res.ok || !data.messages) throw new Error(data.error ?? "Your message couldn't be sent. Please try again.");
       setMessages(data.messages);
       if (typeof data.withinSupportHours === "boolean") setWithinHours(data.withinSupportHours);
@@ -143,11 +148,17 @@ export function ChatWidget({ agentName, hoursLabel, alwaysOpen = false }: { agen
         aria-labelledby={titleId}
         hidden={!open}
         className={cn(
-          "pointer-events-auto fixed flex flex-col overflow-hidden rounded-xl border border-line bg-white shadow-float",
-          // Docked above both launchers at every size so neither launcher is ever covered.
-          "right-[var(--fab-right)] bottom-[calc(var(--fab-bottom)+2*var(--fab-size)+2*var(--fab-gap))]",
-          "w-[min(22.5rem,calc(100vw-2*var(--fab-inset)))]",
-          "h-[min(36rem,calc(100dvh-var(--fab-bottom)-2*var(--fab-size)-2*var(--fab-gap)-var(--fab-inset)-env(safe-area-inset-top,0px)))]",
+          "pointer-events-auto fixed flex flex-col overflow-hidden bg-white shadow-float",
+          maximized
+            ? // Full screen: covers the whole viewport (and the launchers) until restored or closed.
+              "inset-0 h-dvh w-screen"
+            : [
+                "rounded-xl border border-line",
+                // Docked above both launchers at every size so neither launcher is ever covered.
+                "right-[var(--fab-right)] bottom-[calc(var(--fab-bottom)+2*var(--fab-size)+2*var(--fab-gap))]",
+                "w-[min(22.5rem,calc(100vw-2*var(--fab-inset)))]",
+                "h-[min(36rem,calc(100dvh-var(--fab-bottom)-2*var(--fab-size)-2*var(--fab-gap)-var(--fab-inset)-env(safe-area-inset-top,0px)))]",
+              ].join(" "),
         )}
         style={{ zIndex: "var(--z-chat)" }}
       >
@@ -178,6 +189,15 @@ export function ChatWidget({ agentName, hoursLabel, alwaysOpen = false }: { agen
                     : `Outside support hours (${hoursLabel})`}
             </p>
           </div>
+          <button
+            type="button"
+            onClick={() => setMaximized((m) => !m)}
+            aria-pressed={maximized}
+            className="inline-flex size-10 items-center justify-center rounded-md text-white hover:bg-white/10"
+          >
+            {maximized ? <Minimize2 className="size-5" aria-hidden /> : <Maximize2 className="size-5" aria-hidden />}
+            <span className="sr-only">{maximized ? "Restore chat size" : "Maximize chat"}</span>
+          </button>
           <button
             type="button"
             onClick={close}

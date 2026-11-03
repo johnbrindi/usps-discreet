@@ -5,6 +5,7 @@ import { requireStaff } from "@/lib/authz";
 import { db } from "@/lib/db";
 import { logger } from "@/lib/logger";
 import { audit } from "@/server/audit";
+import { clearBlocklistCache } from "@/server/blocklist";
 import { decodeChatImage } from "@/server/chat";
 import { MAX_CHAT_IMAGE_BYTES, chatMessageSchema } from "@/validation/chat";
 import type { ActionState } from "./types";
@@ -20,6 +21,8 @@ export async function replyToConversation(
   if (!parsed.success) return { status: "error", fieldErrors: parsed.error.flatten().fieldErrors };
   const image = parsed.data.image ? decodeChatImage(parsed.data.image, MAX_CHAT_IMAGE_BYTES) : null;
   if (parsed.data.image && !image) return { status: "error", message: "That photo couldn't be sent. Try a JPEG or PNG." };
+  const target = await db.chatConversation.findUnique({ where: { id: conversationId }, select: { blockedAt: true } });
+  if (target?.blockedAt) return { status: "error", message: "This visitor is blocked. Unblock them to reply." };
   try {
     await db.$transaction([
       db.chatMessage.create({
@@ -52,6 +55,35 @@ export async function setConversationStatus(conversationId: string, status: "OPE
     await tx.chatConversation.update({ where: { id: conversationId }, data: { status } });
     await audit(tx, { actorId: user.id, action: `chat.${status.toLowerCase()}`, entityType: "chat", entityId: conversationId });
   });
+  revalidatePath("/admin/messages");
+  revalidatePath(`/admin/messages/${conversationId}`);
+}
+
+/**
+ * Blocks (or unblocks) the visitor behind a conversation. A blocked visitor can no longer chat and
+ * is refused the whole public website, matched by their chat cookie and their last known IP.
+ */
+export async function setConversationBlocked(conversationId: string, blocked: boolean) {
+  const user = await requireStaff();
+  if (typeof conversationId !== "string" || typeof blocked !== "boolean") return;
+  await db.$transaction(async (tx) => {
+    const convo = await tx.chatConversation.findUnique({ where: { id: conversationId }, select: { visitorIp: true } });
+    if (!convo) return;
+    await tx.chatConversation.update({
+      where: { id: conversationId },
+      data: blocked
+        ? { blockedAt: new Date(), blockedIp: convo.visitorIp, status: "CLOSED" }
+        : { blockedAt: null, blockedIp: null },
+    });
+    await audit(tx, {
+      actorId: user.id,
+      action: blocked ? "chat.block" : "chat.unblock",
+      entityType: "chat",
+      entityId: conversationId,
+      ...(blocked && convo.visitorIp && { details: { ip: convo.visitorIp } }),
+    });
+  });
+  clearBlocklistCache();
   revalidatePath("/admin/messages");
   revalidatePath(`/admin/messages/${conversationId}`);
 }

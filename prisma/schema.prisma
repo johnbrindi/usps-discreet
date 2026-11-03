@@ -286,11 +286,18 @@ model ChatConversation {
   visitorReadAt    DateTime?  @map("visitor_read_at") @db.Timestamptz(6)
   /// When staff last viewed the conversation; visitor messages up to here show as seen.
   agentReadAt      DateTime?  @map("agent_read_at") @db.Timestamptz(6)
+  /// Last IP address the visitor chatted from.
+  visitorIp        String?    @map("visitor_ip") @db.VarChar(64)
+  /// Set when staff block the visitor: they are then refused the whole website (by cookie and by IP).
+  blockedAt        DateTime?  @map("blocked_at") @db.Timestamptz(6)
+  /// The IP address that was blocked (the visitor's last IP at the time of blocking).
+  blockedIp        String?    @map("blocked_ip") @db.VarChar(64)
   createdAt        DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
 
   messages ChatMessage[]
 
   @@index([status, lastMessageAt(sort: Desc)])
+  @@index([blockedAt])
   @@map("chat_conversations")
 }
 
