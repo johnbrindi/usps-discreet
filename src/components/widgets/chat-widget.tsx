@@ -49,6 +49,14 @@ export function ChatWidget({ agentName, hoursLabel, alwaysOpen = false }: { agen
     }
   }, []);
 
+  // Check in once per page load: keeps the chat cookie site-wide, and if staff have blocked this
+  // visitor, reloads so the site-wide "Access denied" page takes over.
+  useEffect(() => {
+    fetch("/api/chat/session", { method: "POST", cache: "no-store" })
+      .then((res) => res.status === 403 && window.location.reload())
+      .catch(() => {});
+  }, []);
+
   // Poll for replies while the panel is open and the tab is visible.
   useEffect(() => {
     if (!open) return;

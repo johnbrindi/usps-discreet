@@ -2,6 +2,19 @@ import "server-only";
 import { createHash, randomBytes } from "node:crypto";
 
 export const CHAT_COOKIE = "support_chat";
+const CHAT_COOKIE_MAX_AGE = 60 * 60 * 24 * 30;
+
+/**
+ * Set-Cookie headers for the visitor's chat cookie. It covers the whole site (not just /api/chat)
+ * so a blocked visitor can be refused every page; older cookies scoped to /api/chat are removed.
+ */
+export function chatCookieHeaders(token: string) {
+  const secure = process.env.NODE_ENV === "production" ? "; Secure" : "";
+  return [
+    `${CHAT_COOKIE}=; Path=/api/chat; Max-Age=0; HttpOnly; SameSite=Lax${secure}`,
+    `${CHAT_COOKIE}=${token}; Path=/; Max-Age=${CHAT_COOKIE_MAX_AGE}; HttpOnly; SameSite=Lax${secure}`,
+  ];
+}
 
 export function newVisitorToken() {
   return randomBytes(32).toString("base64url");

@@ -5,6 +5,7 @@ import { chatLimiter } from "@/lib/rate-limit";
 import { isWithinSupportHours } from "@/lib/support-hours";
 import {
   CHAT_COOKIE,
+  chatCookieHeaders,
   chatImageUrl,
   chatPreview,
   decodeChatImage,
@@ -21,7 +22,6 @@ export const dynamic = "force-dynamic";
 
 // Room for a base64-encoded photo plus the text.
 const MAX_BODY_BYTES = 2_100_000;
-const COOKIE_MAX_AGE = 60 * 60 * 24 * 30;
 
 function ipOf(req: NextRequest) {
   return req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || req.headers.get("x-real-ip") || "unknown";
@@ -29,17 +29,8 @@ function ipOf(req: NextRequest) {
 
 const BLOCKED = { error: "You have been blocked.", blocked: true } as const;
 
-/**
- * The chat cookie covers the whole site (not just /api/chat) so a blocked visitor can be refused
- * every page. Older cookies were scoped to /api/chat; those are replaced with a site-wide one.
- */
 function setChatCookie(res: NextResponse, token: string) {
-  const secure = process.env.NODE_ENV === "production" ? "; Secure" : "";
-  res.headers.append("set-cookie", `${CHAT_COOKIE}=; Path=/api/chat; Max-Age=0; HttpOnly; SameSite=Lax${secure}`);
-  res.headers.append(
-    "set-cookie",
-    `${CHAT_COOKIE}=${token}; Path=/; Max-Age=${COOKIE_MAX_AGE}; HttpOnly; SameSite=Lax${secure}`,
-  );
+  for (const c of chatCookieHeaders(token)) res.headers.append("set-cookie", c);
 }
 
 /** Loads the visitor's conversation. With `markRead`, the visitor is looking at it, so staff replies count as seen. */
