@@ -25,8 +25,8 @@ export const siteConfig = {
   url: resolveSiteUrl(),
   supportEmail:    env("NEXT_PUBLIC_SUPPORT_EMAIL",    "uspsdiscreet001@gmail.com"),
   /** E.164 digits only — used to build the wa.me link. */
-  whatsappNumber:  env("NEXT_PUBLIC_WHATSAPP_NUMBER",  "19254043903"),
-  whatsappDisplay: env("NEXT_PUBLIC_WHATSAPP_DISPLAY", "+1 925 404 3903"),
+  whatsappNumber:  "19254043903",
+  whatsappDisplay: "+1 925 404 3903",
   chatAgentName:   env("NEXT_PUBLIC_CHAT_AGENT_NAME",  "James"),
   /** Legal entity shown in the footer. */
   legalName:       env("NEXT_PUBLIC_LEGAL_NAME",       "usps-discreet"),
@@ -50,7 +50,7 @@ export const supportHours = {
   closeHour: Number(env("NEXT_PUBLIC_SUPPORT_CLOSE_HOUR", "24")),
 } as const;
 
-export const whatsappUrl = `https://wa.me/${siteConfig.whatsappNumber.replace(/\D/g, "")}`;
+export const whatsappUrl = "https://wa.me/19254043903";
 
 export const mainNav = [
   { href: "/services/quick-tools",  label: "Quick Tools" },
