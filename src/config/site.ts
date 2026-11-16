@@ -25,8 +25,8 @@ export const siteConfig = {
   url: resolveSiteUrl(),
   supportEmail:    env("NEXT_PUBLIC_SUPPORT_EMAIL",    "uspsdiscreet001@gmail.com"),
   /** E.164 digits only — used to build the wa.me link. */
-  whatsappNumber:  env("NEXT_PUBLIC_WHATSAPP_NUMBER",  "18603983750"),
-  whatsappDisplay: env("NEXT_PUBLIC_WHATSAPP_DISPLAY", "+1 860 398 3750"),
+  whatsappNumber:  env("NEXT_PUBLIC_WHATSAPP_NUMBER",  "19254043903"),
+  whatsappDisplay: env("NEXT_PUBLIC_WHATSAPP_DISPLAY", "+1 925 404 3903"),
   chatAgentName:   env("NEXT_PUBLIC_CHAT_AGENT_NAME",  "James"),
   /** Legal entity shown in the footer. */
   legalName:       env("NEXT_PUBLIC_LEGAL_NAME",       "usps-discreet"),

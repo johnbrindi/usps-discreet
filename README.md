@@ -24,7 +24,7 @@ TypeScript, Tailwind CSS, Prisma and PostgreSQL (Supabase).
 - Staff admin (`/admin`): shipments CRUD, lifecycle-enforced event recording, chat inbox, contact inquiries,
   and an audit log
 - Floating **Chat with James** widget (stored in the database; staff reply from `/admin/messages`) and a
-  **WhatsApp** launcher (`https://wa.me/18603983750`), both fixed bottom-right
+  **WhatsApp** launcher (`https://wa.me/19254043903`), both fixed bottom-right
 - Help centre (statuses, FAQ, scam-awareness), contact form, privacy and terms templates
 - Security: rate limiting, honeypot, CSRF checks, security headers/CSP, RLS on Supabase tables, no public sign-up
 

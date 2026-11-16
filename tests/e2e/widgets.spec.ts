@@ -26,10 +26,10 @@ test.describe("floating support widgets", () => {
   test("WhatsApp link uses the configured number safely", async ({ page }) => {
     await page.goto("/");
     const wa = page.getByRole("link", { name: /Contact us on WhatsApp/ });
-    await expect(wa).toHaveAttribute("href", "https://wa.me/18603983750");
+    await expect(wa).toHaveAttribute("href", "https://wa.me/19254043903");
     await expect(wa).toHaveAttribute("target", "_blank");
     await expect(wa).toHaveAttribute("rel", /noopener/);
-    await expect(wa).toHaveAccessibleName(/\+1 860 398 3750/);
+    await expect(wa).toHaveAccessibleName(/\+1 925 404 3903/);
   });
 
   test("chat opens, sends a message, and closes with Escape @mobile", async ({ page }) => {

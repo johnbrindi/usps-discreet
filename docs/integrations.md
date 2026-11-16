@@ -89,7 +89,7 @@ sync, consecutive failures and the 10 most recent API calls.
 
 ## WhatsApp — working
 
-Click-to-chat link `https://wa.me/18603983750` (display `+1 860 398 3750`), opened in a new tab with
+Click-to-chat link `https://wa.me/19254043903` (display `+1 925 404 3903`), opened in a new tab with
 `rel="noopener noreferrer"`. Configure it with `NEXT_PUBLIC_WHATSAPP_NUMBER` / `NEXT_PUBLIC_WHATSAPP_DISPLAY`.
 The icon is the Simple Icons WhatsApp glyph (CC0), used to label a link to WhatsApp, which Meta's brand
 guidelines permit. Whether that number is answered is outside this app.
